@@ -15,8 +15,8 @@
 		9532A74327C00B900071AF82 /* ChildViewSizeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74227C00B900071AF82 /* ChildViewSizeView.swift */; };
 		9532A74627C113C40071AF82 /* TestPublishedStructView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74527C113C30071AF82 /* TestPublishedStructView.swift */; };
 		9532A74827C1143E0071AF82 /* TestPublishedStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74727C1143E0071AF82 /* TestPublishedStruct.swift */; };
+		9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */; };
 		9545750527BB846100129153 /* ObjectRecoginzerYOLO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */; };
-		9545750727BB8C7500129153 /* YOLOv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9545750627BB8C7300129153 /* YOLOv3.mlmodel */; };
 		9545750F27BBA98A00129153 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750E27BBA98A00129153 /* Observation.swift */; };
 		9545751127BCC4EF00129153 /* YOLOv3FP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9545751027BCC4EE00129153 /* YOLOv3FP16.mlmodel */; };
 		9545751327BD1B1600129153 /* StandAndJump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545751227BD1B1500129153 /* StandAndJump.swift */; };
@@ -122,8 +122,8 @@
 		9532A74227C00B900071AF82 /* ChildViewSizeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildViewSizeView.swift; sourceTree = "<group>"; };
 		9532A74527C113C30071AF82 /* TestPublishedStructView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestPublishedStructView.swift; sourceTree = "<group>"; };
 		9532A74727C1143E0071AF82 /* TestPublishedStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestPublishedStruct.swift; sourceTree = "<group>"; };
+		9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3.mlmodel; sourceTree = "<group>"; };
 		9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectRecoginzerYOLO.swift; sourceTree = "<group>"; };
-		9545750627BB8C7300129153 /* YOLOv3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = YOLOv3.mlmodel; path = Object/YOLOv3.mlmodel; sourceTree = "<group>"; };
 		9545750E27BBA98A00129153 /* Observation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observation.swift; sourceTree = "<group>"; };
 		9545751027BCC4EE00129153 /* YOLOv3FP16.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3FP16.mlmodel; sourceTree = "<group>"; };
 		9545751227BD1B1500129153 /* StandAndJump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandAndJump.swift; sourceTree = "<group>"; };
@@ -352,8 +352,8 @@
 		958F8C2B2760560500F6DF48 /* ml */ = {
 			isa = PBXGroup;
 			children = (
+				9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */,
 				9545751027BCC4EE00129153 /* YOLOv3FP16.mlmodel */,
-				9545750627BB8C7300129153 /* YOLOv3.mlmodel */,
 				958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */,
 				958F8C302760560500F6DF48 /* SVC6.mlmodel */,
 				9545750327BB83C000129153 /* Object */,
@@ -681,6 +681,7 @@
 				95E79E8027A13D3B00AC36E1 /* ControlView.swift in Sources */,
 				95E79E8127A13D3B00AC36E1 /* ErrorView.swift in Sources */,
 				95E79E0727A13C3000AC36E1 /* BlackWhiteFilter.swift in Sources */,
+				9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */,
 				9F69EE5226957E1300746CD7 /* FrameManager.swift in Sources */,
 				95E79E6527A13D3B00AC36E1 /* DevelopView.swift in Sources */,
 				95E79E2D27A13CED00AC36E1 /* CGFloat+Extension.swift in Sources */,
@@ -719,7 +720,6 @@
 				95E79DF627A13AEC00AC36E1 /* SimpleRule.swift in Sources */,
 				95E79E7827A13D3B00AC36E1 /* DirectionView.swift in Sources */,
 				95E79DF727A13AEC00AC36E1 /* SportState.swift in Sources */,
-				9545750727BB8C7500129153 /* YOLOv3.mlmodel in Sources */,
 				95E79E7B27A13D3B00AC36E1 /* VideoRecordView.swift in Sources */,
 				9F69EE4C26942A8A00746CD7 /* CameraError.swift in Sources */,
 				95E79E6E27A13D3B00AC36E1 /* StateRulessSetupView.swift in Sources */,

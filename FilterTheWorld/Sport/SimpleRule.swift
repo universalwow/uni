@@ -130,10 +130,11 @@ struct AngleRange: Codable {
 
 // 过滤有效人
 // MARK: 当前只考虑单区域
-struct LandmarksInArea: Codable {
-  var landmarks: [Landmark]
+struct LandmarkInArea: Codable {
+  var landmarkSegmentType: LandmarkTypeSegment
+  var landmarkType: LandmarkType
+  
   var area: [CGPoint]
-  var isAllSatisfy: Bool = true
   
   var path: Path {
     var path = Path()
@@ -152,27 +153,34 @@ struct LandmarksInArea: Codable {
     return path
   }
   
-  var allSatisfy: Bool {
-    landmarks.allSatisfy{landmark in
-      path.contains(landmark.position.vector2d.toCGPoint)
+  func satisfy(poseMap: PoseMap) -> Bool? {
+    
+    let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+    
+    if landmarkType == landmarkSegment.startLandmark.landmarkType {
+      return path.contains(landmarkSegment.startLandmark.position.vector2d.toCGPoint)
+    }else if landmarkType == landmarkSegment.endLandmark.landmarkType {
+      return path.contains(landmarkSegment.endLandmark.position.vector2d.toCGPoint)
+
     }
+    return nil
   }
   
-  var contains: Bool {
-    landmarks.contains(where: { landmark in
-      path.contains(landmark.position.vector2d.toCGPoint)
-    })
-  }
-  
-  
-  var satisfy:Bool {
-    switch isAllSatisfy {
-      case true:
-        return allSatisfy
-      case false:
-        return contains
-      }
-  }
+//  var contains: Bool {
+//    landmarks.contains(where: { landmark in
+//      path.contains(landmark.position.vector2d.toCGPoint)
+//    })
+//  }
+//
+//
+//  var satisfy:Bool {
+//    switch isAllSatisfy {
+//      case true:
+//        return allSatisfy
+//      case false:
+//        return contains
+//      }
+//  }
   
   
 }
@@ -237,7 +245,7 @@ struct ComplexRules: Identifiable, Hashable, Codable {
 }
 
 
-struct ComplexRule: Identifiable, Equatable, Hashable, Codable {
+struct ComplexRule: Identifiable, Hashable, Codable {
   static func == (lhs: ComplexRule, rhs: ComplexRule) -> Bool {
     lhs.id == rhs.id
   }
@@ -269,16 +277,18 @@ struct ComplexRule: Identifiable, Equatable, Hashable, Codable {
   var lengthXY: RelativeLandmarkSegmentsToAxis?
   
   // 关节点在区域内
-  var landmarksInArea:LandmarksInArea?
+  var landmarkInArea:LandmarkInArea?
   
   
-  func angleSatisfy(poseMap: PoseMap) -> Bool? {
+  func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
     let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-    if let angleRange = angle {
-      return angleRange.angle.contains(landmarkSegment.angle2d.toInt) ||
-      angleRange.angle.contains(landmarkSegment.angle2d.toInt + 360)
-    }
-    return nil
+    return angleRange.angle.contains(landmarkSegment.angle2d.toInt) ||
+    angleRange.angle.contains(landmarkSegment.angle2d.toInt + 360)
+  }
+  
+  
+  func landmarkInAreaSatisfy(landmarkInArea: LandmarkInArea, poseMap: PoseMap) -> Bool? {
+    return landmarkInArea.satisfy(poseMap: poseMap)
   }
   
   
@@ -294,9 +304,13 @@ struct ComplexRule: Identifiable, Equatable, Hashable, Codable {
     var lengthXSatisfy: Bool? = true
     var lengthYSatisfy: Bool? = true
     var lengthXYSatisfy: Bool? = true
+    var angleSatisfy: Bool? = true
+    var landmarkInAreaSatisfy: Bool? = true
+    
     if let length = lengthX {
       lengthXSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
     }
+    
     if let length = lengthY {
       lengthYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
     }
@@ -305,11 +319,19 @@ struct ComplexRule: Identifiable, Equatable, Hashable, Codable {
       lengthXYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
     }
     
-    let angleSatisfy = self.angleSatisfy(poseMap: poseMap)
+    if let angleRange = angle {
+      angleSatisfy = self.angleSatisfy(angleRange: angleRange, poseMap: poseMap)
+    }
+    
+    if let landmarkInArea = landmarkInArea {
+      landmarkInAreaSatisfy = self.landmarkInAreaSatisfy(landmarkInArea: landmarkInArea, poseMap: poseMap)
+    }
+    
+    
     
     // 每个规则至少要包含一个条件 且所有条件都必须满足
-    return (lengthX != nil || lengthY != nil || lengthXY != nil || angle != nil) &&
-    lengthXSatisfy == true && lengthYSatisfy == true && lengthXYSatisfy == true && angleSatisfy == true
+    return (lengthX != nil || lengthY != nil || lengthXY != nil || angle != nil || landmarkInArea != nil) &&
+    lengthXSatisfy == true && lengthYSatisfy == true && lengthXYSatisfy == true && angleSatisfy == true && landmarkInAreaSatisfy == true
   }
   
   func lengthSatisfy(relativeDistance: RelativeLandmarkSegmentsToAxis, poseMap: PoseMap) -> Bool? {
