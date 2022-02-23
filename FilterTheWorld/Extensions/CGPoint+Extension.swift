@@ -2,9 +2,6 @@ import SwiftUI
 import simd
 
 
-
-
-
 extension CGPoint {
   func pointToFit(imageSize: CGSize,
                    viewSize: CGSize) -> CGPoint {

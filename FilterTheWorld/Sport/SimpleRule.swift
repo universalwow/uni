@@ -131,7 +131,6 @@ struct AngleRange: Codable {
 // 过滤有效人
 // MARK: 当前只考虑单区域
 struct LandmarkInArea: Codable {
-  var landmarkSegmentType: LandmarkTypeSegment
   var landmarkType: LandmarkType
   
   var area: [CGPoint]
@@ -153,7 +152,7 @@ struct LandmarkInArea: Codable {
     return path
   }
   
-  func satisfy(poseMap: PoseMap) -> Bool? {
+  func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap) -> Bool? {
     
     let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)
     
@@ -288,7 +287,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
   
   
   func landmarkInAreaSatisfy(landmarkInArea: LandmarkInArea, poseMap: PoseMap) -> Bool? {
-    return landmarkInArea.satisfy(poseMap: poseMap)
+    return landmarkInArea.satisfy(landmarkSegmentType: landmarkSegmentType, poseMap: poseMap)
   }
   
   

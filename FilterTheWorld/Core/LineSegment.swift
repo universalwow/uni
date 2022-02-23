@@ -12,6 +12,12 @@ struct LandmarkTypeSegment: Identifiable, Codable {
     self.endLandmarkType = endLandmarkType
     self.id = "\(startLandmarkType.rawValue)-\(endLandmarkType.rawValue)"
   }
+  
+  
+  
+  var startAndEndSegmentTypes: [LandmarkType] {
+    [startLandmarkType, endLandmarkType]
+  }
 }
 
 

@@ -14,8 +14,16 @@ class SportManager: ObservableObject {
   var currentSportStateRules: ComplexRules?
   @Published var currentSportStateRule: ComplexRule?
   var editedSportStateRule: ComplexRule?
-
   var currentSportStateRuleType:RuleType?
+  var landmarkInArea: LandmarkInArea?
+  @Published var hasAreaRule = false {
+    didSet {
+      print("hasAreaRule.................")
+      if !hasAreaRule {
+        landmarkInArea = nil
+      }
+    }
+  }
   
   var isNewRule = false
   
@@ -45,6 +53,27 @@ extension SportManager {
     return currentSportStateRule?.warning
   }
   
+  func updateSportStateRuleLandmarkInArea(firstPoint: CGPoint,
+                                                  secondPoint: CGPoint,
+                                                  thirdPoint:CGPoint,
+                                                  fourthPoint: CGPoint
+  ) {
+    
+    landmarkInArea?.area = [firstPoint, secondPoint, thirdPoint, fourthPoint]
+    currentSportStateRule?.landmarkInArea = landmarkInArea
+    
+  }
+  
+  func updateSportStateRuleLandmarkInArea(landmarkType: LandmarkType) {
+    
+    if landmarkInArea == nil {
+      landmarkInArea = LandmarkInArea(landmarkType: landmarkType, area: [])
+    }else{
+      landmarkInArea?.landmarkType = landmarkType
+    }
+    
+  }
+  
   func updateCurrentSportStateRuleLengthLowerBound(axis: CoordinateAxis, lowerBound: String) {
     if let lowerBound = Double(lowerBound) {
       switch axis {
@@ -57,6 +86,9 @@ extension SportManager {
         }
     }
   }
+  
+  
+  
   
   func updateCurrentSportStateRuleLengthUpperBound(axis: CoordinateAxis, upperBound: String) {
     if let upperBound = Double(upperBound) {
