@@ -503,7 +503,10 @@ public class UIUtilities {
   }
 
   private static func currentUIOrientation() -> UIDeviceOrientation {
+    
     let deviceOrientation = { () -> UIDeviceOrientation in
+      
+      
       switch UIApplication.shared.statusBarOrientation {
       case .landscapeLeft:
         return .landscapeRight

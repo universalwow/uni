@@ -47,15 +47,19 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   }
   
   
-//  func complexViolateRulesSatisfy(poseMap:PoseMap) -> Bool {
-//    // 只要有一组条件满足
-//    complexScoreRules.contains{ complexRules in
-//      // 每一组条件全部满足
-//      (!complexRules.rules.isEmpty) && complexRules.rules.allSatisfy{ complexRule in
-//        complexRule.allSatisfy(poseMap: poseMap)
-//      }
-//    }
-//  }
+  mutating func setupLandmarkArea(editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
+    
+    if let rulesIndex = firstIndexOfComplexRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
+      switch ruleType {
+        case .SCORE:
+        complexScoreRules[rulesIndex].setupLandmarkArea(editedSportStateRule: editedSportStateRule, landmarkinArea: landmarkinArea)
+
+        case .VIOLATE:
+        complexViolateRules[rulesIndex].setupLandmarkArea(editedSportStateRule: editedSportStateRule, landmarkinArea: landmarkinArea)
+      }
+    
+    }
+  }
   
   func complexScoreRulesSatisfy(poseMap:PoseMap) -> Bool {
     // 只要有一组条件满足
@@ -67,8 +71,8 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
     }
   }
   
-  mutating func updateSportStateRule(editedSportStateRules: ComplexRules, editedRule: ComplexRule, ruleType: RuleType) {
-      if let rulesIndex = firstIndexOfComplexRules(editedRules: editedSportStateRules, ruleType: ruleType) {
+  mutating func updateSportStateRule(editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
+      if let rulesIndex = firstIndexOfComplexRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
         switch ruleType {
           case .SCORE:
             complexScoreRules[rulesIndex].updateSportStateRule(editedRule: editedRule)
@@ -81,15 +85,15 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   }
   
   
-  func firstIndexOfComplexRules(editedRules: ComplexRules, ruleType: RuleType) -> Int? {
+  func firstIndexOfComplexRules(editedRulesId: UUID, ruleType: RuleType) -> Int? {
     switch ruleType {
     case .SCORE:
       return complexScoreRules.firstIndex(where: { rules in
-        editedRules.id == rules.id
+        editedRulesId == rules.id
       })
     case .VIOLATE:
       return complexViolateRules.firstIndex(where: { rules in
-        editedRules.id == rules.id
+        editedRulesId == rules.id
       })
     }
   }
@@ -111,8 +115,8 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
     }
   }
   
-  mutating func deleteSportStateRules(rules: ComplexRules, ruleType: RuleType) {
-    if let index = firstIndexOfComplexRules(editedRules: rules, ruleType: ruleType) {
+  mutating func deleteSportStateRules(rulesId: UUID, ruleType: RuleType) {
+    if let index = firstIndexOfComplexRules(editedRulesId: rulesId, ruleType: ruleType) {
       switch ruleType {
       case .SCORE:
         complexScoreRules.remove(at: index)
@@ -122,28 +126,28 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
     }
   }
   
-  func firstIndexOfLandmarkSegment(landmarkSegmentType: LandmarkTypeSegment) -> Int? {
+  func firstIndexOfLandmarkSegment(editedSportStateRuleId: String) -> Int? {
     landmarkSegments.firstIndex(where: { landmarkSegment in
-      landmarkSegment.landmarkSegmentType.id == landmarkSegmentType.id
+      landmarkSegment.landmarkSegmentType.id == editedSportStateRuleId
     })
   }
 
   
-  mutating func setSegmentToSelected(editedSportStateRule: ComplexRule?) {
+  mutating func setSegmentToSelected(editedSportStateRuleId: String?) {
     let range = 0..<landmarkSegments.count
     range.forEach{ index in
       landmarkSegments[index].selected = false
     }
-    if let editedSportStateRule = editedSportStateRule,
-        let index = firstIndexOfLandmarkSegment(landmarkSegmentType: editedSportStateRule.landmarkSegmentType){
+    if let editedSportStateRuleId = editedSportStateRuleId,
+        let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId){
         landmarkSegments[index].selected = true
     }
 
     
   }
   
-  func findselectedSegment(editedSportStateRule: ComplexRule) -> LandmarkSegment? {
-    if let index = firstIndexOfLandmarkSegment(landmarkSegmentType: editedSportStateRule.landmarkSegmentType) {
+  func findselectedSegment(editedSportStateRuleId: String) -> LandmarkSegment? {
+    if let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId) {
       return landmarkSegments[index]
     }
     

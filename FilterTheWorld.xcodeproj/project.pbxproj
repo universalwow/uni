@@ -99,6 +99,7 @@
 		95E79E7F27A13D3B00AC36E1 /* HumanPoseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E5A27A13D3B00AC36E1 /* HumanPoseView.swift */; };
 		95E79E8027A13D3B00AC36E1 /* ControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E5B27A13D3B00AC36E1 /* ControlView.swift */; };
 		95E79E8127A13D3B00AC36E1 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E5C27A13D3B00AC36E1 /* ErrorView.swift */; };
+		95EFE65D27C8C1B7006C74A8 /* MobileNetV2.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 95EFE65C27C8C1B6006C74A8 /* MobileNetV2.mlmodel */; };
 		95F67542277DC8F80049B03A /* kangaroo.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95F6753E277DC87E0049B03A /* kangaroo.usdz */; };
 		95F67546277EA9B90049B03A /* biped_robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95F67545277EA9B80049B03A /* biped_robot.usdz */; };
 		9F69EE4C26942A8A00746CD7 /* CameraError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F69EE4B26942A8A00746CD7 /* CameraError.swift */; };
@@ -205,6 +206,7 @@
 		95E79E5A27A13D3B00AC36E1 /* HumanPoseView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HumanPoseView.swift; sourceTree = "<group>"; };
 		95E79E5B27A13D3B00AC36E1 /* ControlView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ControlView.swift; sourceTree = "<group>"; };
 		95E79E5C27A13D3B00AC36E1 /* ErrorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
+		95EFE65C27C8C1B6006C74A8 /* MobileNetV2.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MobileNetV2.mlmodel; sourceTree = "<group>"; };
 		95F67540277DC8C10049B03A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = en; path = en.lproj/kangaroo.usdz; sourceTree = "<group>"; };
 		95F67544277DC9A80049B03A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = Base; path = Base.lproj/kangaroo.usdz; sourceTree = "<group>"; };
 		95F67545277EA9B80049B03A /* biped_robot.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = biped_robot.usdz; sourceTree = "<group>"; };
@@ -352,6 +354,7 @@
 		958F8C2B2760560500F6DF48 /* ml */ = {
 			isa = PBXGroup;
 			children = (
+				95EFE65C27C8C1B6006C74A8 /* MobileNetV2.mlmodel */,
 				9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */,
 				9545751027BCC4EE00129153 /* YOLOv3FP16.mlmodel */,
 				958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */,
@@ -706,6 +709,7 @@
 				95E79E7D27A13D3B00AC36E1 /* LocationSetupView.swift in Sources */,
 				95E79E6D27A13D3B00AC36E1 /* SliderView.swift in Sources */,
 				95E79E6127A13D3B00AC36E1 /* LinesView.swift in Sources */,
+				95EFE65D27C8C1B7006C74A8 /* MobileNetV2.mlmodel in Sources */,
 				95E79DF327A13AEC00AC36E1 /* Sport.swift in Sources */,
 				95E79E2527A13CED00AC36E1 /* CIImage+Extension.swift in Sources */,
 				95E79E7E27A13D3B00AC36E1 /* ContentView.swift in Sources */,

@@ -128,6 +128,17 @@ struct AngleRange: Codable {
 
 }
 
+
+
+extension LandmarkInArea {
+  var areaString: String {
+    area.reduce("", { result, next in
+      result + next.roundedString + ","
+    })
+  }
+  
+}
+
 // 过滤有效人
 // MARK: 当前只考虑单区域
 struct LandmarkInArea: Codable {
@@ -219,6 +230,16 @@ struct ComplexRules: Identifiable, Hashable, Codable {
     return nil
   }
   
+  func firstRuleByRuleId(ruleId: String?) -> ComplexRule? {
+    if let ruleId = ruleId {
+      return rules.first(where: { rule in
+        rule.id == ruleId
+      })
+    }
+    return nil
+    
+  }
+  
   
   mutating func updateSportStateRule(editedRule: ComplexRule) {
     if editedRule.angle == nil && editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil {
@@ -231,6 +252,13 @@ struct ComplexRules: Identifiable, Hashable, Codable {
       }else{
         rules.append(editedRule)
       }
+    }
+    
+  }
+  
+  mutating func setupLandmarkArea(editedSportStateRule: ComplexRule, landmarkinArea: LandmarkInArea?) {
+    if let index = firstIndexOfRule(editedRule: editedSportStateRule) {
+      self.rules[index].landmarkInArea = landmarkinArea
     }
     
   }

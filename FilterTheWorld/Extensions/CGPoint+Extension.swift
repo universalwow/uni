@@ -36,6 +36,21 @@ extension CGPoint {
   }
   
   
+  func imagePointToViewPoint(imageOffset: CGSize, imageSize: CGSize,
+                             viewSize: CGSize, scale: CGFloat) -> CGPoint {
+    let viewX = (self.x - imageSize.width/2) * scale + viewSize.width/2 + imageOffset.width
+    let viewY = (self.y - imageSize.height/2) * scale + viewSize.height/2 + imageOffset.height
+    
+    return CGPoint(x: viewX, y: viewY)
+  }
+  
+  
+  func viewPointToOffset(viewSize: CGSize, scale: CGFloat, parentPanOffset: CGSize) -> CGSize {
+    
+    CGSize(width: (self.x - viewSize.width/2 - parentPanOffset.width)/scale, height: (self.y - viewSize.height/2 - parentPanOffset.height)/scale)
+  }
+  
+  
   
   
   func proportionToRealPosition(imageSize:CGSize) -> CGPoint{
