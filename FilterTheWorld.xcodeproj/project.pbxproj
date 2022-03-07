@@ -11,7 +11,10 @@
 		18D775C722AD944400AE281E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18D775C622AD944400AE281E /* Assets.xcassets */; };
 		18D775CA22AD944400AE281E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18D775C922AD944400AE281E /* Preview Assets.xcassets */; };
 		18D775D822AD963800AE281E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18D775DA22AD963800AE281E /* LaunchScreen.storyboard */; };
+		95171C9727CE140B0051249D /* Sporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95171C9627CE140B0051249D /* Sporter.swift */; };
 		9518D31427799B0D0083C215 /* robot.scn in Resources */ = {isa = PBXBuildFile; fileRef = 9518D31627799B0D0083C215 /* robot.scn */; };
+		9521DAD327C8DF960072ED5E /* yolov5s_with_preview.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9521DAD227C8DF960072ED5E /* yolov5s_with_preview.mlmodel */; };
+		9521DAD527C8EC220072ED5E /* yolo_with_metadata.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9521DAD427C8EC210072ED5E /* yolo_with_metadata.mlmodel */; };
 		9532A74327C00B900071AF82 /* ChildViewSizeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74227C00B900071AF82 /* ChildViewSizeView.swift */; };
 		9532A74627C113C40071AF82 /* TestPublishedStructView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74527C113C30071AF82 /* TestPublishedStructView.swift */; };
 		9532A74827C1143E0071AF82 /* TestPublishedStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74727C1143E0071AF82 /* TestPublishedStruct.swift */; };
@@ -20,13 +23,13 @@
 		9545750F27BBA98A00129153 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750E27BBA98A00129153 /* Observation.swift */; };
 		9545751127BCC4EF00129153 /* YOLOv3FP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9545751027BCC4EE00129153 /* YOLOv3FP16.mlmodel */; };
 		9545751327BD1B1600129153 /* StandAndJump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545751227BD1B1500129153 /* StandAndJump.swift */; };
+		954E41FF27D48DDB00535F12 /* IMG_1389.MOV in Resources */ = {isa = PBXBuildFile; fileRef = 954E41FE27D48DDB00535F12 /* IMG_1389.MOV */; };
 		958D17DE27BDEF1F002CC4B5 /* ObjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 958D17DD27BDEF1F002CC4B5 /* ObjectsView.swift */; };
 		958F8C312760560500F6DF48 /* Facenet6.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */; };
 		958F8C322760560500F6DF48 /* FaceRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C2D2760560500F6DF48 /* FaceRecognizer.swift */; };
 		958F8C332760560500F6DF48 /* labels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 958F8C2E2760560500F6DF48 /* labels.txt */; };
 		958F8C352760560500F6DF48 /* SVC6.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C302760560500F6DF48 /* SVC6.mlmodel */; };
 		95AA02CA277959D300C6E340 /* robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95AA02CC277959D300C6E340 /* robot.usdz */; };
-		95BF354827A141DC006F5D80 /* IMG_1389.MOV in Resources */ = {isa = PBXBuildFile; fileRef = 95BF354627A141DC006F5D80 /* IMG_1389.MOV */; };
 		95BF354927A141DC006F5D80 /* tiaosheng_1.MOV in Resources */ = {isa = PBXBuildFile; fileRef = 95BF354727A141DC006F5D80 /* tiaosheng_1.MOV */; };
 		95BF354B27A16D81006F5D80 /* VideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BF354A27A16D81006F5D80 /* VideoManager.swift */; };
 		95BF354D27A16F79006F5D80 /* FramesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BF354C27A16F79006F5D80 /* FramesView.swift */; };
@@ -100,6 +103,7 @@
 		95E79E8027A13D3B00AC36E1 /* ControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E5B27A13D3B00AC36E1 /* ControlView.swift */; };
 		95E79E8127A13D3B00AC36E1 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E5C27A13D3B00AC36E1 /* ErrorView.swift */; };
 		95EFE65D27C8C1B7006C74A8 /* MobileNetV2.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 95EFE65C27C8C1B6006C74A8 /* MobileNetV2.mlmodel */; };
+		95EFE65F27C8D756006C74A8 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 95EFE65E27C8D756006C74A8 /* yolov5s.mlmodel */; };
 		95F67542277DC8F80049B03A /* kangaroo.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95F6753E277DC87E0049B03A /* kangaroo.usdz */; };
 		95F67546277EA9B90049B03A /* biped_robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95F67545277EA9B80049B03A /* biped_robot.usdz */; };
 		9F69EE4C26942A8A00746CD7 /* CameraError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F69EE4B26942A8A00746CD7 /* CameraError.swift */; };
@@ -117,9 +121,12 @@
 		18D775DE22AD96B400AE281E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		48FDCE75E1D0340E4ED3BEB2 /* Pods_FilterTheWorld.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FilterTheWorld.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		883C12D31879384B02649B29 /* Pods-FilterTheWorld.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FilterTheWorld.release.xcconfig"; path = "Target Support Files/Pods-FilterTheWorld/Pods-FilterTheWorld.release.xcconfig"; sourceTree = "<group>"; };
+		95171C9627CE140B0051249D /* Sporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sporter.swift; sourceTree = "<group>"; };
 		9518D31227799AD80083C215 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = en; path = en.lproj/robot.usdz; sourceTree = "<group>"; };
 		9518D31527799B0D0083C215 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; name = Base; path = Base.lproj/robot.scn; sourceTree = "<group>"; };
 		9518D31727799B130083C215 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; name = en; path = en.lproj/robot.scn; sourceTree = "<group>"; };
+		9521DAD227C8DF960072ED5E /* yolov5s_with_preview.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s_with_preview.mlmodel; sourceTree = "<group>"; };
+		9521DAD427C8EC210072ED5E /* yolo_with_metadata.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolo_with_metadata.mlmodel; sourceTree = "<group>"; };
 		9532A74227C00B900071AF82 /* ChildViewSizeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildViewSizeView.swift; sourceTree = "<group>"; };
 		9532A74527C113C30071AF82 /* TestPublishedStructView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestPublishedStructView.swift; sourceTree = "<group>"; };
 		9532A74727C1143E0071AF82 /* TestPublishedStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestPublishedStruct.swift; sourceTree = "<group>"; };
@@ -128,12 +135,12 @@
 		9545750E27BBA98A00129153 /* Observation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observation.swift; sourceTree = "<group>"; };
 		9545751027BCC4EE00129153 /* YOLOv3FP16.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3FP16.mlmodel; sourceTree = "<group>"; };
 		9545751227BD1B1500129153 /* StandAndJump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandAndJump.swift; sourceTree = "<group>"; };
+		954E41FE27D48DDB00535F12 /* IMG_1389.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = IMG_1389.MOV; sourceTree = "<group>"; };
 		958D17DD27BDEF1F002CC4B5 /* ObjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectsView.swift; sourceTree = "<group>"; };
 		958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = Facenet6.mlmodel; sourceTree = "<group>"; };
 		958F8C2D2760560500F6DF48 /* FaceRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceRecognizer.swift; sourceTree = "<group>"; };
 		958F8C2E2760560500F6DF48 /* labels.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = labels.txt; sourceTree = "<group>"; };
 		958F8C302760560500F6DF48 /* SVC6.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SVC6.mlmodel; sourceTree = "<group>"; };
-		95BF354627A141DC006F5D80 /* IMG_1389.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = IMG_1389.MOV; sourceTree = "<group>"; };
 		95BF354727A141DC006F5D80 /* tiaosheng_1.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = tiaosheng_1.MOV; sourceTree = "<group>"; };
 		95BF354A27A16D81006F5D80 /* VideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
 		95BF354C27A16F79006F5D80 /* FramesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FramesView.swift; sourceTree = "<group>"; };
@@ -207,6 +214,7 @@
 		95E79E5B27A13D3B00AC36E1 /* ControlView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ControlView.swift; sourceTree = "<group>"; };
 		95E79E5C27A13D3B00AC36E1 /* ErrorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		95EFE65C27C8C1B6006C74A8 /* MobileNetV2.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MobileNetV2.mlmodel; sourceTree = "<group>"; };
+		95EFE65E27C8D756006C74A8 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
 		95F67540277DC8C10049B03A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = en; path = en.lproj/kangaroo.usdz; sourceTree = "<group>"; };
 		95F67544277DC9A80049B03A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = Base; path = Base.lproj/kangaroo.usdz; sourceTree = "<group>"; };
 		95F67545277EA9B80049B03A /* biped_robot.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = biped_robot.usdz; sourceTree = "<group>"; };
@@ -320,6 +328,7 @@
 				95E79E0127A13C3000AC36E1 /* LineSegment.swift */,
 				95E79DFF27A13C3000AC36E1 /* Storage.swift */,
 				9545750E27BBA98A00129153 /* Observation.swift */,
+				95171C9627CE140B0051249D /* Sporter.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -355,7 +364,10 @@
 			isa = PBXGroup;
 			children = (
 				95EFE65C27C8C1B6006C74A8 /* MobileNetV2.mlmodel */,
+				95EFE65E27C8D756006C74A8 /* yolov5s.mlmodel */,
+				9521DAD227C8DF960072ED5E /* yolov5s_with_preview.mlmodel */,
 				9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */,
+				9521DAD427C8EC210072ED5E /* yolo_with_metadata.mlmodel */,
 				9545751027BCC4EE00129153 /* YOLOv3FP16.mlmodel */,
 				958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */,
 				958F8C302760560500F6DF48 /* SVC6.mlmodel */,
@@ -369,7 +381,7 @@
 		95D6E424276C6EE200C0F1CD /* Videos */ = {
 			isa = PBXGroup;
 			children = (
-				95BF354627A141DC006F5D80 /* IMG_1389.MOV */,
+				954E41FE27D48DDB00535F12 /* IMG_1389.MOV */,
 				95BF354727A141DC006F5D80 /* tiaosheng_1.MOV */,
 			);
 			path = Videos;
@@ -558,10 +570,10 @@
 				95BF354927A141DC006F5D80 /* tiaosheng_1.MOV in Resources */,
 				95AA02CA277959D300C6E340 /* robot.usdz in Resources */,
 				18D775D822AD963800AE281E /* LaunchScreen.storyboard in Resources */,
-				95BF354827A141DC006F5D80 /* IMG_1389.MOV in Resources */,
 				95F67546277EA9B90049B03A /* biped_robot.usdz in Resources */,
 				9518D31427799B0D0083C215 /* robot.scn in Resources */,
 				95E79E7A27A13D3B00AC36E1 /* RobotScene.scn in Resources */,
+				954E41FF27D48DDB00535F12 /* IMG_1389.MOV in Resources */,
 				18D775CA22AD944400AE281E /* Preview Assets.xcassets in Resources */,
 				18D775C722AD944400AE281E /* Assets.xcassets in Resources */,
 				958F8C332760560500F6DF48 /* labels.txt in Resources */,
@@ -684,6 +696,7 @@
 				95E79E8027A13D3B00AC36E1 /* ControlView.swift in Sources */,
 				95E79E8127A13D3B00AC36E1 /* ErrorView.swift in Sources */,
 				95E79E0727A13C3000AC36E1 /* BlackWhiteFilter.swift in Sources */,
+				95EFE65F27C8D756006C74A8 /* yolov5s.mlmodel in Sources */,
 				9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */,
 				9F69EE5226957E1300746CD7 /* FrameManager.swift in Sources */,
 				95E79E6527A13D3B00AC36E1 /* DevelopView.swift in Sources */,
@@ -711,12 +724,15 @@
 				95E79E6127A13D3B00AC36E1 /* LinesView.swift in Sources */,
 				95EFE65D27C8C1B7006C74A8 /* MobileNetV2.mlmodel in Sources */,
 				95E79DF327A13AEC00AC36E1 /* Sport.swift in Sources */,
+				9521DAD527C8EC220072ED5E /* yolo_with_metadata.mlmodel in Sources */,
 				95E79E2527A13CED00AC36E1 /* CIImage+Extension.swift in Sources */,
 				95E79E7E27A13D3B00AC36E1 /* ContentView.swift in Sources */,
 				95E79E7327A13D3B00AC36E1 /* PickEffectiveFrameView.swift in Sources */,
 				9545751327BD1B1600129153 /* StandAndJump.swift in Sources */,
+				9521DAD327C8DF960072ED5E /* yolov5s_with_preview.mlmodel in Sources */,
 				9532A74827C1143E0071AF82 /* TestPublishedStruct.swift in Sources */,
 				95E79E7F27A13D3B00AC36E1 /* HumanPoseView.swift in Sources */,
+				95171C9727CE140B0051249D /* Sporter.swift in Sources */,
 				95E79E7227A13D3B00AC36E1 /* SportManagerView.swift in Sources */,
 				95E79E0327A13C3000AC36E1 /* Card.swift in Sources */,
 				95E79E3527A13D0600AC36E1 /* SportManager.swift in Sources */,

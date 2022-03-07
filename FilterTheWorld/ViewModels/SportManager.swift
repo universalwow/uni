@@ -51,6 +51,10 @@ extension SportManager {
     findFirstSport(sport: editedSport)!.stateTransForm
   }
   
+  func sportStateScoreSequence(editedSport: Sport) -> [SportState] {
+    findFirstSport(sport: editedSport)!.scoreStateSequence
+  }
+  
   static func allSports() -> [Sport] {
     return Storage.allFiles(.documents).map{ url in
       Storage.retrieve(url: url, as: Sport.self)
@@ -394,19 +398,19 @@ extension SportManager {
   
   func play(poseMap: PoseMap, currentTime: Double) {
     if let sportIndex = firstIndex() {
-
-      sports[sportIndex].play(poseMap: poseMap, currentTime: currentTime)
-      // 展示提示消息
-      sports[sportIndex].cancelingWarnings.forEach {warning in
-        dispather.cancelAction(with: warning)
-        }
-      
-      sports[sportIndex].newWarnings.forEach{ warning in
-        dispather.schedule(after: 1, with: warning, on: nil, action: {
-          print(warning)
-        })
-
-      }
+//
+//      sports[sportIndex].play(poseMap: poseMap, currentTime: currentTime)
+//      // 展示提示消息
+//      sports[sportIndex].cancelingWarnings.forEach {warning in
+//        dispather.cancelAction(with: warning)
+//        }
+//      
+//      sports[sportIndex].newWarnings.forEach{ warning in
+//        dispather.schedule(after: 1, with: warning, on: nil, action: {
+//          print(warning)
+//        })
+//
+//      }
       
     }
   }
@@ -454,22 +458,28 @@ extension SportManager {
   }
   
   
-  func updateSportStateIsScore(editedSport: Sport, sportStateName: String, isScore: Bool) {
-    if let sportIndex = firstIndex(editedSport: editedSport) {
-      sports[sportIndex].updateStateIsScore(stateName: sportStateName, isScore: isScore)
-    }
-  }
-  
-  
   func addSportStatetransform(fromSportState: SportState, toSportState: SportState) {
     if let sportIndex = firstIndex() {
       sports[sportIndex].addStateTransform(fromSportState: fromSportState, toSportState: toSportState)
     }
   }
   
+  
   func deleteSportStateTransForm(fromSportState: SportState, toSportState: SportState) {
     if let sportIndex = firstIndex() {
       sports[sportIndex].deleteStateTransForm(fromSportState: fromSportState, toSportState: toSportState)
+    }
+  }
+  
+  
+    func addSportStateScoreSequence(scoreState: SportState) {
+      if let sportIndex = firstIndex() {
+        sports[sportIndex].addSportStateScoreSequence(scoreState: scoreState)
+      }
+    }
+  func deleteSportStateScoreSequence() {
+    if let sportIndex = firstIndex() {
+      sports[sportIndex].deleteSportStateScoreSequence()
     }
   }
   

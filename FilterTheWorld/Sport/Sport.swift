@@ -23,33 +23,21 @@ struct Sport: Identifiable, Hashable, Codable {
   var id = UUID()
   var name:String = ""
   var description:String = ""
-  var states: [SportState] = [] {
-    didSet {
-    }
-    
-  }
+  var states: [SportState] = []
+  
   
   var stateTransForm: [SportStateTransform] = []
-  var startState:SportState = SportState.startState
-  var endState:SportState = SportState.endState
-
-  var currentState:SportState = SportState.startState
+  var scoreStateSequence: [SportState] = [SportState.startState, SportState.endState]
   
-  var scoreTimes: [Double] = []
-  var totalWarnings: Set<String> = []
-  // 当前帧提示，所有存留提示
-  var cancelingWarnings: Set<String> = []
-  var newWarnings: Set<String> = []
-  
-  
-  
+  // 时间限制 秒
+  var timeLimit:Double?
   
 }
 
 extension Sport {
   
   var allStates: [SportState]  {
-    states + [startState, endState]
+    states
   }
   
   
@@ -105,12 +93,6 @@ extension Sport {
     }
   }
   
-  mutating func updateStateIsScore(stateName: String, isScore:Bool) {
-    if let index = firstStateIndexByStateName(editedStateName: stateName) {
-      states[index].isScore = isScore
-    }
-  }
-
   
   mutating func addNewState(state: SportState) {
     states.append(state)
@@ -155,9 +137,6 @@ extension Sport {
       (!state.rules.isEmpty ? 1 : 0) + result
     }))/Double(states.count)
   }
-  
-
-  
   
   var sportFileName : String {
     "\(self.id).json"
@@ -259,6 +238,14 @@ extension Sport {
     }
   }
   
+  mutating func addSportStateScoreSequence(scoreState: SportState) {
+    scoreStateSequence.append(scoreState)
+  }
+  
+  mutating func deleteSportStateScoreSequence() {
+    scoreStateSequence.removeAll()
+  }
+  
   
   mutating func updateSportStateRule(editedSportStateUUID: SportStateUUID, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
@@ -266,58 +253,7 @@ extension Sport {
     }
   }
   
-  
-  mutating func play(poseMap:PoseMap, currentTime: Double) {
-    if let lastScoreTime = scoreTimes.last, (lastScoreTime >= currentTime) {
-      scoreTimes.removeAll{ scoreTime in
-        scoreTime >= currentTime
-      }
-      currentState  = startState
-    }
-//    print("----------1")
 
-    
-    // 违规逻辑
-    stateTransForm.forEach({ transform in
-      if currentState.id == transform.from {
-        if let toState = findSportStateByUUID(sportStateUUID: transform.to) {
-          var allCurrentFrameWarnings:Set<String> = []
-          toState.currentStateViolateWarning(poseMap: poseMap).forEach{ warns in
-            allCurrentFrameWarnings = allCurrentFrameWarnings.union(warns)
-          }
-
-
-          // 取消的提示
-          cancelingWarnings = totalWarnings.subtracting(allCurrentFrameWarnings)
-          // 当前新添加
-          newWarnings = allCurrentFrameWarnings.subtracting(totalWarnings)
-          
-          // 之前存在的提示
-          let oldWarnings = totalWarnings.intersection(allCurrentFrameWarnings)
-          totalWarnings = newWarnings.union(oldWarnings)
-        }
-        }
-      })
-    
-    
-    // 计分逻辑
-    stateTransForm.forEach({ transform in
-      if currentState.id == transform.from {
-        if let toState = findSportStateByUUID(sportStateUUID: transform.to) {
-          if toState.complexScoreRulesSatisfy(poseMap: poseMap) {
-            if toState.isScore {
-              scoreTimes.append(currentTime)
-              
-            }
-            currentState = toState
-    
-          }
-        }
-        
-      }
-    })
-  }
-  
   
   mutating func setSegmentToSelected(editedSportStateUUID: SportStateUUID, editedSportStateRuleId: String?) {
     

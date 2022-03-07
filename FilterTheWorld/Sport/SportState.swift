@@ -13,7 +13,6 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   var id: SportStateUUID = -1
   var name:String = ""
   var description:String = ""
-  var isScore: Bool = false
   var image: PngImage?
   var landmarkSegments :[LandmarkSegment] = []
   var rules : [[SimpleRule]] = []

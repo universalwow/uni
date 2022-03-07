@@ -50,9 +50,6 @@ class ImageAnalysis : ObservableObject {
 
       }
     }
-    
-    
-    
   }
   
   func setupSubscriptions() {
