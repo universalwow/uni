@@ -1,8 +1,6 @@
 
 
 import Foundation
-import UIKit
-
 
 struct SportStateTransform: Identifiable, Hashable, Codable {
   var from: SportStateUUID
@@ -17,71 +15,71 @@ struct Sport: Identifiable, Hashable, Codable {
   }
   
   func hash(into hasher: inout Hasher) {
-          hasher.combine(id)
-      }
+    hasher.combine(id)
+  }
   
   var id = UUID()
   var name:String = ""
   var description:String = ""
-  var states: [SportState] = []
-  
+  var states: [SportState] = [] {
+    didSet {
+      // 删除操作 更新状态转换 和 计分状态列表
+      if states.count < oldValue.count {
+        updateStateTransform()
+        updateScoreStateSequence()
+      }
+    }
+    
+  }
   
   var stateTransForm: [SportStateTransform] = []
-  var scoreStateSequence: [SportState] = [SportState.startState, SportState.endState]
+  var scoreStateSequence: [SportState] = []
   
   // 时间限制 秒
   var timeLimit:Double?
-  
 }
 
 extension Sport {
   
+  var sportFileName : String {
+    "\(self.id).json"
+  }
   var allStates: [SportState]  {
-    states
+    states + [SportState.startState, SportState.endState]
   }
   
-  
-  func firstStateIndexByStateName(editedStateName: String) -> Int? {
-    states.firstIndex(where: { state in
-      state.name == editedStateName
-    })
-    
-  }
-  
-  func firstStateIndexByStateID(editedStateUUID: SportStateUUID) -> Int? {
-    states.firstIndex(where: { state in
-      state.id == editedStateUUID
-    })
-    
-  }
-  
-  
-  mutating func setSportStateImage(editedStateId: SportStateUUID, image: UIImage, landmarkSegments: [LandmarkSegment]) {
-    if let index = firstSportStateIndexByUUID(sportStateUUID: editedStateId) {
-      states[index].image = PngImage(photo: image)
-      states[index].landmarkSegments = landmarkSegments
-    }
-  }
-  
-  func findFirstSportStateByUUID(editedStateUUID: SportStateUUID) -> SportState? {
-    if let sportStateIndex = firstStateIndexByStateID(editedStateUUID: editedStateUUID) {
-      return states[sportStateIndex]
-    }else {
-      return nil
-    }
-  }
-  
-  
-  mutating func setupLandmarkArea(editedSportStateId: SportStateUUID, editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
-    if let index = firstStateIndexByStateID(editedStateUUID: editedSportStateId) {
-      states[index].setupLandmarkArea(editedSportStateRulesId: editedSportStateRulesId, editedSportStateRule: editedSportStateRule, ruleType: ruleType, landmarkinArea: landmarkinArea)
-    }
-  }
   
   var maxStateId: SportStateUUID {
     allStates.map{ state in
       state.id
     }.max()!
+  }
+
+  // MARK: state
+  
+  func firstStateIndexByStateName(editedStateName: String) -> Int? {
+    allStates.firstIndex(where: { state in
+      state.name == editedStateName
+    })
+  }
+  
+  func firstStateIndexByStateID(editedStateUUID: SportStateUUID) -> Int? {
+    allStates.firstIndex(where: { state in
+      state.id == editedStateUUID
+      
+    })
+  }
+  
+  func findFirstSportStateByUUID(editedStateUUID: SportStateUUID) -> SportState? {
+    if let index = firstStateIndexByStateID(editedStateUUID: editedStateUUID) {
+      return allStates[index]
+    }
+    return nil
+  }
+  
+  
+  mutating private func addNewState(state: SportState) {
+    states.append(state)
   }
   
   mutating func updateState(stateName: String, stateDescription: String) {
@@ -93,82 +91,21 @@ extension Sport {
     }
   }
   
-  
-  mutating func addNewState(state: SportState) {
-    states.append(state)
-  }
-  
-  mutating func addNewSportStateRules(editedSportState: SportState, ruleType: RuleType) {
-    if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
-      switch ruleType {
-      case .SCORE:
-        states[index].complexScoreRules.append(ComplexRules(rules: [], description: "计分规则集"))
-      case .VIOLATE:
-        states[index].complexViolateRules.append(ComplexRules(rules: [], description: "违规规则集"))
-      }
-    }
-  }
-  
-  mutating func deleteSportStateRules(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType) {
-    if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
-      states[index].deleteSportStateRules(rulesId: editedRulesId, ruleType: ruleType)
-
-    }
-  }
-  
   mutating func deleteState(state: SportState) {
-    
     if let index = firstStateIndexByStateID(editedStateUUID: state.id) {
       states.remove(at: index)
-      updateStateTransform()
     }
   }
   
-  // 每个状态都设置了相应的规则 则已经被设置
-  var ruleHasSetuped: Bool {
-    states.count ==  states.reduce(0, {(result, state) in
-      (!state.rules.isEmpty ? 1 : 0) + result
-    })
-  }
-  
-  // 规则完整度
-  var ruleIntegrity:Double {
-    Double(states.reduce(0, {(result, state) in
-      (!state.rules.isEmpty ? 1 : 0) + result
-    }))/Double(states.count)
-  }
-  
-  var sportFileName : String {
-    "\(self.id).json"
-  }
-  
-  mutating func updateStateRule(selectedState: SportState, humanposes: [HumanPose]) {
-    if let sportIndex = firstStateIndexByStateName(editedStateName: selectedState.name) {
-      states[sportIndex].rules = []
-      humanposes.forEach{ pose in
-        
-        var rules: [SimpleRule] = []
-        pose.landmarkSegments.forEach{ landmarkSegment in
-          if landmarkSegment.selected && landmarkSegment.angleRange != nil {
-            rules.append(SimpleRule(landmarkSegmentType: LandmarkTypeSegment(startLandmarkType: landmarkSegment.startLandmark.landmarkType , endLandmarkType: landmarkSegment.endLandmark.landmarkType), angleRange: landmarkSegment.angleRange!))
-          }
-        }
-        
-        if !rules.isEmpty {
-          states[sportIndex].rules.append(rules)
-        }
-      }
-      if !states[sportIndex].rules.isEmpty {
-        Storage.store(self, as: sportFileName)
-      }
-      
+  mutating func setSportStateImage(editedStateId: SportStateUUID, image: Data, width:Int, height: Int, landmarkSegments: [LandmarkSegment]) {
+    if let index = firstStateIndexByStateID(editedStateUUID: editedStateId) {
+      states[index].image = PngImage(photo: image, width: width, height: height)
+      states[index].landmarkSegments = landmarkSegments
     }
-    
   }
   
-  mutating func updateStateTransform() {
+  mutating private func updateStateTransform() {
     var newStateTransForm:[SportStateTransform] = []
-    
     
     stateTransForm.forEach{ transform in
       let fromTransform = allStates.first{ state in
@@ -183,43 +120,9 @@ extension Sport {
       if let fromTransform = fromTransform, let toTransform = toTransform {
         newStateTransForm.append(SportStateTransform(from: fromTransform.id , to: toTransform.id))
       }
-      
-      
     }
     stateTransForm = newStateTransForm
   }
-  
-  func firstSportStateIndexByUUID(sportStateUUID: SportStateUUID) -> Int? {
-    allStates.firstIndex(where: { state in
-      state.id == sportStateUUID
-      
-    })
-  }
-  
-  func firstSportStateIndexByName(sportStateName: String) -> Int? {
-    allStates.firstIndex(where: { state in
-      state.name == sportStateName
-      
-    })
-  }
-  
-  
-  func findSportStateByName(sportStateName: String) -> SportState? {
-    if let index = firstSportStateIndexByName(sportStateName: sportStateName) {
-      return allStates[index]
-    }
-    return nil
-    
-  }
-  
-  func findSportStateByUUID(sportStateUUID: SportStateUUID) -> SportState? {
-    if let index = firstSportStateIndexByUUID(sportStateUUID: sportStateUUID) {
-      return allStates[index]
-    }
-    return nil
-    
-  }
-  
   
   mutating func addStateTransform(fromSportState:SportState, toSportState: SportState) {
     if !stateTransForm.contains(where: { transform in
@@ -238,6 +141,7 @@ extension Sport {
     }
   }
   
+  
   mutating func addSportStateScoreSequence(scoreState: SportState) {
     scoreStateSequence.append(scoreState)
   }
@@ -247,22 +151,79 @@ extension Sport {
   }
   
   
+  mutating private func updateScoreStateSequence() {
+    var newScoreStates:[SportState] = []
+    
+    scoreStateSequence.forEach{ scoreState in
+      let newScoreState = allStates.first{ state in
+        state.id == scoreState.id
+      }
+      
+      if let newScoreState = newScoreState {
+        newScoreStates.append(newScoreState)
+      }
+    }
+    scoreStateSequence = newScoreStates
+  }
+  
+  
+  // MARK: rule
+  mutating func setupLandmarkArea(editedSportStateId: SportStateUUID, editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
+    if let index = firstStateIndexByStateID(editedStateUUID: editedSportStateId) {
+      states[index].setupLandmarkArea(editedSportStateRulesId: editedSportStateRulesId, editedSportStateRule: editedSportStateRule, ruleType: ruleType, landmarkinArea: landmarkinArea)
+    }
+  }
+  
+  
+  mutating func addNewSportStateRules(editedSportState: SportState, ruleType: RuleType) {
+    if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+      switch ruleType {
+      case .SCORE:
+        states[index].complexScoreRules.append(ComplexRules(rules: [], description: "计分规则集"))
+      case .VIOLATE:
+        states[index].complexViolateRules.append(ComplexRules(rules: [], description: "违规规则集"))
+      }
+    }
+  }
+  
   mutating func updateSportStateRule(editedSportStateUUID: SportStateUUID, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
       states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
     }
   }
+
+  
+  mutating func deleteSportStateRules(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType) {
+    if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+      states[index].deleteSportStateRules(rulesId: editedRulesId, ruleType: ruleType)
+
+    }
+  }
   
 
   
+  // 每个状态都设置了相应的规则 则已经被设置
+  var ruleHasSetuped: Bool {
+    states.count ==  states.reduce(0, {(result, state) in
+      (!state.rules.isEmpty ? 1 : 0) + result
+    })
+  }
+  
+  // 规则完整度
+  var ruleIntegrity:Double {
+    Double(states.reduce(0, {(result, state) in
+      (!state.rules.isEmpty ? 1 : 0) + result
+    }))/Double(states.count)
+  }
+
+  
   mutating func setSegmentToSelected(editedSportStateUUID: SportStateUUID, editedSportStateRuleId: String?) {
-    
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
       states[stateIndex].setSegmentToSelected(editedSportStateRuleId: editedSportStateRuleId)
     }
   }
+  
   func findselectedSegment(editedSportStateUUID: SportStateUUID, editedSportStateRuleId: String) -> LandmarkSegment? {
-    
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
       return states[stateIndex].findselectedSegment(editedSportStateRuleId: editedSportStateRuleId)
     }
@@ -271,7 +232,6 @@ extension Sport {
   
   
   func findSelectedSegments(editedSportStateUUID: SportStateUUID) -> [LandmarkSegment]? {
-    
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
       return states[stateIndex].landmarkSegments
     }

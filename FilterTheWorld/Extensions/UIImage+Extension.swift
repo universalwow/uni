@@ -330,10 +330,10 @@ extension CIImage {
 public struct PngImage: Equatable, Codable {
 
     public let photo: Data
-    public let imageSize: CGSize
+    public let width:Int
+    public let height:Int
     
-    public init(photo: UIImage) {
-        self.photo = photo.pngData()!
-        self.imageSize = photo.size
-    }
+  var imageSize: CGSize {
+    CGSize(width: width, height: height)
+  }
 }

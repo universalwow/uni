@@ -1,7 +1,5 @@
 
 import Foundation
-import SwiftUI
-
 
 
 enum CoordinateAxis: String, Identifiable,CaseIterable, Codable {
@@ -17,14 +15,12 @@ enum RuleType {
   case SCORE, VIOLATE
 }
 
-
 struct LandmarkSegmentToAxis: Codable{
   var landmarkSegment: LandmarkSegment
   var axis:CoordinateAxis
   
   static var initValue = LandmarkSegmentToAxis(landmarkSegment: LandmarkSegment.initValue(), axis: .X)
 }
-
 
 struct RelativeLandmarkSegmentsToAxis: Codable {
   
@@ -144,24 +140,7 @@ extension LandmarkInArea {
 struct LandmarkInArea: Codable {
   var landmarkType: LandmarkType
   
-  var area: [CGPoint]
-  
-  var path: Path {
-    var path = Path()
-    let areaIndics = area.indices
-    area.indices.forEach{ index in
-      if index == areaIndics.lowerBound {
-        path.move(to: area[index])
-      }else if index == areaIndics.upperBound - 1 {
-        path.addLine(to: area[areaIndics.lowerBound])
-      }else {
-        path.addLine(to: area[index])
-      }
-      
-    }
-    
-    return path
-  }
+  var area: [Point2D]
   
   func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap) -> Bool? {
     
@@ -175,24 +154,6 @@ struct LandmarkInArea: Codable {
     }
     return nil
   }
-  
-//  var contains: Bool {
-//    landmarks.contains(where: { landmark in
-//      path.contains(landmark.position.vector2d.toCGPoint)
-//    })
-//  }
-//
-//
-//  var satisfy:Bool {
-//    switch isAllSatisfy {
-//      case true:
-//        return allSatisfy
-//      case false:
-//        return contains
-//      }
-//  }
-  
-  
 }
 
 
@@ -208,8 +169,6 @@ struct ComplexRules: Identifiable, Hashable, Codable {
   func hash(into hasher: inout Hasher) {
     hasher.combine(id)
   }
-
-  
   
   func firstIndexOfRule(editedRule: ComplexRule) -> Int? {
     rules.firstIndex(where: { rule in
@@ -239,7 +198,6 @@ struct ComplexRules: Identifiable, Hashable, Codable {
     return nil
     
   }
-  
   
   mutating func updateSportStateRule(editedRule: ComplexRule) {
     if editedRule.angle == nil && editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil {

@@ -27,6 +27,10 @@ extension Double {
     String(format: "%.\(number)f", self)
   }
   
+  var roundedString: String {
+    String(format: "%.0f", self)
+  }
+  
 }
 
 extension Float {

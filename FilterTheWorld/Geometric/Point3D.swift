@@ -1,7 +1,7 @@
 
 
 import Foundation
-
+import SwiftUI
 
 struct Point3D: Equatable, Hashable, Codable {
   var x = 0.0
@@ -10,10 +10,26 @@ struct Point3D: Equatable, Hashable, Codable {
   static let zero = Point3D()
 }
 
+struct Point2D: Equatable, Hashable, Codable {
+  var x = 0.0
+  var y = 0.0
+  static let zero = Point2D()
+}
+
 
 extension Point3D {
   var vector2d: Vector2D {
     Vector2D(x: x, y: y)
+  }
+}
+
+extension Point2D {
+  var cgPoint: CGPoint {
+    CGPoint(x: self.x, y: self.y)
+  }
+  
+  var roundedString: String {
+    "\(self.x.roundedString)/\(self.y.roundedString)"
   }
 }
 

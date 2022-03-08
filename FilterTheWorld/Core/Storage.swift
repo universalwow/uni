@@ -62,6 +62,20 @@ public class Storage {
             fatalError(error.localizedDescription)
         }
     }
+  
+  static func delete(to directory: Directory = .documents, secondaryDirectory: String = "sports", as fileName: String) {
+    let url = getURL(for: directory, secondaryDirectory:secondaryDirectory)
+        .appendingPathComponent(fileName, isDirectory: false)
+                
+        do {
+          if FileManager.default.fileExists(atPath: url.path) {
+              try FileManager.default.removeItem(at: url)
+          }
+          
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
     
     /// Retrieve and convert a struct from a file on disk
     ///

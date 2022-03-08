@@ -60,7 +60,7 @@ struct Sporter {
     // 违规逻辑
     sport.stateTransForm.forEach({ transform in
       if currentStateTime.sportState.id == transform.from {
-        if let toState = sport.findSportStateByUUID(sportStateUUID: transform.to) {
+        if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
           var allCurrentFrameWarnings:Set<String> = []
           toState.currentStateViolateWarning(poseMap: poseMap).forEach{ warns in
             allCurrentFrameWarnings = allCurrentFrameWarnings.union(warns)
@@ -83,7 +83,7 @@ struct Sporter {
     // 计分逻辑
     sport.stateTransForm.forEach({ transform in
       if currentStateTime.sportState.id == transform.from {
-        if let toState = sport.findSportStateByUUID(sportStateUUID: transform.to) {
+        if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
           if toState.complexScoreRulesSatisfy(poseMap: poseMap) {
             currentStateTime = StateTime(sportState: toState, time: currentTime)
           }
