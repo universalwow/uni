@@ -65,11 +65,6 @@ extension CGPoint {
   }
   
   
-  var roundedString: String {
-    "\(self.x.roundedString)/\(self.y.roundedString)"
-  }
-  
-  
   var point2d: Point2D {
     Point2D(x: self.x, y: self.y)
   }

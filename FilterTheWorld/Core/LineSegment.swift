@@ -3,6 +3,10 @@
 import Foundation
 import SwiftUI
 
+func landmarkTypeSegmentString(startLandmarkType: LandmarkType, endLandmarkType: LandmarkType) -> String {
+  "\(startLandmarkType.rawValue)-\(endLandmarkType.rawValue)"
+}
+
 struct LandmarkTypeSegment: Identifiable, Codable {
   let startLandmarkType:LandmarkType
   let endLandmarkType:LandmarkType
@@ -10,7 +14,7 @@ struct LandmarkTypeSegment: Identifiable, Codable {
   init(startLandmarkType:LandmarkType, endLandmarkType:LandmarkType) {
     self.startLandmarkType = startLandmarkType
     self.endLandmarkType = endLandmarkType
-    self.id = "\(startLandmarkType.rawValue)-\(endLandmarkType.rawValue)"
+    self.id = landmarkTypeSegmentString(startLandmarkType: startLandmarkType, endLandmarkType: endLandmarkType)
   }
   
   
@@ -47,7 +51,8 @@ struct LandmarkSegment: Hashable, Identifiable, Equatable,  Codable {
   init(startLandmark:Landmark, endLandmark:Landmark, color: Color) {
     self.startLandmark = startLandmark
     self.endLandmark = endLandmark
-    self.id = "\(startLandmark.landmarkType.rawValue)-\(endLandmark.landmarkType.rawValue)"
+    self.id = landmarkTypeSegmentString(startLandmarkType: startLandmark.landmarkType,
+                                        endLandmarkType: endLandmark.landmarkType)
     self.color = color
   }
 }

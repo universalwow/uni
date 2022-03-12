@@ -36,7 +36,7 @@ struct Sport: Identifiable, Hashable, Codable {
   var scoreStateSequence: [SportState] = []
   
   // 时间限制 秒
-  var timeLimit:Double?
+  var scoreTimeLimit:Double?
 }
 
 extension Sport {
@@ -78,18 +78,31 @@ extension Sport {
   }
   
   
-  mutating private func addNewState(state: SportState) {
+  mutating private func addState(state: SportState) {
     states.append(state)
+  }
+  
+  mutating func addState(stateName: String, stateDescription: String) {
+    let state = SportState(id: maxStateId + 1, name: stateName, description: stateDescription)
+    addState(state: state)
+  }
+  
+  mutating func updateSport(state: SportState) {
+    if let stateIndex = firstStateIndexByStateID(editedStateUUID: state.id) {
+      states[stateIndex] = state
+    }
   }
   
   mutating func updateState(stateName: String, stateDescription: String) {
     if let index = firstStateIndexByStateName(editedStateName: stateName) {
       states[index].name = stateName
       states[index].description = stateDescription
-    }else{
-      addNewState(state: SportState(id: maxStateId + 1, name: stateName, description: stateDescription))
     }
   }
+  
+  
+  
+  
   
   mutating func deleteState(state: SportState) {
     if let index = firstStateIndexByStateID(editedStateUUID: state.id) {
@@ -179,10 +192,16 @@ extension Sport {
     if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
       switch ruleType {
       case .SCORE:
-        states[index].complexScoreRules.append(ComplexRules(rules: [], description: "计分规则集"))
+        states[index].complexScoreRules.append(ComplexRules(singleFrameRules: [], description: "计分规则集"))
       case .VIOLATE:
-        states[index].complexViolateRules.append(ComplexRules(rules: [], description: "违规规则集"))
+        states[index].complexViolateRules.append(ComplexRules(singleFrameRules: [], description: "违规规则集"))
       }
+    }
+  }
+  
+  mutating func addSportStateRule(editedSportStateUUID: SportStateUUID, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
+    if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
+      states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
     }
   }
   
@@ -191,6 +210,16 @@ extension Sport {
       states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
     }
   }
+  
+  
+  
+  
+  mutating func dropInvalidComplexRule(editedSportStateUUID: SportStateUUID, editedSportStateRulesId: UUID, ruleType: RuleType) {
+    if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
+      states[stateIndex].dropInvalidRules(editedSportStateRulesId: editedSportStateRulesId, ruleType: ruleType)
+    }
+  }
+  
 
   
   mutating func deleteSportStateRules(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType) {

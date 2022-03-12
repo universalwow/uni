@@ -11,6 +11,7 @@
 		18D775C722AD944400AE281E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18D775C622AD944400AE281E /* Assets.xcassets */; };
 		18D775CA22AD944400AE281E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18D775C922AD944400AE281E /* Preview Assets.xcassets */; };
 		18D775D822AD963800AE281E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18D775DA22AD963800AE281E /* LaunchScreen.storyboard */; };
+		95107FF427D73FB600C9C83D /* RoundedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95107FF327D73FB600C9C83D /* RoundedString.swift */; };
 		95171C9727CE140B0051249D /* Sporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95171C9627CE140B0051249D /* Sporter.swift */; };
 		9518D31427799B0D0083C215 /* robot.scn in Resources */ = {isa = PBXBuildFile; fileRef = 9518D31627799B0D0083C215 /* robot.scn */; };
 		9521DAD327C8DF960072ED5E /* yolov5s_with_preview.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9521DAD227C8DF960072ED5E /* yolov5s_with_preview.mlmodel */; };
@@ -122,6 +123,7 @@
 		18D775DE22AD96B400AE281E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		48FDCE75E1D0340E4ED3BEB2 /* Pods_FilterTheWorld.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_FilterTheWorld.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		883C12D31879384B02649B29 /* Pods-FilterTheWorld.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FilterTheWorld.release.xcconfig"; path = "Target Support Files/Pods-FilterTheWorld/Pods-FilterTheWorld.release.xcconfig"; sourceTree = "<group>"; };
+		95107FF327D73FB600C9C83D /* RoundedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedString.swift; sourceTree = "<group>"; };
 		95171C9627CE140B0051249D /* Sporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sporter.swift; sourceTree = "<group>"; };
 		9518D31227799AD80083C215 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = en; path = en.lproj/robot.usdz; sourceTree = "<group>"; };
 		9518D31527799B0D0083C215 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; name = Base; path = Base.lproj/robot.scn; sourceTree = "<group>"; };
@@ -331,6 +333,7 @@
 				95E79DFF27A13C3000AC36E1 /* Storage.swift */,
 				9545750E27BBA98A00129153 /* Observation.swift */,
 				95171C9627CE140B0051249D /* Sporter.swift */,
+				95107FF327D73FB600C9C83D /* RoundedString.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -408,6 +411,7 @@
 				95E79E3727A13D3B00AC36E1 /* VideoFramePlayer.swift */,
 				95E79E3827A13D3B00AC36E1 /* ImageAnalysisView.swift */,
 				95E79E3927A13D3B00AC36E1 /* FrameView.swift */,
+				95BF354C27A16F79006F5D80 /* FramesView.swift */,
 				95E79E3A27A13D3B00AC36E1 /* MediaPicker.swift */,
 				95E79E3B27A13D3B00AC36E1 /* LinesView.swift */,
 				95E79E3C27A13D3B00AC36E1 /* CardView.swift */,
@@ -435,7 +439,6 @@
 				95E79E5A27A13D3B00AC36E1 /* HumanPoseView.swift */,
 				95E79E5B27A13D3B00AC36E1 /* ControlView.swift */,
 				95E79E5C27A13D3B00AC36E1 /* ErrorView.swift */,
-				95BF354C27A16F79006F5D80 /* FramesView.swift */,
 				958D17DD27BDEF1F002CC4B5 /* ObjectsView.swift */,
 				9532A74227C00B900071AF82 /* ChildViewSizeView.swift */,
 			);
@@ -758,6 +761,7 @@
 				95E79E7927A13D3B00AC36E1 /* FaceNetView.swift in Sources */,
 				95E79E7127A13D3B00AC36E1 /* PureSingleHumanPose.swift in Sources */,
 				95E79E6327A13D3B00AC36E1 /* VideoPlayerView.swift in Sources */,
+				95107FF427D73FB600C9C83D /* RoundedString.swift in Sources */,
 				95BF354D27A16F79006F5D80 /* FramesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

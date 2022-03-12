@@ -32,11 +32,11 @@ struct Sporter {
   
   var scoreTimes: [Double] = [] {
     didSet {
+      // 计分保留最后一个状态
       stateTimeHistory = [stateTimeHistory.last!]
       totalWarnings = []
       cancelingWarnings = []
       newWarnings = []
-      
     }
   }
   var totalWarnings: Set<String> = []
@@ -101,10 +101,16 @@ struct Sporter {
       
       var timeSatisfy = true
       
-      if let timeLimit = sport.timeLimit, sport.scoreStateSequence.count > 1, let startTime = stateTimeHistory.first?.time, let endTime = stateTimeHistory.last?.time {
+      if let timeLimit = sport.scoreTimeLimit, sport.scoreStateSequence.count > 1, let startTime = stateTimeHistory.first?.time, let endTime = stateTimeHistory.last?.time {
         if endTime - startTime > timeLimit {
           timeSatisfy = false
         }
+      }
+      
+      
+      // 时间间隔不满足 抛出warning
+      if !timeSatisfy {
+        
       }
       
       if allStateSatisfy && timeSatisfy {

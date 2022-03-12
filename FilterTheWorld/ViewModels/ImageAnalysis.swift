@@ -114,7 +114,6 @@ class ImageAnalysis : ObservableObject {
       self.cachedFrames.append((currentTime, image))
       self.detectorProcess(image: image, request: request, currentTime: currentTime)
     }
-    
 
   }
 }

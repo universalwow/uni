@@ -10,11 +10,6 @@ extension CGFloat {
   var float:Float {
     Float(self)
   }
-  
-  
-  var roundedString: String {
-    String(format: "%.0f", self)
-  }
 }
 
 
@@ -26,11 +21,6 @@ extension Double {
   func roundedString(number: Int) -> String {
     String(format: "%.\(number)f", self)
   }
-  
-  var roundedString: String {
-    String(format: "%.0f", self)
-  }
-  
 }
 
 extension Float {
@@ -47,6 +37,7 @@ extension Float {
 
 extension CGSize {
 
+
   static func + (left: CGSize, right: CGSize) -> CGSize {
     return CGSize(width:left.width + right.width,
                   height: left.height + right.height)
@@ -60,11 +51,6 @@ extension CGSize {
   static func / (left: CGSize, right: CGFloat) -> CGSize {
     return CGSize(width:left.width / right,
                   height: left.height / right)
-  }
-  
-  
-  var roundedString: String {
-    "\(self.width.roundedString)/\(self.height.roundedString)"
   }
   
   

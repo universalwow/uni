@@ -93,7 +93,7 @@ class PoseRecognizer: ObservableObject {
           newPose.initLandmarkSegments()
           detectedHumanPoses.append(newPose)
         }
-        print("........... \(detectedHumanPoses.count)/\(fps ?? self.frameData.fps)")
+        print("........... \(detectedHumanPoses.count)/\(fps ?? self.frameData.fps)/\(self.frameData.poses)")
         
         self.frameData = FrameShowData(fps: fps ?? self.frameData.fps, currentTime: currentTime, poses: detectedHumanPoses)
         

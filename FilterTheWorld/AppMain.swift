@@ -34,12 +34,15 @@ import SwiftUI
 
 @main
 struct AppMain: App {
-  let sportManager = SportManager()
+  @StateObject var sportManager = SportManager()
+  @StateObject var imageAnalysor = ImageAnalysis()
+  
   let test = TestPublishedStruct()
   var body: some Scene {
     WindowGroup {
       ContentView().environmentObject(sportManager)
         .environmentObject(test)
+        .environmentObject(imageAnalysor)
     }
   }
 }

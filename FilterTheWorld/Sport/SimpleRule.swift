@@ -1,14 +1,12 @@
 
 import Foundation
 
-
 enum CoordinateAxis: String, Identifiable,CaseIterable, Codable {
   var id: String {
     self.rawValue
   }
   
   case X,Y,XY
-
 }
 
 enum RuleType {
@@ -20,6 +18,36 @@ struct LandmarkSegmentToAxis: Codable{
   var axis:CoordinateAxis
   
   static var initValue = LandmarkSegmentToAxis(landmarkSegment: LandmarkSegment.initValue(), axis: .X)
+}
+
+// 关节点从一个状态到该状态的 相对位移
+
+
+struct LandmarkToAxis: Codable{
+  var landmark: Landmark
+  var axis:CoordinateAxis
+}
+
+struct LandmarkToAxisAndState: Codable {
+  var lowerBound:Double
+  var upperBound:Double
+  
+  //相对
+  var landmarkToAxis: LandmarkToAxis
+  var toStateId:SportStateUUID
+  var toLandmarkSegmentToAxis: LandmarkSegmentToAxis
+  
+  var length: Range<Double> {
+    lowerBound..<upperBound
+  }
+  
+  static func initValue(landmarkSegment: LandmarkSegment, axis: CoordinateAxis) -> LandmarkToAxisAndState {
+    LandmarkToAxisAndState(
+      lowerBound: 0,
+      upperBound: 0,
+      landmarkToAxis: LandmarkToAxis(landmark: landmarkSegment.startLandmark, axis: axis), toStateId: SportState.startState.id, toLandmarkSegmentToAxis: LandmarkSegmentToAxis.initValue)
+  }
+  
 }
 
 struct RelativeLandmarkSegmentsToAxis: Codable {
@@ -99,11 +127,12 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
   }
   
   static func initValue(fromLandmarkSegment: LandmarkSegment, axis: CoordinateAxis) -> RelativeLandmarkSegmentsToAxis {
-    
-    return RelativeLandmarkSegmentsToAxis(lowerBound: 0,
-                                   upperBound: 0,
-                                   from: LandmarkSegmentToAxis(landmarkSegment: fromLandmarkSegment, axis: axis), to: LandmarkSegmentToAxis.initValue)
-    
+    return RelativeLandmarkSegmentsToAxis(
+      lowerBound: 0,
+      upperBound: 0,
+      from: LandmarkSegmentToAxis(
+        landmarkSegment: fromLandmarkSegment, axis: axis),
+      to: LandmarkSegmentToAxis.initValue)
   }
   
 }
@@ -123,7 +152,6 @@ struct AngleRange: Codable {
   static var relativeAngleRange: AngleRange = AngleRange(lowerBound: 0, upperBound: 0)
 
 }
-
 
 
 extension LandmarkInArea {
@@ -157,9 +185,12 @@ struct LandmarkInArea: Codable {
 }
 
 
+
 struct ComplexRules: Identifiable, Hashable, Codable {
   var id = UUID()
-  var rules:[ComplexRule] = []
+  var singleFrameRules:[ComplexRule] = []
+  var multiFrameRules:[MultiFrameRule] = []
+  
   var description:String = ""
   
   static func == (lhs: ComplexRules, rhs: ComplexRules) -> Bool {
@@ -171,27 +202,27 @@ struct ComplexRules: Identifiable, Hashable, Codable {
   }
   
   func firstIndexOfRule(editedRule: ComplexRule) -> Int? {
-    rules.firstIndex(where: { rule in
+    singleFrameRules.firstIndex(where: { rule in
       rule.landmarkSegmentType.id == editedRule.landmarkSegmentType.id
     })
   }
   
   func firstIndexOfRuleBySegmentType(segmentType: LandmarkTypeSegment) -> Int? {
-    rules.firstIndex(where: { rule in
+    singleFrameRules.firstIndex(where: { rule in
       rule.landmarkSegmentType.id == segmentType.id
     })
   }
   
   func firstRuleBySegmentType(segmentType: LandmarkTypeSegment) -> ComplexRule? {
     if let index = firstIndexOfRuleBySegmentType(segmentType: segmentType) {
-      return rules[index]
+      return singleFrameRules[index]
     }
     return nil
   }
   
-  func firstRuleByRuleId(ruleId: String?) -> ComplexRule? {
+  func findFirstComplexRule(ruleId: String?) -> ComplexRule? {
     if let ruleId = ruleId {
-      return rules.first(where: { rule in
+      return singleFrameRules.first(where: { rule in
         rule.id == ruleId
       })
     }
@@ -199,36 +230,64 @@ struct ComplexRules: Identifiable, Hashable, Codable {
     
   }
   
+  mutating func dropInvalidRules() {
+    singleFrameRules.removeAll { editedRule in
+      if editedRule.angle == nil && editedRule.landmarkInArea == nil &&
+          editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil {
+        return true
+      }
+      return false
+    }
+  }
+  
   mutating func updateSportStateRule(editedRule: ComplexRule) {
-    if editedRule.angle == nil && editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil {
-      if let index = firstIndexOfRule(editedRule: editedRule) {
-        rules.remove(at: index)
-      }
+    
+    if let index = firstIndexOfRule(editedRule: editedRule) {
+      singleFrameRules[index] = editedRule
     }else{
-      if let index = firstIndexOfRule(editedRule: editedRule) {
-        rules[index] = editedRule
-      }else{
-        rules.append(editedRule)
-      }
+      singleFrameRules.append(editedRule)
     }
     
   }
   
   mutating func setupLandmarkArea(editedSportStateRule: ComplexRule, landmarkinArea: LandmarkInArea?) {
     if let index = firstIndexOfRule(editedRule: editedSportStateRule) {
-      self.rules[index].landmarkInArea = landmarkinArea
+      self.singleFrameRules[index].landmarkInArea = landmarkinArea
     }
     
   }
   
   func currentRulesWarnings(poseMap: PoseMap) -> Set<String> {
-    Set(rules.map{ rule in
+    Set(singleFrameRules.map{ rule in
       rule.currentRuleWarning(poseMap: poseMap)
     }).subtracting([""])
   }
   
 }
 
+/**
+ 基于多帧的规则 假设为依赖过去状态收集值
+  
+ */
+
+
+struct MultiFrameRule: Codable {
+  var landmarkToAxisAndState: LandmarkToAxisAndState
+}
+
+
+
+/**
+ 基于单帧的规则
+ */
+func ruleIdToLandmarkTypes(ruleId: String) -> LandmarkTypeSegment {
+  let landmarkTypes = ruleId
+    .split(separator: "-")
+    .compactMap{ landmarkTypeString in
+              LandmarkType(rawValue: "\(landmarkTypeString)")
+    }
+  return LandmarkTypeSegment(startLandmarkType: landmarkTypes.first!, endLandmarkType: landmarkTypes.last!)
+}
 
 struct ComplexRule: Identifiable, Hashable, Codable {
   static func == (lhs: ComplexRule, rhs: ComplexRule) -> Bool {
@@ -246,12 +305,16 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     self.id = landmarkSegmentType.id
     self.landmarkSegmentType = landmarkSegmentType
   }
+  init(ruleId: String) {
+    self.id = ruleId
+    self.landmarkSegmentType = ruleIdToLandmarkTypes(ruleId: ruleId)
+  }
+  
 //  var landmarkSegment:LandmarkSegment
   // 10 - 30 340-380
   // 角度
-  // 当前状态下需要的提示
+  // 当前状态下该规则需要的提示
   var warning:String = ""
-  
   // 角度
   var angle:AngleRange?
   // X 轴间距
@@ -263,7 +326,8 @@ struct ComplexRule: Identifiable, Hashable, Codable {
   
   // 关节点在区域内
   var landmarkInArea:LandmarkInArea?
-  
+  // TODO:
+  //MARK:  1. 物体在区域内 2. 物体与关节点的关系 3.物体相对自身位移 关节相对自身位移
   
   func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
     let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)

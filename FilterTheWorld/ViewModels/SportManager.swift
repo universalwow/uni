@@ -3,27 +3,44 @@ import Foundation
 import UIKit
 
 
+
+
 class SportManager: ObservableObject {
   @Published var sports:[Sport] = SportManager.allSports
 
   // 以下属性只能用于查询 不能用作存储
   var currentSportId: UUID?
   var currentStateId: SportStateUUID?
-  
   var currentSportStateRulesId: UUID?
+  
+  var updateTimer: Timer?
   
   @Published var currentSportStateRuleId: String? {
     didSet {
+      if currentSportStateRuleId != nil {
+        if let _ = self.findCurrentSportStateRule() {
+          print("修改规则。。。。。。。。")
+        }else{
+          
+          self.addStateRule()
+          print("添加新规则。。。。。。。。")
+        }
+        print("setSegmentToSelected \(currentSportStateRuleId)")
+      }
+      
       setSegmentToSelected()
+
     }
   }
-  var editedSportStateRuleId: String?
+  
   var currentSportStateRuleType:RuleType?
   var dispather = Dispatcher()
   
 }
 
 extension SportManager {
+  
+
   
   // MARK: 计算变量
   
@@ -81,9 +98,9 @@ extension SportManager {
   }
   
   
-  private func firstIndex(editedSport: Sport) -> Int? {
+  private func firstIndex(editedSportId: UUID) -> Int? {
     return sports.firstIndex(where: { sport in
-      sport.id == editedSport.id
+      sport.id == editedSportId
     })
   }
   
@@ -96,13 +113,19 @@ extension SportManager {
     }
   }
   
-  func findFirstSport(sport: Sport) -> Sport? {
-    if let sportIndex = firstIndex(editedSport: sport) {
+  func findFirstSport(sportId: UUID) -> Sport? {
+    if let sportIndex = firstIndex(editedSportId: sportId) {
       return sports[sportIndex]
     }else {
       return nil
     }
   }
+  
+  func findFirstSport(sport: Sport) -> Sport? {
+    findFirstSport(sportId: sport.id)
+  }
+  
+  
   
   func addSport(sport:Sport) {
     sports.append(sport)
@@ -112,15 +135,25 @@ extension SportManager {
     Storage.store(editedSport, to: .documents, as: editedSport.sportFileName)
   }
   
-  func updateSport(editedSport:Sport, sportName: String, sportDescription: String) {
-    if let index = firstIndex(editedSport: editedSport) {
-      sports[index].name = sportName
-      sports[index].description = sportDescription
+  private func updateSport(sport: Sport) {
+    if let index = firstIndex(editedSportId: sport.id) {
+      sports[index] = sport
     }
   }
   
+  func updateSport(editedSport:Sport, sportName: String, sportDescription: String) {
+    if let sport = findFirstSport(sport: editedSport) {
+      var newSport = sport
+      newSport.name = sportName
+      newSport.description = sportDescription
+      
+      updateSport(sport: newSport)
+    }
+  }
+  
+  
   func deleteSport(editedSport: Sport) {
-    if let sportIndex = firstIndex(editedSport: editedSport) {
+    if let sportIndex = firstIndex(editedSportId: editedSport.id) {
       sports.remove(at: sportIndex)
       Storage.delete(as: editedSport.sportFileName)
     }
@@ -128,43 +161,54 @@ extension SportManager {
   
   //MARK: sport state
   
-  
   func setCurrentSportState(editedSport : Sport, editedSportState: SportState) {
     currentStateId = editedSportState.id
   }
   
   func findFirstSportState() -> SportState? {
-    if let sportIndex = firstIndex() {
-      return sports[sportIndex].findFirstSportStateByUUID(editedStateUUID: currentStateId!)
-    }
-    return nil
+    findFirstSport()?.findFirstSportStateByUUID(editedStateUUID: currentStateId!)
   }
   
-  func findSportStateByUUID(editedSport: Sport, sportStateUUID: SportStateUUID) -> SportState? {
-    if let sportIndex = firstIndex(editedSport: editedSport) {
-      return sports[sportIndex].findFirstSportStateByUUID(editedStateUUID: sportStateUUID)
-    }
-    
-    return nil
+  
+  private func findFirstSportState(editedSportId: UUID, sportStateUUID: SportStateUUID) -> SportState? {
+    findFirstSport(sportId: editedSportId)?.findFirstSportStateByUUID(editedStateUUID: sportStateUUID)
   }
+  
+  
+  func findFirstSportState(editedSport: Sport, sportStateUUID: SportStateUUID) -> SportState? {
+    return findFirstSportState(editedSportId: editedSport.id, sportStateUUID: sportStateUUID)
     
+  }
+
   
   func addSportState(editedSport: Sport, stateName: String, stateDescription: String) {
-    if let sportIndex = firstIndex(editedSport: editedSport) {
-      sports[sportIndex].updateState(stateName: stateName, stateDescription: stateDescription)
+    if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+      sports[sportIndex].addState(stateName: stateName, stateDescription: stateDescription)
     }
   }
 
   
   func deleteSportState(editedSport: Sport, editedSportState: SportState) {
-    if editedSportState.id != SportState.startState.id, editedSportState.id != SportState.endState.id, let sportIndex = firstIndex(editedSport: editedSport) {
+    if let sportIndex = firstIndex(editedSportId: editedSport.id) {
       sports[sportIndex].deleteState(state: editedSportState)
     }
   }
   
-  func setSportStateImage(image: UIImage, landmarkSegments: [LandmarkSegment]) {
+  
+  private func updateSportState(state: SportState) {
     if let sportIndex = firstIndex() {
-      sports[sportIndex].setSportStateImage(editedStateId: currentStateId!, image: image.pngData()!, width: Int(image.size.width), height: Int(image.size.width), landmarkSegments: landmarkSegments)
+      sports[sportIndex].updateSport(state: state)
+    }
+  }
+  
+  func updateSportState(image: UIImage, landmarkSegments: [LandmarkSegment]) {
+    if let state = findFirstSportState() {
+      var newState = state
+      newState.image = PngImage(photo: image.pngData()!, width: Int(image.size.width), height: Int(image.size.width))
+
+      newState.landmarkSegments = landmarkSegments
+      self.updateSportState(state: newState)
+      
     }
   }
   
@@ -185,7 +229,6 @@ extension SportManager {
     findFirstSport(sport: editedSport)!.stateTransForm
   }
   
-  
   func addSportStateScoreSequence(scoreState: SportState) {
     if let sportIndex = firstIndex() {
       sports[sportIndex].addSportStateScoreSequence(scoreState: scoreState)
@@ -203,12 +246,8 @@ extension SportManager {
   }
   
   
-  func findSelectedSegments() -> [LandmarkSegment]? {
-    if let sportIndex = firstIndex() {
-      let segments = sports[sportIndex].findSelectedSegments(editedSportStateUUID: currentStateId!)
-      return segments
-    }
-    return nil
+  func findSelectedSegments() -> [LandmarkSegment] {
+    findFirstSportState()!.landmarkSegments
   }
   
   
@@ -217,88 +256,100 @@ extension SportManager {
     currentSportId = editedSport.id
     currentStateId = editedSportState.id
     currentSportStateRulesId  = editedSportStateRules.id
-    self.editedSportStateRuleId = editedSportStateRule?.id
-    self.currentSportStateRuleId = nil
+    self.currentSportStateRuleId = editedSportStateRule?.id
     currentSportStateRuleType = ruleType
   }
   
   
-  func resetCurrentSportStateRule() {
-    self.currentSportStateRuleId = self.editedSportStateRuleId
+  func setCurrentSportStateRule(landmarkSegment: LandmarkSegment) {
+    currentSportStateRuleId = landmarkSegment.id
   }
   
-  func setCurrentSportStateRule(editedSportStateRule: ComplexRule) {
-    currentSportStateRuleId = editedSportStateRuleId
+  
+  private func addStateRule() {
+    let rule = ComplexRule(ruleId: self.currentSportStateRuleId!)
+    self.upsertCurrentRule(rule: rule)
   }
   
-  func updateCurrentRule(rule: ComplexRule) {
+  
+  private func upsertCurrentRule(rule: ComplexRule) {
     if let sportIndex = firstIndex() {
       sports[sportIndex].updateSportStateRule(editedSportStateUUID: self.currentStateId!, editedSportStateRulesId: currentSportStateRulesId!, editedRule: rule, ruleType: currentSportStateRuleType!)
     }
   }
   
-  func findSelectedRules(editedState: SportState, ruleType: RuleType) -> [ComplexRules] {
-    switch ruleType {
-    case .SCORE:
-      return editedState.complexScoreRules
-    case .VIOLATE:
-      return editedState.complexViolateRules
-    }
+  private func findComplexRulesList(sportId: UUID, editedStateId: SportStateUUID, ruleType: RuleType) -> [ComplexRules] {
+    let sportState = findFirstSportState(editedSportId: sportId, sportStateUUID: editedStateId)!
+    
+    return sportState.findComplexRulesList(ruleType: ruleType)
+    
   }
+  
+  func findComplexRulesList(sport: Sport, editedState: SportState, ruleType: RuleType) -> [ComplexRules] {
+    findComplexRulesList(sportId: sport.id, editedStateId: editedState.id, ruleType: ruleType)
+  }
+  
+  func findComplexRulex() -> ComplexRules {
+    let sportState = findFirstSportState()
+    return (sportState?.findComplexRules(ruleType: currentSportStateRuleType!, currentSportStateRulesId: currentSportStateRulesId!))!
+  }
+  
   
   func findCurrentSportStateRule() -> ComplexRule? {
-    if let sportIndex = firstIndex() {
-      if let state = self.sports[sportIndex].findFirstSportStateByUUID(editedStateUUID: currentStateId!) {
-        if let rules = state.firstComplexRulesById(editedRulesId: currentSportStateRulesId!, ruleType: currentSportStateRuleType!) {
-          return rules.firstRuleByRuleId(ruleId: currentSportStateRuleId)
-          
-        }
-      }
-    }
-    return nil
+    
+    // ComplexRulex
+    let complexRulex = findComplexRulex()
+    return complexRulex.findFirstComplexRule(ruleId: currentSportStateRuleId)
+    
   }
   
-  func findCurrentSportStateRule(editedSegmentType: LandmarkTypeSegment) -> ComplexRule? {
-    // 查询当前规则
+  
+  func dropInvalidComplexRule() {
     if let sportIndex = firstIndex() {
-      if let state = self.sports[sportIndex].findFirstSportStateByUUID(editedStateUUID: currentStateId!) {
-        if let rules = state.firstComplexRulesById(editedRulesId: currentSportStateRulesId!, ruleType: currentSportStateRuleType!) {
-          return rules.firstRuleBySegmentType(segmentType: editedSegmentType)
-        }
-      }
+      sports[sportIndex].dropInvalidComplexRule(editedSportStateUUID: self.currentStateId!, editedSportStateRulesId: currentSportStateRulesId!, ruleType: currentSportStateRuleType!)
     }
-    return nil
+  }
+  
+  func setCurrentRuleLandmarkInArea() {
+    if let rule = findCurrentSportStateRule() {
+      var newRule = rule
+      newRule.landmarkInArea = LandmarkInArea(
+        landmarkType: rule.landmarkSegmentType.startLandmarkType,
+        area: [])
+      self.upsertCurrentRule(rule: newRule)
+    }
   }
   
   func setLandmarkArea(landmarkinArea: LandmarkInArea?) {
     if let rule = findCurrentSportStateRule() {
       var newRule = rule
       newRule.landmarkInArea = landmarkinArea
-      self.updateCurrentRule(rule: newRule)
-    }
-  }
-  func findCurrentLandMarkArea() -> LandmarkInArea? {
-    if let rule = findCurrentSportStateRule() {
-      if let area = rule.landmarkInArea {
-        return area
-      }
-    }
-    return nil
-  }
-  
-  func updateSportStateRuleLandmarkInArea(firstPoint: CGPoint, secondPoint: CGPoint, thirdPoint:CGPoint, fourthPoint: CGPoint) {
-    if let selectedLandmarkInArea = self.findCurrentLandMarkArea() {
-      self.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: selectedLandmarkInArea.landmarkType, area: [firstPoint.point2d, secondPoint.point2d, thirdPoint.point2d, fourthPoint.point2d])
-      )
+      self.upsertCurrentRule(rule: newRule)
     }
   }
   
-  func updateSportStateRuleLandmarkInArea(landmarkType: LandmarkType) {
-    if let selectedLandmarkInArea = self.findCurrentLandMarkArea() {
-      self.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: landmarkType, area: selectedLandmarkInArea.area)
-      )
-    }else{
-      self.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: landmarkType, area: []))
+  func findCurrentLandmarkArea() -> LandmarkInArea? {
+    let rule = findCurrentSportStateRule()
+    return rule?.landmarkInArea
+  }
+  
+  func updateSportStateRule(firstPoint: CGPoint, secondPoint: CGPoint, thirdPoint:CGPoint, fourthPoint: CGPoint) {
+    
+    if let  rule = findCurrentSportStateRule() {
+      var newRule = rule
+      newRule.landmarkInArea!.area =
+      [firstPoint.point2d, secondPoint.point2d, thirdPoint.point2d, fourthPoint.point2d]
+      self.upsertCurrentRule(rule: newRule)
+    }
+    
+  }
+  
+  func updateSportStateRule(landmarkType: LandmarkType) {
+    if let  rule = findCurrentSportStateRule() {
+      var newRule = rule
+      
+      newRule.landmarkInArea!.landmarkType = landmarkType
+      self.upsertCurrentRule(rule: newRule)
     }
   }
   
@@ -306,7 +357,7 @@ extension SportManager {
     if let rule = findCurrentSportStateRule() {
       var newRule = rule
       newRule.warning = warning
-      self.updateCurrentRule(rule: newRule)
+      self.upsertCurrentRule(rule: newRule)
     }
   }
   
@@ -336,7 +387,7 @@ extension SportManager {
           newRule.lengthXY?.lowerBound = lowerBound
           }
       }
-      self.updateCurrentRule(rule: newRule)
+      self.upsertCurrentRule(rule: newRule)
     }
     
   }
@@ -354,7 +405,7 @@ extension SportManager {
           newRule.lengthXY?.upperBound = upperBound
           }
       }
-      self.updateCurrentRule(rule: newRule)
+      self.upsertCurrentRule(rule: newRule)
     }
     
   }
@@ -370,7 +421,7 @@ extension SportManager {
         case .XY:
           newRule.lengthXY = length
       }
-      self.updateCurrentRule(rule: newRule)
+      self.upsertCurrentRule(rule: newRule)
     }
   }
   
@@ -386,7 +437,7 @@ extension SportManager {
       case .XY:
         newRule.lengthXY?.to.landmarkSegment = landmarkSegment
       }
-      self.updateCurrentRule(rule: newRule)
+      self.upsertCurrentRule(rule: newRule)
     }
   }
   
@@ -406,7 +457,7 @@ extension SportManager {
         newRule.lengthXY?.to.axis = toAxis
         newRule.lengthXY?.initBound()
       }
-      self.updateCurrentRule(rule: newRule)
+      self.upsertCurrentRule(rule: newRule)
       
     }
   }
@@ -415,21 +466,20 @@ extension SportManager {
     if let rule = findCurrentSportStateRule() {
       var newRule = rule
       newRule.angle  = angle
-      self.updateCurrentRule(rule: newRule)
-      
+      self.upsertCurrentRule(rule: newRule)
     }
   }
   
   
   func addNewSportStateRules(editedSport: Sport, editedSportState: SportState, ruleType: RuleType) {
-    if let sportIndex = firstIndex(editedSport: editedSport) {
+    if let sportIndex = firstIndex(editedSportId: editedSport.id) {
       sports[sportIndex].addNewSportStateRules(editedSportState: editedSportState, ruleType: ruleType)
     }
     
   }
   
   func deleteSportStateRules(editedSport: Sport, editedSportState: SportState, editedRules: ComplexRules, ruleType: RuleType) {
-    if let sportIndex = firstIndex(editedSport: editedSport) {
+    if let sportIndex = firstIndex(editedSportId: editedSport.id) {
       sports[sportIndex].deleteSportStateRules(editedSportState: editedSportState, editedRulesId: editedRules.id, ruleType: ruleType)
     }
   }

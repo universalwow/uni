@@ -12,11 +12,17 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   var landmarkSegments :[LandmarkSegment] = []
   
   // MARK: TO DELETE
+  // TODO: 状态对应的规则 时间限制 一定时间内没有切换状态
+  var transFormTimeLimit: Double? 
   var rules : [[SimpleRule]] = []
-  // 计分规则
+  // 计分规则 关节点对应的规则
   var complexScoreRules:[ComplexRules] = []
   // 违规规则 用于提示
   var complexViolateRules:[ComplexRules] = []
+  
+  
+  
+  
   
   static func == (lhs: SportState, rhs: SportState) -> Bool {
     lhs.name == rhs.name
@@ -53,6 +59,22 @@ extension SportState {
     }
   }
   
+  func findComplexRulesList(ruleType: RuleType) -> [ComplexRules] {
+    switch ruleType {
+    case .SCORE:
+      return complexScoreRules
+    case .VIOLATE:
+      return complexViolateRules
+    }
+  }
+  
+  func findComplexRules(ruleType: RuleType, currentSportStateRulesId: UUID) -> ComplexRules? {
+    findComplexRulesList(ruleType: ruleType)
+      .first(where: { rules in
+        currentSportStateRulesId == rules.id
+      })
+  }
+  
   func firstComplexRulesById(editedRulesId: UUID, ruleType: RuleType) -> ComplexRules? {
     switch ruleType {
     case .SCORE:
@@ -78,6 +100,21 @@ extension SportState {
     }
     
   }
+  
+  mutating func dropInvalidRules(editedSportStateRulesId: UUID, ruleType: RuleType) {
+      if let rulesIndex = firstIndexOfComplexRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
+        switch ruleType {
+          case .SCORE:
+            complexScoreRules[rulesIndex].dropInvalidRules()
+
+          case .VIOLATE:
+            complexViolateRules[rulesIndex].dropInvalidRules()
+          }
+    }
+    
+  }
+  
+  
   
   mutating func deleteSportStateRules(rulesId: UUID, ruleType: RuleType) {
     if let index = firstIndexOfComplexRules(editedRulesId: rulesId, ruleType: ruleType) {
@@ -111,6 +148,7 @@ extension SportState {
     if let editedSportStateRuleId = editedSportStateRuleId,
         let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId){
         landmarkSegments[index].selected = true
+      print("editedSportStateRuleId \(landmarkSegments[index].selected)")
     }
   }
   
@@ -138,7 +176,7 @@ extension SportState {
     // 只要有一组条件满足
     complexScoreRules.contains{ complexRules in
       // 每一组条件全部满足
-      (!complexRules.rules.isEmpty) && complexRules.rules.allSatisfy{ complexRule in
+      (!complexRules.singleFrameRules.isEmpty) && complexRules.singleFrameRules.allSatisfy{ complexRule in
         complexRule.allSatisfy(poseMap: poseMap)
       }
     }
