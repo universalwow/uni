@@ -207,7 +207,7 @@ extension SportManager {
   func updateSportState(image: UIImage, landmarkSegments: [LandmarkSegment]) {
     if let state = findFirstSportState() {
       var newState = state
-      newState.image = PngImage(photo: image.pngData()!, width: Int(image.size.width), height: Int(image.size.width))
+      newState.image = PngImage(photo: image.pngData()!, width: Int(image.size.width), height: Int(image.size.height))
 
       newState.landmarkSegments = landmarkSegments
       self.updateSportState(state: newState)

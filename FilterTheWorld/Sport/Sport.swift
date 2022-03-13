@@ -110,12 +110,6 @@ extension Sport {
     }
   }
   
-  mutating func setSportStateImage(editedStateId: Int, image: Data, width:Int, height: Int, landmarkSegments: [LandmarkSegment]) {
-    if let index = firstStateIndexByStateID(editedStateUUID: editedStateId) {
-      states[index].image = PngImage(photo: image, width: width, height: height)
-      states[index].landmarkSegments = landmarkSegments
-    }
-  }
   
   mutating private func updateStateTransform() {
     var newStateTransForm:[SportStateTransform] = []
