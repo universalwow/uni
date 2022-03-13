@@ -183,4 +183,9 @@ extension LandmarkType {
     [LeftShoulder,LeftHip,LeftKnee,LeftAnkle,LeftHeel,LeftToe],
     [RightShoulder, RightHip,RightKnee,RightAnkle,RightHeel,RightToe]
   ]
+  
+  func landmark(poseMap: PoseMap) -> Landmark {
+    let point = poseMap[self]
+    return Landmark(position: point, landmarkType: self)
+  }
 }

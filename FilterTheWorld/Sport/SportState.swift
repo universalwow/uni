@@ -181,6 +181,19 @@ extension SportState {
     }
   }
   
+  
+  func complexScoreRulesMultiFrameSatisfy(stateTimeHistory: [StateTime]) -> Bool {
+    // 只要有一组条件满足
+    complexScoreRules.contains{ complexRules in
+      // 每一组条件全部满足
+      (!complexRules.rules.isEmpty) && complexRules.rules.allSatisfy{ complexRule in
+        complexRule.allSatisfy(stateTimeHistory: stateTimeHistory)
+      }
+    }
+  }
+  
+  
+  
   func findLandmarkSegment(id: String) -> LandmarkSegment {
     landmarkSegments.first{ landmarkSegment in
       landmarkSegment.id == id

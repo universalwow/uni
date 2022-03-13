@@ -100,16 +100,12 @@ extension Sport {
     }
   }
   
-  
-  
-  
-  
   mutating func deleteState(state: SportState) {
     if let index = firstStateIndexByStateID(editedStateUUID: state.id) {
       states.remove(at: index)
     }
   }
-  
+
   
   mutating private func updateStateTransform() {
     var newStateTransForm:[SportStateTransform] = []
@@ -122,7 +118,6 @@ extension Sport {
       let toTransform = allStates.first{ state in
         state.id == transform.to
       }
-      
       
       if let fromTransform = fromTransform, let toTransform = toTransform {
         newStateTransForm.append(SportStateTransform(from: fromTransform.id , to: toTransform.id))
