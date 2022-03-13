@@ -50,9 +50,9 @@ struct Sporter {
   
   mutating func play(poseMap:PoseMap, currentTime: Double) {
     
-    if let lastScoreTime = scoreTimes.last, (lastScoreTime >= currentTime) {
+    if let lastScoreTime = scoreTimes.last, (lastScoreTime.0 >= currentTime) {
       scoreTimes.removeAll{ scoreTime in
-        scoreTime >= currentTime
+        scoreTime.0 >= currentTime
       }
       currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: [:])
     }
