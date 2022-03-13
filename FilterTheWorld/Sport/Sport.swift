@@ -3,8 +3,8 @@
 import Foundation
 
 struct SportStateTransform: Identifiable, Hashable, Codable {
-  var from: SportStateUUID
-  var to: SportStateUUID
+  var from: Int
+  var to: Int
   var id = UUID()
   
 }
@@ -49,7 +49,7 @@ extension Sport {
   }
   
   
-  var maxStateId: SportStateUUID {
+  var maxStateId: Int {
     allStates.map{ state in
       state.id
     }.max()!
@@ -63,14 +63,14 @@ extension Sport {
     })
   }
   
-  func firstStateIndexByStateID(editedStateUUID: SportStateUUID) -> Int? {
+  func firstStateIndexByStateID(editedStateUUID: Int) -> Int? {
     allStates.firstIndex(where: { state in
       state.id == editedStateUUID
       
     })
   }
   
-  func findFirstSportStateByUUID(editedStateUUID: SportStateUUID) -> SportState? {
+  func findFirstSportStateByUUID(editedStateUUID: Int) -> SportState? {
     if let index = firstStateIndexByStateID(editedStateUUID: editedStateUUID) {
       return allStates[index]
     }
@@ -110,7 +110,7 @@ extension Sport {
     }
   }
   
-  mutating func setSportStateImage(editedStateId: SportStateUUID, image: Data, width:Int, height: Int, landmarkSegments: [LandmarkSegment]) {
+  mutating func setSportStateImage(editedStateId: Int, image: Data, width:Int, height: Int, landmarkSegments: [LandmarkSegment]) {
     if let index = firstStateIndexByStateID(editedStateUUID: editedStateId) {
       states[index].image = PngImage(photo: image, width: width, height: height)
       states[index].landmarkSegments = landmarkSegments
@@ -181,31 +181,31 @@ extension Sport {
   
   
   // MARK: rule
-  mutating func setupLandmarkArea(editedSportStateId: SportStateUUID, editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
-    if let index = firstStateIndexByStateID(editedStateUUID: editedSportStateId) {
-      states[index].setupLandmarkArea(editedSportStateRulesId: editedSportStateRulesId, editedSportStateRule: editedSportStateRule, ruleType: ruleType, landmarkinArea: landmarkinArea)
-    }
-  }
+//  mutating func setupLandmarkArea(editedSportStateId: SportStateUUID, editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
+//    if let index = firstStateIndexByStateID(editedStateUUID: editedSportStateId) {
+//      states[index].setupLandmarkArea(editedSportStateRulesId: editedSportStateRulesId, editedSportStateRule: editedSportStateRule, ruleType: ruleType, landmarkinArea: landmarkinArea)
+//    }
+//  }
   
   
   mutating func addNewSportStateRules(editedSportState: SportState, ruleType: RuleType) {
     if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
       switch ruleType {
       case .SCORE:
-        states[index].complexScoreRules.append(ComplexRules(singleFrameRules: [], description: "计分规则集"))
+        states[index].complexScoreRules.append(ComplexRules(rules: [], description: "计分规则集"))
       case .VIOLATE:
-        states[index].complexViolateRules.append(ComplexRules(singleFrameRules: [], description: "违规规则集"))
+        states[index].complexViolateRules.append(ComplexRules(rules: [], description: "违规规则集"))
       }
     }
   }
   
-  mutating func addSportStateRule(editedSportStateUUID: SportStateUUID, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
+  mutating func addSportStateRule(editedSportStateUUID: Int, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
       states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
     }
   }
   
-  mutating func updateSportStateRule(editedSportStateUUID: SportStateUUID, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
+  mutating func updateSportStateRule(editedSportStateUUID: Int, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
       states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
     }
@@ -214,7 +214,7 @@ extension Sport {
   
   
   
-  mutating func dropInvalidComplexRule(editedSportStateUUID: SportStateUUID, editedSportStateRulesId: UUID, ruleType: RuleType) {
+  mutating func dropInvalidComplexRule(editedSportStateUUID: Int, editedSportStateRulesId: UUID, ruleType: RuleType) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
       states[stateIndex].dropInvalidRules(editedSportStateRulesId: editedSportStateRulesId, ruleType: ruleType)
     }
@@ -246,24 +246,11 @@ extension Sport {
   }
 
   
-  mutating func setSegmentToSelected(editedSportStateUUID: SportStateUUID, editedSportStateRuleId: String?) {
+  mutating func setSegmentToSelected(editedSportStateUUID: Int, editedSportStateRuleId: String?) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
       states[stateIndex].setSegmentToSelected(editedSportStateRuleId: editedSportStateRuleId)
     }
   }
   
-  func findselectedSegment(editedSportStateUUID: SportStateUUID, editedSportStateRuleId: String) -> LandmarkSegment? {
-    if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
-      return states[stateIndex].findselectedSegment(editedSportStateRuleId: editedSportStateRuleId)
-    }
-    return nil
-  }
-  
-  
-  func findSelectedSegments(editedSportStateUUID: SportStateUUID) -> [LandmarkSegment]? {
-    if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
-      return states[stateIndex].landmarkSegments
-    }
-    return nil
-  }
+
 }

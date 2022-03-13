@@ -29,73 +29,139 @@ struct LandmarkToAxis: Codable{
 }
 
 struct LandmarkToAxisAndState: Codable {
-  var lowerBound:Double
-  var upperBound:Double
+  var lowerBound:Double = 0
+  var upperBound:Double = 0
   
   //相对
-  var landmarkToAxis: LandmarkToAxis
-  var toStateId:SportStateUUID
-  var toLandmarkSegmentToAxis: LandmarkSegmentToAxis
+  var fromLandmarkToAxis: LandmarkToAxis {
+    didSet {
+      initBound()
+    }
+  }
+  
+  var toLandmarkToAxis: LandmarkToAxis {
+    didSet {
+      initBound()
+    }
+  }
+  
+  var toStateId:Int
+  var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
+    didSet {
+      initBound()
+    }
+  }
   
   var length: Range<Double> {
     lowerBound..<upperBound
   }
   
-  static func initValue(landmarkSegment: LandmarkSegment, axis: CoordinateAxis) -> LandmarkToAxisAndState {
-    LandmarkToAxisAndState(
-      lowerBound: 0,
-      upperBound: 0,
-      landmarkToAxis: LandmarkToAxis(landmark: landmarkSegment.startLandmark, axis: axis), toStateId: SportState.startState.id, toLandmarkSegmentToAxis: LandmarkSegmentToAxis.initValue)
+  init(fromLandmarkToAxis: LandmarkToAxis, toStateId: Int, toLandmarkToAxis: LandmarkToAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis) {
+    self.fromLandmarkToAxis = fromLandmarkToAxis
+    self.toLandmarkToAxis = toLandmarkToAxis
+    self.toStateId = toStateId
+    self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
+  }
+  
+  private mutating func initBound() {
+    switch (fromLandmarkToAxis.axis, toLandmarkSegmentToAxis.axis) {
+      case (.X, .X):
+        let length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+      case (.X, .Y):
+        let length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+      case (.X, .XY):
+        let length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+      case (.Y, .X):
+        let length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+      case (.Y, .Y):
+        let length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+      case (.Y, .XY):
+        let length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+      case (.XY, .X):
+        let length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+      case (.XY, .Y):
+        let length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+      case (.XY, .XY):
+        let length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+        lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+        upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+    }
   }
   
 }
 
 struct RelativeLandmarkSegmentsToAxis: Codable {
   
-  var lowerBound:Double
-  var upperBound:Double
+  var lowerBound:Double = 0
+  var upperBound:Double = 0
   
-  var from:LandmarkSegmentToAxis
-  var to: LandmarkSegmentToAxis
+  var from:LandmarkSegmentToAxis {
+    didSet {
+      initBound()
+    }
+  }
+  var to: LandmarkSegmentToAxis {
+    didSet {
+      initBound()
+    }
+  }
   
   var length: Range<Double> {
     lowerBound..<upperBound
   }
   
-  mutating func initBound() {
-    
-    switch (from, to) {
-      case (let from, let to) where from.axis == .X && to.axis == .X :
+  init(from: LandmarkSegmentToAxis, to: LandmarkSegmentToAxis) {
+    self.from = from
+    self.to = to
+    initBound()
+    print("length.........\(length)/\(from.landmarkSegment.id)/\(to.landmarkSegment.id)")
+  }
+  
+  private mutating func initBound() {
+    switch (from.axis, to.axis) {
+    case (.X, .X):
         lowerBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceX
         upperBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceX
-        
-      case (let from, let to) where from.axis == .X && to.axis == .Y :
+      
+    case (.X, .Y):
         
         lowerBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceY
         upperBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceY
 
-          
-      case (let from, let to) where from.axis == .X && to.axis == .XY:
+    case (.X, .XY):
             
             lowerBound = from.landmarkSegment.distanceX/to.landmarkSegment.distance
             upperBound = from.landmarkSegment.distanceX/to.landmarkSegment.distance
         
       // from Y
         
-      case (let from, let to) where from.axis == .Y && to.axis == .X :
+    case (.Y, .X):
         
         lowerBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceX
         upperBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceX
         
-        
-      case (let from, let to) where from.axis == .Y && to.axis == .Y :
+    case (.Y, .Y):
         
         lowerBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceY
         upperBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceY
         
-          
-
-      case (let from, let to) where from.axis == .Y && to.axis == .XY:
+    case (.Y, .XY):
             
         lowerBound = from.landmarkSegment.distanceY/to.landmarkSegment.distance
         upperBound = from.landmarkSegment.distanceY/to.landmarkSegment.distance
@@ -103,36 +169,21 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
         
         // from XY
         
-      case (let from, let to) where from.axis == .XY && to.axis == .X :
+    case (.XY, .X):
         
         lowerBound = from.landmarkSegment.distance/to.landmarkSegment.distanceX
         upperBound = from.landmarkSegment.distance/to.landmarkSegment.distanceX
         
-        
-      case (let from, let to) where from.axis == .XY && to.axis == .Y :
+    case (.XY, .Y):
         
         lowerBound = from.landmarkSegment.distance/to.landmarkSegment.distanceY
         upperBound = from.landmarkSegment.distance/to.landmarkSegment.distanceY
-        
-
           
-      case (let from, let to) where from.axis == .XY && to.axis == .XY:
+    case (.XY, .XY):
             
         lowerBound = from.landmarkSegment.distance/to.landmarkSegment.distance
         upperBound = from.landmarkSegment.distance/to.landmarkSegment.distance
-    
-    case (_, _): break
-      
     }
-  }
-  
-  static func initValue(fromLandmarkSegment: LandmarkSegment, axis: CoordinateAxis) -> RelativeLandmarkSegmentsToAxis {
-    return RelativeLandmarkSegmentsToAxis(
-      lowerBound: 0,
-      upperBound: 0,
-      from: LandmarkSegmentToAxis(
-        landmarkSegment: fromLandmarkSegment, axis: axis),
-      to: LandmarkSegmentToAxis.initValue)
   }
   
 }
@@ -188,8 +239,7 @@ struct LandmarkInArea: Codable {
 
 struct ComplexRules: Identifiable, Hashable, Codable {
   var id = UUID()
-  var singleFrameRules:[ComplexRule] = []
-  var multiFrameRules:[MultiFrameRule] = []
+  var rules:[ComplexRule] = []
   
   var description:String = ""
   
@@ -202,27 +252,27 @@ struct ComplexRules: Identifiable, Hashable, Codable {
   }
   
   func firstIndexOfRule(editedRule: ComplexRule) -> Int? {
-    singleFrameRules.firstIndex(where: { rule in
+    rules.firstIndex(where: { rule in
       rule.landmarkSegmentType.id == editedRule.landmarkSegmentType.id
     })
   }
   
   func firstIndexOfRuleBySegmentType(segmentType: LandmarkTypeSegment) -> Int? {
-    singleFrameRules.firstIndex(where: { rule in
+    rules.firstIndex(where: { rule in
       rule.landmarkSegmentType.id == segmentType.id
     })
   }
   
   func firstRuleBySegmentType(segmentType: LandmarkTypeSegment) -> ComplexRule? {
     if let index = firstIndexOfRuleBySegmentType(segmentType: segmentType) {
-      return singleFrameRules[index]
+      return rules[index]
     }
     return nil
   }
   
   func findFirstComplexRule(ruleId: String?) -> ComplexRule? {
     if let ruleId = ruleId {
-      return singleFrameRules.first(where: { rule in
+      return rules.first(where: { rule in
         rule.id == ruleId
       })
     }
@@ -231,7 +281,7 @@ struct ComplexRules: Identifiable, Hashable, Codable {
   }
   
   mutating func dropInvalidRules() {
-    singleFrameRules.removeAll { editedRule in
+    rules.removeAll { editedRule in
       if editedRule.angle == nil && editedRule.landmarkInArea == nil &&
           editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil {
         return true
@@ -243,22 +293,22 @@ struct ComplexRules: Identifiable, Hashable, Codable {
   mutating func updateSportStateRule(editedRule: ComplexRule) {
     
     if let index = firstIndexOfRule(editedRule: editedRule) {
-      singleFrameRules[index] = editedRule
+      rules[index] = editedRule
     }else{
-      singleFrameRules.append(editedRule)
+      rules.append(editedRule)
     }
     
   }
   
   mutating func setupLandmarkArea(editedSportStateRule: ComplexRule, landmarkinArea: LandmarkInArea?) {
     if let index = firstIndexOfRule(editedRule: editedSportStateRule) {
-      self.singleFrameRules[index].landmarkInArea = landmarkinArea
+      self.rules[index].landmarkInArea = landmarkinArea
     }
     
   }
   
   func currentRulesWarnings(poseMap: PoseMap) -> Set<String> {
-    Set(singleFrameRules.map{ rule in
+    Set(rules.map{ rule in
       rule.currentRuleWarning(poseMap: poseMap)
     }).subtracting([""])
   }
@@ -271,9 +321,6 @@ struct ComplexRules: Identifiable, Hashable, Codable {
  */
 
 
-struct MultiFrameRule: Codable {
-  var landmarkToAxisAndState: LandmarkToAxisAndState
-}
 
 
 
@@ -305,6 +352,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     self.id = landmarkSegmentType.id
     self.landmarkSegmentType = landmarkSegmentType
   }
+  
   init(ruleId: String) {
     self.id = ruleId
     self.landmarkSegmentType = ruleIdToLandmarkTypes(ruleId: ruleId)
@@ -328,6 +376,11 @@ struct ComplexRule: Identifiable, Hashable, Codable {
   var landmarkInArea:LandmarkInArea?
   // TODO:
   //MARK:  1. 物体在区域内 2. 物体与关节点的关系 3.物体相对自身位移 关节相对自身位移
+  
+  // 基于多帧的规则
+  var lengthXToState: LandmarkToAxisAndState?
+  var lengthYToState: LandmarkToAxisAndState?
+  var lengthXYToState: LandmarkToAxisAndState?
   
   func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
     let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)

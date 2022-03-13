@@ -124,6 +124,10 @@ extension LandmarkSegment {
     LandmarkTypeSegment(startLandmarkType: startLandmark.landmarkType, endLandmarkType: endLandmark.landmarkType)
   }
   
+  var startAndEndSegment: [Landmark] {
+    [startLandmark, endLandmark]
+  }
+  
   
   
 }

@@ -1,11 +1,10 @@
 
 import Foundation
 
-typealias SportStateUUID = Int
 
 struct SportState: Identifiable, Equatable, Hashable, Codable {
   
-  var id: SportStateUUID = -1
+  var id: Int = -1
   var name:String = ""
   var description:String = ""
   var image: PngImage?
@@ -176,10 +175,16 @@ extension SportState {
     // 只要有一组条件满足
     complexScoreRules.contains{ complexRules in
       // 每一组条件全部满足
-      (!complexRules.singleFrameRules.isEmpty) && complexRules.singleFrameRules.allSatisfy{ complexRule in
+      (!complexRules.rules.isEmpty) && complexRules.rules.allSatisfy{ complexRule in
         complexRule.allSatisfy(poseMap: poseMap)
       }
     }
+  }
+  
+  func findLandmarkSegment(id: String) -> LandmarkSegment {
+    landmarkSegments.first{ landmarkSegment in
+      landmarkSegment.id == id
+    }!
   }
   
 }
