@@ -185,7 +185,7 @@ extension LandmarkType {
   ]
   
   func landmark(poseMap: PoseMap) -> Landmark {
-    let point = poseMap[self]
+    let point = poseMap[self]!
     return Landmark(position: point, landmarkType: self)
   }
 }

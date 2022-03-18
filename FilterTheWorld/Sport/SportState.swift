@@ -175,19 +175,21 @@ extension SportState {
     // 只要有一组条件满足
     complexScoreRules.contains{ complexRules in
       // 每一组条件全部满足
-      (!complexRules.rules.isEmpty) && complexRules.rules.allSatisfy{ complexRule in
+//      (!complexRules.rules.isEmpty) && 
+      complexRules.rules.allSatisfy{ complexRule in
         complexRule.allSatisfy(poseMap: poseMap)
       }
     }
   }
   
   
-  func complexScoreRulesMultiFrameSatisfy(stateTimeHistory: [StateTime]) -> Bool {
+  func complexScoreRulesMultiFrameSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
     // 只要有一组条件满足
     complexScoreRules.contains{ complexRules in
       // 每一组条件全部满足
-      (!complexRules.rules.isEmpty) && complexRules.rules.allSatisfy{ complexRule in
-        complexRule.allSatisfy(stateTimeHistory: stateTimeHistory)
+//      scoreTimes.append((currentTime,true))
+      complexRules.rules.allSatisfy { complexRule in
+        complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
       }
     }
   }

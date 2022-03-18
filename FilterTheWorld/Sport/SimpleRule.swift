@@ -31,6 +31,7 @@ struct LandmarkToAxis: Codable{
 struct LandmarkToAxisAndState: Codable {
   var lowerBound:Double = 0
   var upperBound:Double = 0
+  var warning:String = ""
   
   //相对
   var fromLandmarkToAxis: LandmarkToAxis {
@@ -61,6 +62,7 @@ struct LandmarkToAxisAndState: Codable {
     self.toLandmarkToAxis = toLandmarkToAxis
     self.toStateId = toStateId
     self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
+    initBound()
   }
   
   private mutating func initBound() {
@@ -110,6 +112,7 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
   
   var lowerBound:Double = 0
   var upperBound:Double = 0
+  var warning:String = ""
   
   var from:LandmarkSegmentToAxis {
     didSet {
@@ -191,6 +194,7 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
 struct AngleRange: Codable {
   var lowerBound:Double
   var upperBound:Double
+  var warning:String = ""
   
   var angle: Range<Int> {
     if lowerBound < upperBound {
@@ -206,6 +210,7 @@ struct AngleRange: Codable {
 
 
 extension LandmarkInArea {
+  
   var areaString: String {
     area.reduce("", { result, next in
       result + next.roundedString + ","
@@ -220,6 +225,8 @@ struct LandmarkInArea: Codable {
   var landmarkType: LandmarkType
   
   var area: [Point2D]
+  var warning:String = ""
+
   
   func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap) -> Bool? {
     
@@ -404,28 +411,27 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     return warning
   }
   
-  func allSatisfy(stateTimeHistory: [StateTime]) -> Bool {
+  func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
 
     var lengthXToStateSatisfy: Bool? = true
     var lengthYToStateSatisfy: Bool? = true
     var lengthXYToStateSatisfy: Bool? = true
     
     if let length = lengthXToState {
-      lengthXToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory)
+      lengthXToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
     }
     
     if let length = lengthYToState {
-      lengthYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory)
+      lengthYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
     }
     
     if let length = lengthXYToState {
-      lengthXYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory)
+      lengthXYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
     }
-
     
     // 每个规则至少要包含一个条件 且所有条件都必须满足
-    return (lengthXToStateSatisfy != nil || lengthYToStateSatisfy != nil || lengthXYToStateSatisfy != nil) &&
-    lengthXToStateSatisfy == true && lengthYToStateSatisfy == true && lengthXYToStateSatisfy == true
+//    (lengthXToStateSatisfy != nil || lengthYToStateSatisfy != nil || lengthXYToStateSatisfy != nil) &&
+    return lengthXToStateSatisfy == true && lengthYToStateSatisfy == true && lengthXYToStateSatisfy == true
   }
   
   
@@ -459,7 +465,8 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     
     
     // 每个规则至少要包含一个条件 且所有条件都必须满足
-    return (lengthX != nil || lengthY != nil || lengthXY != nil || angle != nil || landmarkInArea != nil) &&
+//    (lengthX != nil || lengthY != nil || lengthXY != nil || angle != nil || landmarkInArea != nil) &&
+    return
     lengthXSatisfy == true && lengthYSatisfy == true && lengthXYSatisfy == true && angleSatisfy == true && landmarkInAreaSatisfy == true
   }
   
@@ -479,12 +486,20 @@ struct ComplexRule: Identifiable, Hashable, Codable {
   }
   
     
-  func lengthToStateSatisfy(relativeDistance: LandmarkToAxisAndState, stateTimeHistory: [StateTime]) -> Bool? {
+  func lengthToStateSatisfy(relativeDistance: LandmarkToAxisAndState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {
+    
+    if stateTimeHistory.isEmpty || stateTimeHistory.contains(where: { stateTime in
+      stateTime.sportState.id == SportState.startState.id
+    }) && stateTimeHistory.last { stateTime in
+      stateTime.sportState.id == relativeDistance.toStateId
+    } == nil {
+      return true
+    }
+    
     let  lowerBound = relativeDistance.length.lowerBound
     let  upperBound = relativeDistance.length.upperBound
     
-    let currentPoseMap = stateTimeHistory.last!.poseMap
-    let fromLandmark = relativeDistance.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: currentPoseMap)
+    let fromLandmark = relativeDistance.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
     
     // 依赖历史状态收集
     let toLandmark = relativeDistance.fromLandmarkToAxis.landmark.landmarkType.landmark(
@@ -495,7 +510,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     
     
     let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
-    let toSegment = relativeDistance.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: currentPoseMap)
+    let toSegment = relativeDistance.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
 
     return satisfy(fromAxis: relativeDistance.fromLandmarkToAxis.axis,
             toAxis: relativeDistance.toLandmarkSegmentToAxis.axis,
@@ -534,6 +549,8 @@ extension ComplexRule {
   private func satisfy(fromAxis: CoordinateAxis, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, fromSegment: LandmarkSegment, toSegment: LandmarkSegment) -> Bool {
     switch (fromAxis, toAxis) {
       case (.X, .X):
+          print("from segment ... \(fromSegment.distanceX/toSegment.distanceX)")
+
           return (lowerBound..<upperBound).contains(
             fromSegment.distanceX/toSegment.distanceX
           )

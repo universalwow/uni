@@ -10,10 +10,10 @@ struct StateTime {
   let poseMap: PoseMap
 }
 
-struct Sporter {
+struct Sporter: Identifiable {
+  var id = UUID()
   var name:String
   var sport: Sport
-  
   
   var currentStateTime: StateTime = StateTime(sportState: SportState.startState, time: 0, poseMap: [:]) {
     
@@ -51,7 +51,9 @@ struct Sporter {
   mutating func play(poseMap:PoseMap, currentTime: Double) {
     
     if let lastScoreTime = scoreTimes.last, (lastScoreTime.0 >= currentTime) {
+      print("score time \(lastScoreTime.0)/\(currentTime)")
       scoreTimes.removeAll{ scoreTime in
+        
         scoreTime.0 >= currentTime
       }
       currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: [:])
@@ -59,13 +61,12 @@ struct Sporter {
 
     // 违规逻辑
     sport.stateTransForm.forEach({ transform in
-      if currentStateTime.sportState.id == transform.from {
-        if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+//      if currentStateTime.sportState.id == transform.from {
+      if let toState = sport.findFirstSportStateByUUID(editedStateUUID: currentStateTime.sportState.id) {
           var allCurrentFrameWarnings:Set<String> = []
           toState.currentStateViolateWarning(poseMap: poseMap).forEach{ warns in
             allCurrentFrameWarnings = allCurrentFrameWarnings.union(warns)
           }
-
 
           // 取消的提示
           cancelingWarnings = totalWarnings.subtracting(allCurrentFrameWarnings)
@@ -75,20 +76,42 @@ struct Sporter {
           // 之前存在的提示
           let oldWarnings = totalWarnings.intersection(allCurrentFrameWarnings)
           totalWarnings = newWarnings.union(oldWarnings)
+          print("warning \(totalWarnings.count)/\(cancelingWarnings.count)")
+          totalWarnings.forEach{ string in
+            print("warning \(string)")
+            
+          }
+        
+          cancelingWarnings.forEach{ string in
+            print("warning cancel \(string)")
+          }
         }
-        }
+//        }
       })
     
     
     // 计分逻辑
+    if currentStateTime.sportState.id == SportState.startState.id {
+      sport.stateTransForm.forEach({ transform in
+        if currentStateTime.sportState.id == transform.from {
+          if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+              if toState.complexScoreRulesSatisfy(poseMap: poseMap) {
+                currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+              }
+            }
+        }
+      })
+      return
+    }
+    
+    
     sport.stateTransForm.forEach({ transform in
       if currentStateTime.sportState.id == transform.from {
         if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-          if toState.complexScoreRulesSatisfy(poseMap: poseMap) {
+          if toState.complexScoreRulesSatisfy(poseMap: poseMap) && toState.complexScoreRulesMultiFrameSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap) {
             currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
           }
         }
-        
       }
     })
     
@@ -115,11 +138,12 @@ struct Sporter {
       
       if allStateSatisfy && timeSatisfy {
         // 检查状态改变后是否满足多帧条件 决定是否计分
-        if stateTimeHistory.last!.sportState.complexScoreRulesMultiFrameSatisfy(stateTimeHistory: stateTimeHistory) {
-          scoreTimes.append((currentTime,true))
-        }else {
-          scoreTimes.append((currentTime,false))
-        }
+        scoreTimes.append((currentTime,true))
+//        if stateTimeHistory.last!.sportState.complexScoreRulesMultiFrameSatisfy(stateTimeHistory: stateTimeHistory) {
+//
+//        }else {
+//          scoreTimes.append((currentTime,false))
+//        }
         
       }
       

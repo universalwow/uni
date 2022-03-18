@@ -34,7 +34,7 @@ import SwiftUI
 
 @main
 struct AppMain: App {
-  @StateObject var sportManager = SportManager()
+  @StateObject var sportManager = SportsManager()
   @StateObject var imageAnalysor = ImageAnalysis()
   
   let test = TestPublishedStruct()

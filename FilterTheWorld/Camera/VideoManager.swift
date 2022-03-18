@@ -39,6 +39,7 @@ class VideoManager: ObservableObject {
       let cmTime =
         CMTimeMake(value: currentTime, timescale: Int32(asset.duration.timescale))
       generator.generateCGImagesAsynchronously(forTimes: [cmTime as NSValue], completionHandler: {requestedTime, image, actualTime, result, error in
+        
           DispatchQueue.main.async {
               if let image = image {
                 self.frame = image
@@ -55,6 +56,7 @@ class VideoManager: ObservableObject {
     }
     
     if let generator = generator {
+  
       var frameForTimes = [NSValue]()
       let videoDuration = asset.duration
       let sampleCounts = (framePerSecond * videoDuration.seconds).toInt
@@ -69,8 +71,12 @@ class VideoManager: ObservableObject {
       }
         
       generator.generateCGImagesAsynchronously(forTimes: frameForTimes, completionHandler: {requestedTime, image, actualTime, result, error in
+          
           DispatchQueue.main.async {
               if let image = image {
+              print("""
+                    frame size \(image.width)/\(image.height)/\(UIImage(cgImage:image).imageOrientation.rawValue)
+              """)
                 self.frames.append(image)
               }
           }

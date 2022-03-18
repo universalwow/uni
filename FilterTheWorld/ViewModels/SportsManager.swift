@@ -6,8 +6,8 @@ import SwiftUI
 
 
 
-class SportManager: ObservableObject {
-  @Published var sports:[Sport] = SportManager.allSports
+class SportsManager: ObservableObject {
+  @Published var sports:[Sport] = SportsManager.allSports
 
   // 以下属性只能用于查询 不能用作存储
   var currentSportId: UUID?
@@ -39,9 +39,7 @@ class SportManager: ObservableObject {
   
 }
 
-extension SportManager {
-  
-
+extension SportsManager {
   
   // MARK: 计算变量
   
@@ -186,12 +184,18 @@ extension SportManager {
   
   func addSportState(editedSport: Sport, stateName: String, stateDescription: String) {
     if let sportIndex = firstIndex(editedSportId: editedSport.id) {
-      sports[sportIndex].addState(stateName: stateName, stateDescription: stateDescription)
+      sports[sportIndex].updateState(stateName: stateName, stateDescription: stateDescription)
     }
   }
 
   
   func deleteSportState(editedSport: Sport, editedSportState: SportState) {
+    if [SportState.startState, SportState.endState].contains(where: { state in
+      state.id == editedSportState.id
+    }) {
+      return
+    }
+    
     if let sportIndex = firstIndex(editedSportId: editedSport.id) {
       sports[sportIndex].deleteState(state: editedSportState)
     }
@@ -365,55 +369,17 @@ extension SportManager {
     
   }
   
-  func updateSportStateRule(landmarkType: LandmarkType) {
-    if let  rule = findCurrentSportStateRule() {
+  func updateSportStateRule(landmarkType: LandmarkType, landmarkInAreaWarning: String) {
+    if let rule = findCurrentSportStateRule() {
       var newRule = rule
-      
       newRule.landmarkInArea!.landmarkType = landmarkType
+      newRule.landmarkInArea!.warning = landmarkInAreaWarning
       self.upsertCurrentRule(rule: newRule)
     }
   }
   
-  func updateSportStateRuleMutiFrame(fromAxis: CoordinateAxis, stateId: Int, landmarkType: LandmarkType) {
-    if let  rule = findCurrentSportStateRule() {
   
-      var newRule = rule
-      switch fromAxis {
-      case .X:
-        let toStateLandmark =
-          findFirstSportState(editedSportId: currentSportId!, sportStateUUID: stateId)!
-          .findLandmarkSegment(id: rule.id)
-          .startAndEndSegment.first{ landmark in
-            landmark.landmarkType == landmarkType
-        }!
-        newRule.lengthXToState!.toLandmarkToAxis.landmark = toStateLandmark
-        newRule.lengthXToState!.toStateId = stateId
-      case .Y:
-      
-        let toStateLandmark =
-          findFirstSportState(editedSportId: currentSportId!, sportStateUUID: stateId)!
-          .findLandmarkSegment(id: rule.id)
-          .startAndEndSegment.first{ landmark in
-            landmark.landmarkType == landmarkType
-        }!
-        newRule.lengthYToState!.toLandmarkToAxis.landmark = toStateLandmark
-        newRule.lengthYToState!.toStateId = stateId
-        
-      case .XY:
-        let toStateLandmark =
-          findFirstSportState(editedSportId: currentSportId!, sportStateUUID: stateId)!
-          .findLandmarkSegment(id: rule.id)
-          .startAndEndSegment.first{ landmark in
-            landmark.landmarkType == landmarkType
-        }!
-        newRule.lengthXYToState!.toLandmarkToAxis.landmark = toStateLandmark
-        newRule.lengthXYToState!.toStateId = stateId
-      }
-      self.upsertCurrentRule(rule: newRule)
-    }
-  }
-  
-  func updateSportStateRuleMutiFrame(fromAxis: CoordinateAxis, landmarkType: LandmarkType) {
+  func updateSportStateRuleMutiFrame(fromAxis: CoordinateAxis, landmarkType: LandmarkType, stateId: Int, landmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, warning: String) {
     if let  rule = findCurrentSportStateRule() {
       let fromStateLandmark = findFirstSportState()!
         .findLandmarkSegment(id: rule.id)
@@ -424,14 +390,21 @@ extension SportManager {
       switch fromAxis {
       case .X:
         newRule.lengthXToState!.fromLandmarkToAxis.landmark = fromStateLandmark
-        let toStateId = newRule.lengthXToState!.toStateId
+        
         let toStateLandmark =
-          findFirstSportState(editedSportId: currentSportId!, sportStateUUID: toStateId)!
+          findFirstSportState(editedSportId: currentSportId!, sportStateUUID: stateId)!
           .findLandmarkSegment(id: rule.id)
           .startAndEndSegment.first{ landmark in
             landmark.landmarkType == landmarkType
         }!
         newRule.lengthXToState!.toLandmarkToAxis.landmark = toStateLandmark
+        
+        newRule.lengthXToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
+        newRule.lengthXToState!.toLandmarkSegmentToAxis.axis = toAxis
+        newRule.lengthXToState!.toStateId = stateId
+        
+        newRule.lengthXToState!.warning = warning
+
         
       case .Y:
         newRule.lengthYToState!.fromLandmarkToAxis.landmark = fromStateLandmark
@@ -445,6 +418,13 @@ extension SportManager {
         }!
         newRule.lengthYToState!.toLandmarkToAxis.landmark = toStateLandmark
         
+        newRule.lengthYToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
+        newRule.lengthYToState!.toLandmarkSegmentToAxis.axis = toAxis
+        newRule.lengthYToState!.toStateId = stateId
+        newRule.lengthYToState!.warning = warning
+
+        
+        
       case .XY:
         newRule.lengthXYToState!.fromLandmarkToAxis.landmark = fromStateLandmark
         
@@ -456,6 +436,12 @@ extension SportManager {
             landmark.landmarkType == landmarkType
         }!
         newRule.lengthXYToState!.toLandmarkToAxis.landmark = toStateLandmark
+        
+        newRule.lengthXYToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
+        newRule.lengthXYToState!.toLandmarkSegmentToAxis.axis = toAxis
+        newRule.lengthXYToState!.toStateId = stateId
+        newRule.lengthXYToState!.warning = warning
+
       }
       self.upsertCurrentRule(rule: newRule)
     }
@@ -497,69 +483,19 @@ extension SportManager {
     }
   }
   
-  func updateCurrentRuleLengthLowerBound(axis: CoordinateAxis, lowerBound: String) {
+  func updateSportStateRule(axis: CoordinateAxis, lowerBound: String, upperBound: String) {
     if let rule = self.findCurrentSportStateRule() {
       var newRule = rule
-      if let lowerBound = Double(lowerBound) {
+      if let lowerBound = Double(lowerBound), let upperBound =  Double(upperBound){
         switch axis {
           case .X:
           newRule.lengthX!.lowerBound = lowerBound
-          case .Y:
-          newRule.lengthY!.lowerBound = lowerBound
-          case .XY:
-          newRule.lengthXY!.lowerBound = lowerBound
-          }
-      }
-      self.upsertCurrentRule(rule: newRule)
-    }
-    
-  }
-  
-  func updateCurrentRuleMultiFrameLengthUpperBound(axis: CoordinateAxis, lowerBound: String) {
-    if let rule = self.findCurrentSportStateRule() {
-      var newRule = rule
-      if let lowerBound = Double(lowerBound) {
-        switch axis {
-          case .X:
-          newRule.lengthXToState!.lowerBound = lowerBound
-          case .Y:
-          newRule.lengthYToState!.lowerBound = lowerBound
-          case .XY:
-          newRule.lengthXYToState!.lowerBound = lowerBound
-          }
-      }
-      self.upsertCurrentRule(rule: newRule)
-    }
-    
-  }
-  
-  func updateCurrentRuleMultiFrameLengthUpperBound(axis: CoordinateAxis, upperBound: String) {
-    if let rule = self.findCurrentSportStateRule() {
-      var newRule = rule
-      if let upperBound = Double(upperBound) {
-        switch axis {
-          case .X:
-          newRule.lengthXToState!.upperBound = upperBound
-          case .Y:
-          newRule.lengthYToState!.upperBound = upperBound
-          case .XY:
-          newRule.lengthXYToState!.upperBound = upperBound
-          }
-      }
-      self.upsertCurrentRule(rule: newRule)
-    }
-  }
-  
-  func updateCurrentRuleLengthUpperBound(axis: CoordinateAxis, upperBound: String) {
-    if let rule = self.findCurrentSportStateRule() {
-      var newRule = rule
-      if let upperBound = Double(upperBound) {
-        switch axis {
-          case .X:
           newRule.lengthX!.upperBound = upperBound
           case .Y:
+          newRule.lengthY!.lowerBound = lowerBound
           newRule.lengthY!.upperBound = upperBound
           case .XY:
+          newRule.lengthXY!.lowerBound = lowerBound
           newRule.lengthXY!.upperBound = upperBound
           }
       }
@@ -567,6 +503,32 @@ extension SportManager {
     }
     
   }
+  
+  func updateCurrentRuleMultiFrame(axis: CoordinateAxis, lowerBound: String, upperBound: String) {
+    if let rule = self.findCurrentSportStateRule() {
+      var newRule = rule
+      if let lowerBound = Double(lowerBound), let upperBound = Double(upperBound) {
+        switch axis {
+          case .X:
+          newRule.lengthXToState!.lowerBound = lowerBound
+          newRule.lengthXToState!.upperBound = upperBound
+
+          case .Y:
+          newRule.lengthYToState!.lowerBound = lowerBound
+          newRule.lengthYToState!.upperBound = upperBound
+
+          case .XY:
+          newRule.lengthXYToState!.lowerBound = lowerBound
+          newRule.lengthXYToState!.upperBound = upperBound
+
+          }
+      }
+      self.upsertCurrentRule(rule: newRule)
+    }
+    
+  }
+  
+  
   
   func setSportStateRuleMultiFrameLength(fromAxis: CoordinateAxis, relativeSegment: LandmarkSegment, toAxis: CoordinateAxis) {
     if let rule = findCurrentSportStateRule() {
@@ -624,6 +586,23 @@ extension SportManager {
     
   }
   
+  
+  
+  func updateCurrentSportStateRuleLengthMutiFrame(axis: CoordinateAxis, length: LandmarkToAxisAndState?) {
+    if let rule = findCurrentSportStateRule() {
+      var newRule = rule
+      switch axis {
+        case .X:
+        newRule.lengthXToState = length
+        case .Y:
+          newRule.lengthYToState = length
+        case .XY:
+          newRule.lengthXYToState = length
+      }
+      self.upsertCurrentRule(rule: newRule)
+    }
+  }
+  
   func updateCurrentSportStateRuleLength(axis: CoordinateAxis, length: RelativeLandmarkSegmentsToAxis?) {
     if let rule = findCurrentSportStateRule() {
       var newRule = rule
@@ -639,68 +618,31 @@ extension SportManager {
     }
   }
   
-  func updateCurrentSportStateRuleLengthToLandmarkSegment(axis: CoordinateAxis, landmarkSegment: LandmarkSegment) {
-    
-    if let rule = findCurrentSportStateRule() {
-      var newRule = rule
-      switch axis {
-      case .X:
-        newRule.lengthX!.to.landmarkSegment = landmarkSegment
-      case .Y:
-        newRule.lengthY!.to.landmarkSegment = landmarkSegment
-      case .XY:
-        newRule.lengthXY!.to.landmarkSegment = landmarkSegment
-      }
-      self.upsertCurrentRule(rule: newRule)
-    }
-  }
   
-  func updateCurrentSportStateRuleMutiFrameLengthToLandmarkSegment(axis: CoordinateAxis, landmarkSegment: LandmarkSegment) {
-    
-    if let rule = findCurrentSportStateRule() {
-      var newRule = rule
-      switch axis {
-      case .X:
-        newRule.lengthXToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-      case .Y:
-        newRule.lengthYToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-      case .XY:
-        newRule.lengthXYToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-      }
-      self.upsertCurrentRule(rule: newRule)
-    }
-  }
-  
-  
-  func updateCurrentSportStateRuleMutiFrameLengthToAxis(fromAxis: CoordinateAxis, toAxis: CoordinateAxis) {
-    if let rule = findCurrentSportStateRule() {
-      var newRule = rule
-      switch fromAxis {
-      case .X:
-        newRule.lengthXToState!.toLandmarkSegmentToAxis.axis = toAxis
-      case .Y:
-        newRule.lengthYToState!.toLandmarkSegmentToAxis.axis = toAxis
-      case .XY:
-        newRule.lengthXYToState!.toLandmarkSegmentToAxis.axis = toAxis
-      }
-      self.upsertCurrentRule(rule: newRule)
-      
-    }
-
-  }
-  
-  
-  func updateCurrentSportStateRuleLengthToAxis(fromAxis: CoordinateAxis, toAxis: CoordinateAxis) {
+  func updateCurrentSportStateRule(
+    fromAxis: CoordinateAxis,
+    toAxis: CoordinateAxis,
+    relativeSegment: LandmarkSegment,
+    warning: String
+) {
     
     if let rule = findCurrentSportStateRule() {
       var newRule = rule
       switch fromAxis {
       case .X:
+        newRule.lengthX!.to.landmarkSegment = relativeSegment
         newRule.lengthX!.to.axis = toAxis
+        newRule.lengthX!.warning = warning
       case .Y:
+        newRule.lengthY!.to.landmarkSegment = relativeSegment
         newRule.lengthY!.to.axis = toAxis
+        newRule.lengthY!.warning = warning
+
       case .XY:
+        newRule.lengthXY!.to.landmarkSegment = relativeSegment
         newRule.lengthXY!.to.axis = toAxis
+        newRule.lengthXY!.warning = warning
+
       }
       self.upsertCurrentRule(rule: newRule)
       

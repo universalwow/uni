@@ -21,7 +21,7 @@ struct Sport: Identifiable, Hashable, Codable {
   var id = UUID()
   var name:String = ""
   var description:String = ""
-  var states: [SportState] = [] {
+  var states: [SportState] = [SportState.startState, SportState.endState] {
     didSet {
       // 删除操作 更新状态转换 和 计分状态列表
       if states.count < oldValue.count {
@@ -45,7 +45,14 @@ extension Sport {
     "\(self.id).json"
   }
   var allStates: [SportState]  {
-    states + [SportState.startState, SportState.endState]
+    states
+  }
+  
+  var allImageSettedState: [SportState] {
+    states.filter { state in
+      state.image != nil
+      
+    }
   }
   
   
@@ -97,6 +104,8 @@ extension Sport {
     if let index = firstStateIndexByStateName(editedStateName: stateName) {
       states[index].name = stateName
       states[index].description = stateDescription
+    } else {
+      addState(stateName: stateName, stateDescription: stateDescription)
     }
   }
   
