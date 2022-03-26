@@ -9,6 +9,7 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   var description:String = ""
   var image: PngImage?
   var landmarkSegments :[LandmarkSegment] = []
+  var objects: [Observation] = []
   
   // MARK: TO DELETE
   // TODO: 状态对应的规则 时间限制 一定时间内没有切换状态
@@ -19,10 +20,7 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   // 违规规则 用于提示
   var complexViolateRules:[ComplexRules] = []
   
-  
-  
-  
-  
+
   static func == (lhs: SportState, rhs: SportState) -> Bool {
     lhs.name == rhs.name
   }
@@ -151,11 +149,6 @@ extension SportState {
     }
   }
   
-  func currentStateViolateWarning(poseMap: PoseMap) -> [Set<String>] {
-    complexViolateRules.map{rules in
-      rules.currentRulesWarnings(poseMap: poseMap)
-    }
-  }
   
   mutating func setupLandmarkArea(editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
     
@@ -171,30 +164,29 @@ extension SportState {
     }
   }
   
-  func complexScoreRulesSatisfy(poseMap:PoseMap) -> Bool {
-    // 只要有一组条件满足
-    complexScoreRules.contains{ complexRules in
-      // 每一组条件全部满足
-//      (!complexRules.rules.isEmpty) && 
-      complexRules.rules.allSatisfy{ complexRule in
-        complexRule.allSatisfy(poseMap: poseMap)
-      }
+  func complexScoreRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap) -> (Bool, Set<String>) {
+    
+    var rules : [ComplexRules] = []
+    switch ruleType {
+      case .SCORE:
+        rules = complexScoreRules
+      case .VIOLATE:
+        rules = complexViolateRules
     }
-  }
-  
-  
-  func complexScoreRulesMultiFrameSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
     // 只要有一组条件满足
-    complexScoreRules.contains{ complexRules in
-      // 每一组条件全部满足
-//      scoreTimes.append((currentTime,true))
-      complexRules.rules.allSatisfy { complexRule in
-        complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-      }
-    }
+    return rules.reduce((false, Set<String>()), { result, complexRules in
+        // 每一组条件全部满足
+  //      (!complexRules.rules.isEmpty) &&
+      let rulesSatisfy = complexRules.rules.reduce((true, Set<String>()), { satisfy, complexRule in
+        let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+//        print("rule satisfy ... \(ruleSatisfy)")
+        return (satisfy.0 && ruleSatisfy.0, satisfy.1.union(ruleSatisfy.1))
+      })
+      
+      return (result.0 || rulesSatisfy.0, result.1.union(rulesSatisfy.1))
+      
+    })
   }
-  
-  
   
   func findLandmarkSegment(id: String) -> LandmarkSegment {
     landmarkSegments.first{ landmarkSegment in

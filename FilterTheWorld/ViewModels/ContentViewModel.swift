@@ -69,7 +69,7 @@ class ContentViewModel: ObservableObject {
 //      self.recognizer = FaceRecognizer()
 //      self.initObjectDetector()
 //      self.initPoseDetector()
-      self.objectDetectorYOLO = ObjectRecoginzerYOLO()
+      self.objectDetectorYOLO = ObjectRecoginzerYOLO(yoloModelName: "yolov5-pipeline")
 
       self.setupSubscriptions()
       print("init................")
@@ -220,7 +220,7 @@ class ContentViewModel: ObservableObject {
           self.objectDetectorYOLO?.detectObject(in: buffer!, imageSize: CGSize(width: image.width, height: image.height))
         }
         
-        let uiImage = UIImage(cgImage: image)
+//        let uiImage = UIImage(cgImage: image)
         
         
 //        self.detectFace(in: buffer!)

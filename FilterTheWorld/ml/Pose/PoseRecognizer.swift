@@ -15,6 +15,24 @@ struct FrameShowData {
   var currentTime = 0.0
   var poses: [HumanPose] = []
   
+  mutating func selectePose(pose: HumanPose) {
+    poses.indices.forEach { index in
+      let humanPose = poses[index]
+      if humanPose.id == pose.id {
+        poses[index].toggle()
+      }else {
+        poses[index].noselected()
+      }
+      
+    }
+    
+  }
+  
+  var selectedPose : HumanPose? {
+    poses.first { pose in
+      pose.isSelected
+    }
+  }
 }
 
 
@@ -78,7 +96,6 @@ class PoseRecognizer: ObservableObject {
       }
       
       DispatchQueue.main.async {
-        
         var detectedHumanPoses = [HumanPose]()
         for poseIndex in detectedPoses.indices {
           var newPose = HumanPose(id: poseIndex)
@@ -93,8 +110,6 @@ class PoseRecognizer: ObservableObject {
           newPose.initLandmarkSegments()
           detectedHumanPoses.append(newPose)
         }
-        print("........... \(detectedHumanPoses.count)/\(fps ?? self.frameData.fps)/\(self.frameData.poses)")
-        
         self.frameData = FrameShowData(fps: fps ?? self.frameData.fps, currentTime: currentTime, poses: detectedHumanPoses)
         
         if detectedHumanPoses.count == 0 {

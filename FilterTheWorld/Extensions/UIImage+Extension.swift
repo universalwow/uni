@@ -16,6 +16,73 @@ import PerspectiveTransform
 
 extension UIImage {
   
+  func resize(croppedimage: UIImage) -> UIImage{
+    //resize to 160x160 square
+    let newWidth:CGFloat = 160
+    let newHeight:CGFloat = 160
+    UIGraphicsBeginImageContextWithOptions(CGSize(width: newWidth, height: newHeight), true, 3.0)
+    croppedimage.draw(in: CGRect(x:0, y:0, width:newWidth, height:newHeight))
+    let newImage = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    return newImage!
+  }
+  
+  
+  
+  
+  
+  func resizeImageTo(targetSize: CGSize) -> UIImage {
+    
+    let widthRatio = targetSize.width / size.width
+    let heightRatio = targetSize.height / size.height
+    let scaleFactor = min(widthRatio, heightRatio)
+    
+    let scaledImageSize = CGSize(
+        width: size.width * scaleFactor,
+        height: size.height * scaleFactor
+    )
+          
+    UIGraphicsBeginImageContextWithOptions(scaledImageSize, false, 1.0)
+    self.draw(in: CGRect(origin: CGPoint.zero, size: scaledImageSize))
+    let resizedImage = UIGraphicsGetImageFromCurrentImageContext()!
+    UIGraphicsEndImageContext()
+    return resizedImage
+  }
+  
+  func scalePreservingAspectRatio(targetSize: CGSize) -> UIImage {
+      // Determine the scale factor that preserves aspect ratio
+      let widthRatio = targetSize.width / size.width
+      let heightRatio = targetSize.height / size.height
+      let scaleFactor = min(widthRatio, heightRatio)
+      
+      // Compute the new image size that preserves aspect ratio
+      let scaledImageSize = CGSize(
+          width: size.width * scaleFactor,
+          height: size.height * scaleFactor
+      )
+
+      // Draw and return the resized UIImage
+    
+    let format = UIGraphicsImageRendererFormat()
+    format.scale = 1
+    
+    let renderer = UIGraphicsImageRenderer(bounds: CGRect(
+      origin: .zero,
+      size: targetSize
+    ), format: format)
+    
+      
+      let scaledImage = renderer.image { _ in
+        self.draw(
+          in: CGRect(
+            origin: .zero,
+            size: scaledImageSize
+          ))
+      }
+      
+    return scaledImage
+  }
+  
   public func drawContours(contoursObservation: VNContoursObservation, sourceImage: CGImage) -> UIImage {
       let size = CGSize(width: sourceImage.width, height: sourceImage.height)
       let renderer = UIGraphicsImageRenderer(size: size)
@@ -159,16 +226,6 @@ extension UIImage {
         return resize(croppedimage: UIImage(cgImage: cutImageRef))
     }
 
-      func resize(croppedimage: UIImage) -> UIImage{
-        //resize to 160x160 square
-        let newWidth:CGFloat = 160
-        let newHeight:CGFloat = 160
-        UIGraphicsBeginImageContextWithOptions(CGSize(width: newWidth, height: newHeight), true, 3.0)
-        croppedimage.draw(in: CGRect(x:0, y:0, width:newWidth, height:newHeight))
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return newImage!
-    }
 
     //RGBA => 32bit => 4x8
     func getPixelData(buffer :inout [Double]){

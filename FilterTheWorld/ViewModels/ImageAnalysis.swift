@@ -27,21 +27,22 @@ class ImageAnalysis : ObservableObject {
   @Published var modelInited = false
   @Published var sportData:SportDataShow = SportDataShow()
   
-  
   @Published var cachedFrames:[(Double, UIImage)] = []
   var currentFrame:UIImage?
     
   private var faceRecognizer :FaceRecognizer?
   
   private(set) var poseRecognizer: PoseRecognizer?
-  private(set) var objectRecognizer: ObjectRecognizer?
+//  private(set) var objectRecognizer: ObjectRecognizer?
+  private(set) var objectDetectorYOLO: ObjectRecoginzerYOLO?
 
 
   init() {
     DispatchQueue.global(qos: .userInteractive).async {
       self.faceRecognizer = FaceRecognizer()
       self.poseRecognizer = PoseRecognizer()
-      self.objectRecognizer = ObjectRecognizer()
+//      self.objectRecognizer = ObjectRecognizer()
+      self.objectDetectorYOLO = ObjectRecoginzerYOLO(yoloModelName: "yolov5-pipeline")
       
       self.setupSubscriptions()
       DispatchQueue.main.async {
@@ -65,7 +66,6 @@ class ImageAnalysis : ObservableObject {
           self.cachedFrames.removeAll(where: { cache in
             cache.0 <= frameData.currentTime
           })
-          
 
           return SportDataShow(frameData: frameData, frame: image)
         }else{
@@ -86,17 +86,19 @@ class ImageAnalysis : ObservableObject {
       
       let visionImage = VisionImage(image: image)
       visionImage.orientation = image.imageOrientation
-//      print(image.imageOrientation.rawValue)
-//      self.findObjects(image: visionImage)
+      
+      let buffer = image.scalePreservingAspectRatio(targetSize: CGSize(width: 640, height: 640)).toCVPixelBuffer()
+      
+      self.objectDetectorYOLO?.detectObject(in: buffer!, imageSize: image.size)
       self.findPoses(image: visionImage, request: request, currentTime: currentTime)
       
     }
   }
 
-  // 物体检测
-  func findObjects(image: VisionImage) {
-    self.objectRecognizer?.detectObject(image: image)
-  }
+//  // 物体检测
+//  func findObjects(image: VisionImage) {
+//    self.objectRecognizer?.detectObject(image: image)
+//  }
   
   // 关节点检测
   func findPoses(image: VisionImage, request: AVAsynchronousCIImageFilteringRequest?, currentTime: Double){
@@ -114,7 +116,6 @@ class ImageAnalysis : ObservableObject {
       self.cachedFrames.append((currentTime, image))
       self.detectorProcess(image: image, request: request, currentTime: currentTime)
     }
-
   }
 }
 
@@ -165,7 +166,13 @@ extension ImageAnalysis {
 
 extension ImageAnalysis {
   
+  
+  func selectHumanPose(selectedHumanPose: HumanPose) {
+    self.sportData.frameData.selectePose(pose: selectedHumanPose)
+  }
+  
   func selectLandmarkSegment(selectedHumanPose: HumanPose, selectedlandmarkSegment: LandmarkSegment) {
+    
     self.sportData.frameData.poses[(self.sportData.frameData.poses.firstIndex { humanPose in
       humanPose.id == selectedHumanPose.id
     })!].selectLandmarkSegment(selectedlandmarkSegment: selectedlandmarkSegment)

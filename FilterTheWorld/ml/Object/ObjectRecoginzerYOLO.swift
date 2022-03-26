@@ -6,6 +6,10 @@ import Vision
 import UIKit
 
 
+
+
+
+
 class ObjectRecoginzerYOLO: ObservableObject {
   
   // Vision parts
@@ -14,60 +18,42 @@ class ObjectRecoginzerYOLO: ObservableObject {
   private var detectionOverlay: CALayer! = nil
   var bufferSize = CGSize.zero
   var rootLayer: CALayer! = nil
-  var imageSize: CGSize = CGSize.zero
+  var imageSize = CGSize.zero
+  var modelSize = CGSize.zero
 
   private var requests = [VNRequest]()
   @Published var results: [Observation] = []
-  
-  init() {
-    let _ = setupVision()
+
+  init(yoloModelName: String) {
+    self.modelSize = setupModelSize(yoloModelName: yoloModelName)
+    let _ = setupVision(modelName: yoloModelName)
+    print("setupVision")
     
   }
   
-  func setupVision() -> NSError? {
+  func setupModelSize(yoloModelName: String) -> CGSize {
+    return CGSize(width: 640, height: 640)
+  }
+  
+  func setupVision(modelName: String) -> NSError? {
       // Setup Vision parts
       let error: NSError! = nil
       
-      guard let modelURL = Bundle.main.url(forResource: "YOLOv3FP16", withExtension: "mlmodelc") else {
+      guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "mlmodelc") else {
           return NSError(domain: "VisionObjectRecognitionViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Model file is missing"])
       }
+    
       do {
           let visionModel = try VNCoreMLModel(for: MLModel(contentsOf: modelURL))
           let objectRecognition = VNCoreMLRequest(model: visionModel, completionHandler: { (request, error) in
             DispatchQueue.main.async(execute: { [self] in
-              
-                  // perform all the UI updates on the main queue
-                let currentTime = Date().timeIntervalSince1970
-                  if let results = request.results {
-
-
-                    var observations: [Observation] = []
-
-                    for observation in results where observation is VNRecognizedObjectObservation {
-                        guard let objectObservation = observation as? VNRecognizedObjectObservation else {
-                            continue
-                        }
-                        // Select only the label with the highest confidence.
-                        let topLabelObservation = objectObservation.labels[0]
-                      let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(self.imageSize.width), Int(self.imageSize.height))
-                      
-                      let newBound = CGRect(origin: CGPoint(x: objectBounds.minX, y: self.imageSize.height - objectBounds.minY - objectBounds.height), size: objectBounds.size)
-                      print("object position \(newBound)")
-
-                      observations.append(Observation(label: "\(topLabelObservation.identifier)/\(topLabelObservation.confidence.roundedString(number: 2))", rect:
-                                                        newBound))
-//                      self.drawVisionRequestResults(results)
-                    }
-
-                    self.results = observations
-
-                  }
-              
-              print("current time \(Float(currentTime -  self.lastTime).roundedString(number: 5))/\(self.results.count)/\(self.imageSize)")
-              self.lastTime = currentTime
-  
+              if let results = request.results {
+                processVisionRequestResults(results: results)
+              }
               })
           })
+        print("imageCropAndScaleOption \(objectRecognition.imageCropAndScaleOption.rawValue)")
+//        objectRecognition.imageCropAndScaleOption = .centerCrop
           self.requests = [objectRecognition]
       } catch let error as NSError {
           print("Model loading went wrong: \(error)")
@@ -75,6 +61,66 @@ class ObjectRecoginzerYOLO: ObservableObject {
       
       return error
   }
+  
+  private func processVisionRequestResults(results: [Any]) {
+    let currentTime = Date().timeIntervalSince1970
+    var observations: [Observation] = []
+    
+    for observation in results where observation is VNRecognizedObjectObservation {
+        guard let objectObservation = observation as? VNRecognizedObjectObservation else {
+            continue
+        }
+        let topLabelObservation = objectObservation.labels[0]
+      
+      print("object position before \(topLabelObservation.identifier) (\(objectObservation.boundingBox.midX), \(objectObservation.boundingBox.midY), \(objectObservation.boundingBox.width), \(objectObservation.boundingBox.height))")
+//        let objectBounds = VNImageRectForNormalizedRect(
+//          objectObservation.boundingBox,
+//          Int(self.imageSize.width), Int(self.imageSize.height))
+      
+        
+      
+        let newBound = CGRect(
+          origin: CGPoint(
+            x: objectObservation.boundingBox.minX / currentScale ,
+            y: -1 *  (objectObservation.boundingBox.minY + objectObservation.boundingBox.height) / currentScale
+          ),
+          size: CGSize(width: objectObservation.boundingBox.size.width / currentScale, height: objectObservation.boundingBox.size.height  / currentScale)
+        )
+
+        observations.append(
+          Observation(
+            label:topLabelObservation.identifier,
+            confidence: topLabelObservation.confidence.roundedString(number: 2),
+            rect:newBound
+          )
+        )
+    }
+    self.results = observations
+    self.lastTime = currentTime
+  }
+  
+  
+//  private func processVisionRequestResultsScaleFill(results: [Any]) {
+//    CATransaction.begin()
+//    CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+//
+//    self.objectDetectionLayer.sublayers = nil
+//    for observation in results where observation is VNRecognizedObjectObservation {
+//        guard let objectObservation = observation as? VNRecognizedObjectObservation else {
+//            continue
+//        }
+//
+//        let topLabelObservation = objectObservation.labels[0]
+//        let objectBounds = VNImageRectForNormalizedRect(
+//            objectObservation.boundingBox,
+//            Int(self.objectDetectionLayer.bounds.width), Int(self.objectDetectionLayer.bounds.height))
+//
+//        let bbLayer = self.createBoundingBoxLayer(objectBounds, identifier: topLabelObservation.identifier, confidence: topLabelObservation.confidence)
+//        self.objectDetectionLayer.addSublayer(bbLayer)
+//    }
+//    CATransaction.commit()
+//  }
+  
   
   func createTextSubLayerInBounds(_ bounds: CGRect, identifier: String, confidence: VNConfidence) -> CATextLayer {
       let textLayer = CATextLayer()
@@ -155,12 +201,40 @@ class ObjectRecoginzerYOLO: ObservableObject {
   
   func detectObject(in image: CVPixelBuffer, imageSize: CGSize) {
     self.imageSize = imageSize
-    let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: image, orientation: .up, options: [:])
+    let imageRequestHandler = VNImageRequestHandler(
+      cvPixelBuffer: image,
+      orientation: .up,
+      options: [:])
     do {
         try imageRequestHandler.perform(self.requests)
     } catch {
         print("error ",error)
     }
-    
   }
+}
+
+
+extension ObjectRecoginzerYOLO {
+  var currentScale: Double {
+    let widthRatio = modelSize.width / imageSize.width
+    let heightRatio = modelSize.height / imageSize.height
+    return min(widthRatio, heightRatio)
+  }
+  
+  
+  func selectObject(object: Observation) {
+    results.indices.forEach { index in
+      let obj = results[index]
+      if object.id == obj.id {
+        results[index].selected.toggle()
+      }
+    }
+  }
+  
+  var selectedObjects: [Observation] {
+    results.filter { object in
+      object.selected
+    }
+  }
+  
 }

@@ -219,6 +219,16 @@ extension SportsManager {
     }
   }
   
+  func updateSportState(image: UIImage, objects: [Observation]) {
+    if let state = findFirstSportState() {
+      var newState = state
+      newState.image = PngImage(photo: image.pngData()!, width: Int(image.size.width), height: Int(image.size.height))
+      newState.objects = objects
+      self.updateSportState(state: newState)
+      
+    }
+  }
+  
   
   func addSportStatetransform(fromSportState: SportState, toSportState: SportState) {
     if let sportIndex = firstIndex() {
@@ -255,6 +265,10 @@ extension SportsManager {
   
   func findSelectedSegments() -> [LandmarkSegment] {
     findFirstSportState()!.landmarkSegments
+  }
+  
+  func findSelectedObjects() -> [Observation] {
+    findFirstSportState()!.objects
   }
   
   

@@ -1,13 +1,13 @@
 
 import Foundation
 
-enum CoordinateAxis: String, Identifiable,CaseIterable, Codable {
+enum CoordinateAxis: String, Identifiable, CaseIterable, Codable {
   var id: String {
     self.rawValue
   }
-  
   case X,Y,XY
 }
+
 
 enum RuleType {
   case SCORE, VIOLATE
@@ -106,6 +106,17 @@ struct LandmarkToAxisAndState: Codable {
     }
   }
   
+}
+
+struct ObjectPositionPoint: Codable {
+  var position: ObjectPosition
+  var point: Point2D
+}
+
+struct ObjectToObject: Codable {
+  var fromPosition: ObjectPositionPoint
+  var toPosition: ObjectPositionPoint
+  var axis: CoordinateAxis
 }
 
 struct RelativeLandmarkSegmentsToAxis: Codable {
@@ -314,15 +325,7 @@ struct ComplexRules: Identifiable, Hashable, Codable {
     if let index = firstIndexOfRule(editedRule: editedSportStateRule) {
       self.rules[index].landmarkInArea = landmarkinArea
     }
-    
   }
-  
-  func currentRulesWarnings(poseMap: PoseMap) -> Set<String> {
-    Set(rules.map{ rule in
-      rule.currentRuleWarning(poseMap: poseMap)
-    }).subtracting([""])
-  }
-  
 }
 
 /**
@@ -392,82 +395,105 @@ struct ComplexRule: Identifiable, Hashable, Codable {
   var lengthYToState: LandmarkToAxisAndState?
   var lengthXYToState: LandmarkToAxisAndState?
   
+  // 物体位置相对于关节点
+  
+  // 物体位置相对于物体位置
+  var objectPositionToObjectPosition: ObjectToObject?
+  
   func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
     let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+//    print("angle range \(angleRange.angle)/\(landmarkSegment.angle2d.toInt)/\(angleRange.angle.contains(landmarkSegment.angle2d.toInt))")
     return angleRange.angle.contains(landmarkSegment.angle2d.toInt) ||
     angleRange.angle.contains(landmarkSegment.angle2d.toInt + 360)
   }
-  
   
   func landmarkInAreaSatisfy(landmarkInArea: LandmarkInArea, poseMap: PoseMap) -> Bool? {
     return landmarkInArea.satisfy(landmarkSegmentType: landmarkSegmentType, poseMap: poseMap)
   }
   
   
-  func currentRuleWarning(poseMap: PoseMap) -> String {
-    if allSatisfy(poseMap: poseMap) {
-      return ""
-    }
-    return warning
-  }
   
-  func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
-
-    var lengthXToStateSatisfy: Bool? = true
-    var lengthYToStateSatisfy: Bool? = true
-    var lengthXYToStateSatisfy: Bool? = true
-    
-    if let length = lengthXToState {
-      lengthXToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-    }
-    
-    if let length = lengthYToState {
-      lengthYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-    }
-    
-    if let length = lengthXYToState {
-      lengthXYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-    }
-    
-    // 每个规则至少要包含一个条件 且所有条件都必须满足
-//    (lengthXToStateSatisfy != nil || lengthYToStateSatisfy != nil || lengthXYToStateSatisfy != nil) &&
-    return lengthXToStateSatisfy == true && lengthYToStateSatisfy == true && lengthXYToStateSatisfy == true
-  }
-  
-  
-  func allSatisfy(poseMap: PoseMap) -> Bool {
+  func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> (Bool, Set<String>) {
+    // 单帧
     var lengthXSatisfy: Bool? = true
     var lengthYSatisfy: Bool? = true
     var lengthXYSatisfy: Bool? = true
     var angleSatisfy: Bool? = true
     var landmarkInAreaSatisfy: Bool? = true
     
+    // 多帧
+    var lengthXToStateSatisfy: Bool? = true
+    var lengthYToStateSatisfy: Bool? = true
+    var lengthXYToStateSatisfy: Bool? = true
+    
+    var warnings : Set<String> = []
+    
     if let length = lengthX {
       lengthXSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
+      if lengthXSatisfy == false {
+        warnings.insert(length.warning)
+      }
     }
     
     if let length = lengthY {
       lengthYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
+      if lengthYSatisfy == false {
+        warnings.insert(length.warning)
+      }
     }
     
     if let length = lengthXY {
       lengthXYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
+      if lengthXYSatisfy == false {
+        warnings.insert(length.warning)
+      }
     }
     
     if let angleRange = angle {
       angleSatisfy = self.angleSatisfy(angleRange: angleRange, poseMap: poseMap)
+      
+      if angleSatisfy == false {
+        warnings.insert(angleRange.warning)
+      }
     }
     
     if let landmarkInArea = landmarkInArea {
       landmarkInAreaSatisfy = self.landmarkInAreaSatisfy(landmarkInArea: landmarkInArea, poseMap: poseMap)
+      if landmarkInAreaSatisfy == false {
+        warnings.insert(landmarkInArea.warning)
+      }
     }
+    
+    
+    if let length = lengthXToState {
+      lengthXToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+      if lengthXToStateSatisfy == false {
+        warnings.insert(length.warning)
+      }
+    }
+    
+    if let length = lengthYToState {
+      lengthYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+      if lengthYToStateSatisfy == false {
+        warnings.insert(length.warning)
+      }
+    }
+    
+    if let length = lengthXYToState {
+      lengthXYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+      if lengthXYToStateSatisfy == false {
+        warnings.insert(length.warning)
+      }
+    }
+    
+    print("warning.........\(warnings)")
     
     
     
     // 每个规则至少要包含一个条件 且所有条件都必须满足
-//    (lengthX != nil || lengthY != nil || lengthXY != nil || angle != nil || landmarkInArea != nil) &&
-    return
-    lengthXSatisfy == true && lengthYSatisfy == true && lengthXYSatisfy == true && angleSatisfy == true && landmarkInAreaSatisfy == true
+    return (lengthXSatisfy == true && lengthYSatisfy == true && lengthXYSatisfy == true &&
+            angleSatisfy == true && landmarkInAreaSatisfy == true &&
+            lengthXToStateSatisfy == true && lengthYToStateSatisfy == true && lengthXYToStateSatisfy == true, warnings)
   }
   
   func lengthSatisfy(relativeDistance: RelativeLandmarkSegmentsToAxis, poseMap: PoseMap) -> Bool? {

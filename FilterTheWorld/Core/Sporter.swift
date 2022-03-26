@@ -26,8 +26,11 @@ struct Sporter: Identifiable {
         if stateTimeHistory.count > sport.scoreStateSequence.count {
           stateTimeHistory.remove(at: 0)
         }
-        
       }
+      
+      // 状态切换 取消历史提示
+      totalWarnings = []
+      
     }
   }
   
@@ -35,17 +38,19 @@ struct Sporter: Identifiable {
     didSet {
       // 计分保留最后一个状态
       stateTimeHistory = [stateTimeHistory.last!]
-      totalWarnings = []
-      cancelingWarnings = []
-      newWarnings = []
+
     }
   }
   var totalWarnings: Set<String> = []
-  // 当前帧提示，所有存留提示
-  var cancelingWarnings: Set<String> = []
-  var newWarnings: Set<String> = []
+//  // 当前帧提示，所有存留提示
+//  var cancelingWarnings: Set<String> = []
+//  var newWarnings: Set<String> = []
   
   var stateTimeHistory: [StateTime] = []
+  
+  mutating func updateWarnings(allCurrentFrameWarnings: Set<String>) {
+    totalWarnings = allCurrentFrameWarnings
+  }
   
   
   mutating func play(poseMap:PoseMap, currentTime: Double) {
@@ -53,69 +58,68 @@ struct Sporter: Identifiable {
     if let lastScoreTime = scoreTimes.last, (lastScoreTime.0 >= currentTime) {
       print("score time \(lastScoreTime.0)/\(currentTime)")
       scoreTimes.removeAll{ scoreTime in
-        
         scoreTime.0 >= currentTime
       }
-      currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: [:])
+      currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: poseMap)
     }
 
+    
+    var allCurrentFrameWarnings : Set<String> = []
     // 违规逻辑
-    sport.stateTransForm.forEach({ transform in
-//      if currentStateTime.sportState.id == transform.from {
-      if let toState = sport.findFirstSportStateByUUID(editedStateUUID: currentStateTime.sportState.id) {
-          var allCurrentFrameWarnings:Set<String> = []
-          toState.currentStateViolateWarning(poseMap: poseMap).forEach{ warns in
-            allCurrentFrameWarnings = allCurrentFrameWarnings.union(warns)
-          }
-
-          // 取消的提示
-          cancelingWarnings = totalWarnings.subtracting(allCurrentFrameWarnings)
-          // 当前新添加
-          newWarnings = allCurrentFrameWarnings.subtracting(totalWarnings)
-          
-          // 之前存在的提示
-          let oldWarnings = totalWarnings.intersection(allCurrentFrameWarnings)
-          totalWarnings = newWarnings.union(oldWarnings)
-          print("warning \(totalWarnings.count)/\(cancelingWarnings.count)")
-          totalWarnings.forEach{ string in
-            print("warning \(string)")
-            
-          }
-        
-          cancelingWarnings.forEach{ string in
-            print("warning cancel \(string)")
-          }
-        }
-//        }
-      })
-    
-    
-    // 计分逻辑
     if currentStateTime.sportState.id == SportState.startState.id {
-      sport.stateTransForm.forEach({ transform in
-        if currentStateTime.sportState.id == transform.from {
-          if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-              if toState.complexScoreRulesSatisfy(poseMap: poseMap) {
-                currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
-              }
-            }
-        }
-      })
-      return
-    }
-    
-    
-    sport.stateTransForm.forEach({ transform in
-      if currentStateTime.sportState.id == transform.from {
-        if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-          if toState.complexScoreRulesSatisfy(poseMap: poseMap) && toState.complexScoreRulesMultiFrameSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap) {
-            currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
-          }
+      let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+      if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
+      {
+        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        if !satisfy.0 {
+          allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//          updateWarnings(allCurrentFrameWarnings: satisfy.1)
         }
       }
-    })
+    } else {
+      // 之后的状态转换
+      let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+      if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        if !satisfy.0 {
+          allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//            updateWarnings(allCurrentFrameWarnings: satisfy.1)
+        }
+      }
+    }
+
+    // 计分逻辑 当前状态为开始状态 使用开始状态检查
+    if currentStateTime.sportState.id == SportState.startState.id {
+      let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+      if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from),
+         let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to)
+      {
+        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        if satisfy.0 {
+            currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+        } else {
+          allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//          updateWarnings(allCurrentFrameWarnings: satisfy.1)
+        }
+      }
+
+    } else {
+      // 之后的状态转换
+      let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+      if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        if satisfy.0  {
+          currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+        } else {
+          allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//            updateWarnings(allCurrentFrameWarnings: satisfy.1)
+        }
+      }
+    }
     
     
+    allCurrentFrameWarnings.remove("")
+    updateWarnings(allCurrentFrameWarnings: allCurrentFrameWarnings)
     // 长度等于计数序列开始判断是否满足计分条件
     if stateTimeHistory.count == sport.scoreStateSequence.count {
       let allStateSatisfy = sport.scoreStateSequence.indices.allSatisfy{ index in

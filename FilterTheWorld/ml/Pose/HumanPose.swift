@@ -88,6 +88,27 @@ extension HumanPose {
   }
   
   
+  mutating func toggle() {
+    landmarkSegments.indices.forEach { index in
+      landmarkSegments[index].selected.toggle()
+      
+    }
+  }
+  
+  mutating func noselected() {
+    landmarkSegments.indices.forEach { index in
+      landmarkSegments[index].selected = false
+      
+    }
+  }
+  
+  var isSelected: Bool {
+    landmarkSegments.contains{ landmarkSegment in
+      landmarkSegment.selected
+    }
+  }
+  
+  
   mutating func updateSegmentAngleRange(selectedlandmarkSegment: LandmarkSegment) {
     landmarkSegments[
       landmarkSegments.firstIndex{ landmarkSegment in
