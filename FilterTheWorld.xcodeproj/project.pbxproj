@@ -14,6 +14,9 @@
 		950F555727EB04AC00480F17 /* yolov5-pipeline.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 950F555627EB04AC00480F17 /* yolov5-pipeline.mlmodel */; };
 		950F555927EB059D00480F17 /* IMG_1389.MOV in Resources */ = {isa = PBXBuildFile; fileRef = 950F555827EB059D00480F17 /* IMG_1389.MOV */; };
 		950F555B27EDDD8E00480F17 /* ObjecToLandmarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950F555A27EDDD8C00480F17 /* ObjecToLandmarkView.swift */; };
+		950F555D27EEE71900480F17 /* ObservableState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950F555C27EEE71900480F17 /* ObservableState.swift */; };
+		950F556027F034CB00480F17 /* ImageLabelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950F555F27F034C900480F17 /* ImageLabelView.swift */; };
+		950F556227F149B100480F17 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950F556127F149B100480F17 /* Annotation.swift */; };
 		95107FF427D73FB600C9C83D /* RoundedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95107FF327D73FB600C9C83D /* RoundedString.swift */; };
 		95171C9727CE140B0051249D /* Sporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95171C9627CE140B0051249D /* Sporter.swift */; };
 		9518D31427799B0D0083C215 /* robot.scn in Resources */ = {isa = PBXBuildFile; fileRef = 9518D31627799B0D0083C215 /* robot.scn */; };
@@ -39,6 +42,7 @@
 		95A3E60227E2DD610005E364 /* WarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A3E60127E2DD610005E364 /* WarningView.swift */; };
 		95A3E60427E2DDEC0005E364 /* Warning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A3E60327E2DDEC0005E364 /* Warning.swift */; };
 		95AA02CA277959D300C6E340 /* robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95AA02CC277959D300C6E340 /* robot.usdz */; };
+		95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B7627327F18C45000DE18C /* AnnotationManager.swift */; };
 		95BF354927A141DC006F5D80 /* tiaosheng_1.MOV in Resources */ = {isa = PBXBuildFile; fileRef = 95BF354727A141DC006F5D80 /* tiaosheng_1.MOV */; };
 		95BF354B27A16D81006F5D80 /* VideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BF354A27A16D81006F5D80 /* VideoManager.swift */; };
 		95BF354D27A16F79006F5D80 /* FramesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BF354C27A16F79006F5D80 /* FramesView.swift */; };
@@ -132,6 +136,9 @@
 		950F555627EB04AC00480F17 /* yolov5-pipeline.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "yolov5-pipeline.mlmodel"; sourceTree = "<group>"; };
 		950F555827EB059D00480F17 /* IMG_1389.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = IMG_1389.MOV; sourceTree = "<group>"; };
 		950F555A27EDDD8C00480F17 /* ObjecToLandmarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjecToLandmarkView.swift; sourceTree = "<group>"; };
+		950F555C27EEE71900480F17 /* ObservableState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableState.swift; sourceTree = "<group>"; };
+		950F555F27F034C900480F17 /* ImageLabelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLabelView.swift; sourceTree = "<group>"; };
+		950F556127F149B100480F17 /* Annotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Annotation.swift; sourceTree = "<group>"; };
 		95107FF327D73FB600C9C83D /* RoundedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedString.swift; sourceTree = "<group>"; };
 		95171C9627CE140B0051249D /* Sporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sporter.swift; sourceTree = "<group>"; };
 		9518D31227799AD80083C215 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = en; path = en.lproj/robot.usdz; sourceTree = "<group>"; };
@@ -158,6 +165,7 @@
 		959A61E527D610E600B2818B /* LandmarkInArea+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LandmarkInArea+Extension.swift"; sourceTree = "<group>"; };
 		95A3E60127E2DD610005E364 /* WarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningView.swift; sourceTree = "<group>"; };
 		95A3E60327E2DDEC0005E364 /* Warning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warning.swift; sourceTree = "<group>"; };
+		95B7627327F18C45000DE18C /* AnnotationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationManager.swift; sourceTree = "<group>"; };
 		95BF354727A141DC006F5D80 /* tiaosheng_1.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = tiaosheng_1.MOV; sourceTree = "<group>"; };
 		95BF354A27A16D81006F5D80 /* VideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
 		95BF354C27A16F79006F5D80 /* FramesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FramesView.swift; sourceTree = "<group>"; };
@@ -310,6 +318,14 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		950F555E27F0349C00480F17 /* LabelImage */ = {
+			isa = PBXGroup;
+			children = (
+				950F555F27F034C900480F17 /* ImageLabelView.swift */,
+			);
+			path = LabelImage;
+			sourceTree = "<group>";
+		};
 		951EEE6427648FA700740407 /* Face */ = {
 			isa = PBXGroup;
 			children = (
@@ -347,6 +363,7 @@
 				95171C9627CE140B0051249D /* Sporter.swift */,
 				95107FF327D73FB600C9C83D /* RoundedString.swift */,
 				95A3E60327E2DDEC0005E364 /* Warning.swift */,
+				950F556127F149B100480F17 /* Annotation.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -426,6 +443,7 @@
 		95E79E3627A13D3B00AC36E1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				950F555E27F0349C00480F17 /* LabelImage */,
 				95A3E60027E2DCDB0005E364 /* Sporter */,
 				9532A74427C113950071AF82 /* Tests */,
 				95E79E3727A13D3B00AC36E1 /* VideoFramePlayer.swift */,
@@ -512,6 +530,8 @@
 				95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */,
 				95E79E3127A13D0600AC36E1 /* SportsManager.swift */,
 				95878ECC27DEDD8300F31A9B /* SportsGround.swift */,
+				950F555C27EEE71900480F17 /* ObservableState.swift */,
+				95B7627327F18C45000DE18C /* AnnotationManager.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -741,12 +761,14 @@
 				95E79E6427A13D3B00AC36E1 /* FacesView.swift in Sources */,
 				95E79E2927A13CED00AC36E1 /* CGImage+Extension.swift in Sources */,
 				95BF354B27A16D81006F5D80 /* VideoManager.swift in Sources */,
+				950F556027F034CB00480F17 /* ImageLabelView.swift in Sources */,
 				95E79E2627A13CED00AC36E1 /* PerspectiveTransform+Extension.swift in Sources */,
 				95E79E3427A13D0600AC36E1 /* LineRecognizer.swift in Sources */,
 				95E79E7627A13D3B00AC36E1 /* SingleHumanPoseView.swift in Sources */,
 				95E79E5E27A13D3B00AC36E1 /* ImageAnalysisView.swift in Sources */,
 				95E79E2B27A13CED00AC36E1 /* UIImage+Extension.swift in Sources */,
 				95E79E6927A13D3B00AC36E1 /* QuadrAngleView.swift in Sources */,
+				950F556227F149B100480F17 /* Annotation.swift in Sources */,
 				95878ECD27DEDD8300F31A9B /* SportsGround.swift in Sources */,
 				95E79E7427A13D3B00AC36E1 /* NewSportView.swift in Sources */,
 				95E79E7C27A13D3B00AC36E1 /* Main.swift in Sources */,
@@ -769,11 +791,13 @@
 				95E79E7227A13D3B00AC36E1 /* SportManagerView.swift in Sources */,
 				95E79E0327A13C3000AC36E1 /* Card.swift in Sources */,
 				95E79E3527A13D0600AC36E1 /* SportsManager.swift in Sources */,
+				95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */,
 				95E79E6827A13D3B00AC36E1 /* TestView.swift in Sources */,
 				95E79DF627A13AEC00AC36E1 /* SimpleRule.swift in Sources */,
 				95E79E7827A13D3B00AC36E1 /* DirectionView.swift in Sources */,
 				95E79DF727A13AEC00AC36E1 /* SportState.swift in Sources */,
 				95E79E7B27A13D3B00AC36E1 /* VideoRecordView.swift in Sources */,
+				950F555D27EEE71900480F17 /* ObservableState.swift in Sources */,
 				9F69EE4C26942A8A00746CD7 /* CameraError.swift in Sources */,
 				95E79E6E27A13D3B00AC36E1 /* StateRulessSetupView.swift in Sources */,
 				958D17DE27BDEF1F002CC4B5 /* ObjectsView.swift in Sources */,

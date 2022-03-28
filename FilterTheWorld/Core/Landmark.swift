@@ -1,7 +1,10 @@
 import SwiftUI
 
 
-enum LandmarkType: String, Equatable, Codable {
+enum LandmarkType: String, Identifiable, Equatable, Codable, CaseIterable {
+  var id: String {
+    self.rawValue
+  }
   case Nose = "Nose" //鼻子
 
   case LeftEyeOuter = "LeftEyeOuter" //左眼外
@@ -48,6 +51,8 @@ enum LandmarkType: String, Equatable, Codable {
   
   case LeftToe = "LeftToe" //左脚趾
   case RightToe = "RightToe" //右脚趾
+  
+  case None = "None" //填充值
   
   
   var chineseName:String {
@@ -118,6 +123,8 @@ enum LandmarkType: String, Equatable, Codable {
       return "左脚拇指"
     case .RightToe:
       return "右脚拇指"
+    case .None:
+      return "占位"
     }
   }
   
@@ -125,7 +132,10 @@ enum LandmarkType: String, Equatable, Codable {
 
 
 
-struct Landmark: Equatable, Hashable, Codable {
+struct Landmark: Equatable, Identifiable, Hashable, Codable {
+  var id: String {
+    landmarkType.id
+  }
   let position: Point3D
   let landmarkType: LandmarkType
 }

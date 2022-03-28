@@ -48,21 +48,24 @@ struct Sporter: Identifiable {
   
   var stateTimeHistory: [StateTime] = []
   
+  var lastTime: Double = 0
+  
   mutating func updateWarnings(allCurrentFrameWarnings: Set<String>) {
     totalWarnings = allCurrentFrameWarnings
   }
   
   
-  mutating func play(poseMap:PoseMap, currentTime: Double) {
+  mutating func play(poseMap:PoseMap, object: Observation?, currentTime: Double) {
     
-    if let lastScoreTime = scoreTimes.last, (lastScoreTime.0 >= currentTime) {
-      print("score time \(lastScoreTime.0)/\(currentTime)")
-      scoreTimes.removeAll{ scoreTime in
-        scoreTime.0 >= currentTime
-      }
+    // 3秒没切换状态 则重置状态为开始
+    if currentTime - currentStateTime.time > 3 {
       currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: poseMap)
     }
-
+    
+    // 如果返回顺序错误 则丢弃
+    if lastTime > currentTime {
+      return
+    }
     
     var allCurrentFrameWarnings : Set<String> = []
     // 违规逻辑
@@ -70,7 +73,7 @@ struct Sporter: Identifiable {
       let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
       if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
       {
-        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
         if !satisfy.0 {
           allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
 //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
@@ -80,7 +83,7 @@ struct Sporter: Identifiable {
       // 之后的状态转换
       let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
       if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
         if !satisfy.0 {
           allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
 //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
@@ -94,7 +97,7 @@ struct Sporter: Identifiable {
       if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from),
          let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to)
       {
-        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
         if satisfy.0 {
             currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
         } else {
@@ -107,7 +110,7 @@ struct Sporter: Identifiable {
       // 之后的状态转换
       let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
       if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
         if satisfy.0  {
           currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
         } else {
@@ -156,7 +159,9 @@ struct Sporter: Identifiable {
     
     
     
-    
+    if currentTime > lastTime {
+      lastTime = currentTime
+    }
     
   }
   

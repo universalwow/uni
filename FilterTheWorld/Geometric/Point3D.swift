@@ -21,12 +21,26 @@ extension Point3D {
   var vector2d: Vector2D {
     Vector2D(x: x, y: y)
   }
+  
+  var point2D: Point2D {
+    Point2D(x: x, y: y)
+  }
+  
 }
 
 extension Point2D {
   var cgPoint: CGPoint {
     CGPoint(x: self.x, y: self.y)
   }
+  
+  var vector2d: Vector2D {
+    Vector2D(x: x, y: y)
+  }
+  
+  var point3D: Point3D {
+    Point3D(x: x, y: y, z: 0)
+  }
+
   
   var roundedString: String {
     "\(self.x.roundedString)/\(self.y.roundedString)"

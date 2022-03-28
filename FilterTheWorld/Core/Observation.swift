@@ -3,7 +3,6 @@
 import Foundation
 import SwiftUI
 
-
 enum ObjectPosition: String, Codable, Identifiable, CaseIterable {
   var id: String {
     self.rawValue
@@ -50,15 +49,16 @@ extension CGRect {
 
 
 
-struct Observation: Identifiable, Codable {
+struct Observation: Identifiable, Codable, Equatable {
+  var id: String
   var label: String
   var confidence: String
   var rect: CGRect
   var color = Color.blue
   var selected = false
-  var id: UUID = UUID()
   
-  init(label: String, confidence: String, rect: CGRect) {
+  init(id: String, label: String, confidence: String, rect: CGRect) {
+    self.id = id
     self.label = label
     self.confidence = confidence
     self.rect = rect

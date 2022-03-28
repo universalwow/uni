@@ -164,7 +164,7 @@ extension SportState {
     }
   }
   
-  func complexScoreRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap) -> (Bool, Set<String>) {
+  func complexScoreRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?) -> (Bool, Set<String>) {
     
     var rules : [ComplexRules] = []
     switch ruleType {
@@ -178,7 +178,7 @@ extension SportState {
         // 每一组条件全部满足
   //      (!complexRules.rules.isEmpty) &&
       let rulesSatisfy = complexRules.rules.reduce((true, Set<String>()), { satisfy, complexRule in
-        let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
 //        print("rule satisfy ... \(ruleSatisfy)")
         return (satisfy.0 && ruleSatisfy.0, satisfy.1.union(ruleSatisfy.1))
       })

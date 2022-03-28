@@ -217,7 +217,7 @@ class ContentViewModel: ObservableObject {
         }
         
         DispatchQueue.global(qos: .userInteractive).async {
-          self.objectDetectorYOLO?.detectObject(in: buffer!, imageSize: CGSize(width: image.width, height: image.height))
+          self.objectDetectorYOLO?.detectObject(in: buffer!, imageSize: CGSize(width: image.width, height: image.height),currentTime: 0)
         }
         
 //        let uiImage = UIImage(cgImage: image)

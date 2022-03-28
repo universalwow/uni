@@ -105,7 +105,7 @@ class PoseRecognizer: ObservableObject {
                                                          y: pose[landmarkIndex].position.y,
                                                          z: pose[landmarkIndex].position.z),
                                        landmarkType: LandmarkType(rawValue: pose[landmarkIndex].type.rawValue.landmarkTypeRawValueMirror)!)
-            newPose.addElement(landmark: newLandmark)
+            newPose.upsertLandmark(landmark: newLandmark)
           }
           newPose.initLandmarkSegments()
           detectedHumanPoses.append(newPose)

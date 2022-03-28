@@ -13,17 +13,50 @@ import SwiftUI
 
 typealias PoseMap = [LandmarkType: Point3D]
 
-struct HumanPose:Identifiable {
+struct HumanPose:Identifiable, Equatable {
   var id: Int
   //关节点
   private(set) var landmarks:[Landmark] = []
   private(set) var landmarkSegments :[LandmarkSegment] = []
-  mutating func addElement(landmark:Landmark) {
-    self.landmarks.append(landmark)
+  
+  mutating func upsertLandmark(landmark:Landmark) {
+    if let index = firstIndexOf(landmark: landmark) {
+      self.landmarks[index] = landmark
+    }else {
+      self.landmarks.append(landmark)
+    }
+  }
+  
+  mutating func deleteLandmark(landmarkType: LandmarkType) {
+    if let index = firstIndexOf(landmarkType: landmarkType) {
+      self.landmarks.remove(at: index)
+    }
+  }
+  
+  func firstIndexOf(landmarkType: LandmarkType) -> Int? {
+    self.landmarks.firstIndex { land in
+      land.id == landmarkType.id
+    }
+  }
+  
+  
+  func firstIndexOf(landmark: Landmark) -> Int? {
+    self.landmarks.firstIndex { land in
+      land.id == landmark.id
+    }
   }
 }
 
+
+
 extension HumanPose {
+  
+  func landmarkMarked(landmarkType: LandmarkType) -> Bool {
+    landmarks.contains { landmark in
+      landmark.id == landmarkType.id
+    }
+  }
+  
   var landmarksMaps: PoseMap {
     landmarks.reduce(PoseMap()) { (dict, landmark) -> PoseMap in
         var dict = dict

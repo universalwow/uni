@@ -21,10 +21,10 @@ class SportsGround: ObservableObject {
     sporters = [Sporter(name: "Uni", sport: sport)]
   }
   
-  func play(poseMap: PoseMap, currentTime: Double) {
+  func play(poseMap: PoseMap, object: Observation?, currentTime: Double) {
     
     sporters.indices.forEach { sporterIndex in
-      sporters[sporterIndex].play(poseMap: poseMap, currentTime: currentTime)
+      sporters[sporterIndex].play(poseMap: poseMap, object: object, currentTime: currentTime)
       // 该帧到来的提醒
       // 1. 如果该提醒不存在 将其加入map
       // 2. 如果该提醒存在 则不管

@@ -183,4 +183,8 @@ extension Vector2D {
     Vector2D(x: x, y: -1 * y)
   }
   
+  var cgPoint: CGPoint {
+    CGPoint(x: self.x, y: self.y)
+  }
+  
 }

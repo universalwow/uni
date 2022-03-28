@@ -104,6 +104,14 @@ extension LandmarkSegment {
     abs(startLandmark.position.y - endLandmark.position.y)
   }
   
+  var distanceXWithDirection:Double {
+    startLandmark.position.x - endLandmark.position.x
+  }
+  
+  var distanceYWithDirection:Double {
+    startLandmark.position.y - endLandmark.position.y
+  }
+  
   var distance:Double {
     endLandmark.position.vector2d.distance(to: startLandmark.position.vector2d)
   }

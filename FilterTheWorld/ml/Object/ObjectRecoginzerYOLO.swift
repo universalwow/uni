@@ -46,9 +46,9 @@ class ObjectRecoginzerYOLO: ObservableObject {
       do {
           let visionModel = try VNCoreMLModel(for: MLModel(contentsOf: modelURL))
           let objectRecognition = VNCoreMLRequest(model: visionModel, completionHandler: { (request, error) in
-            DispatchQueue.main.async(execute: { [self] in
+            DispatchQueue.main.async(execute: { [weak self] in
               if let results = request.results {
-                processVisionRequestResults(results: results)
+                self?.processVisionRequestResults(results: results)
               }
               })
           })
@@ -89,6 +89,7 @@ class ObjectRecoginzerYOLO: ObservableObject {
 
         observations.append(
           Observation(
+            id: "\(topLabelObservation.identifier) - \(observations.count)",
             label:topLabelObservation.identifier,
             confidence: topLabelObservation.confidence.roundedString(number: 2),
             rect:newBound
@@ -199,12 +200,13 @@ class ObjectRecoginzerYOLO: ObservableObject {
   }
   
   
-  func detectObject(in image: CVPixelBuffer, imageSize: CGSize) {
+  func detectObject(in image: CVPixelBuffer, imageSize: CGSize, currentTime: Double) {
     self.imageSize = imageSize
     let imageRequestHandler = VNImageRequestHandler(
       cvPixelBuffer: image,
       orientation: .up,
       options: [:])
+    
     do {
         try imageRequestHandler.perform(self.requests)
     } catch {

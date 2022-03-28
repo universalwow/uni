@@ -26,6 +26,7 @@ class ImageAnalysis : ObservableObject {
   @Published var detectedObjects:[CGRect]?
   @Published var modelInited = false
   @Published var sportData:SportDataShow = SportDataShow()
+  @Published var objects : [Observation] = []
   
   @Published var cachedFrames:[(Double, UIImage)] = []
   var currentFrame:UIImage?
@@ -35,6 +36,8 @@ class ImageAnalysis : ObservableObject {
   private(set) var poseRecognizer: PoseRecognizer?
 //  private(set) var objectRecognizer: ObjectRecognizer?
   private(set) var objectDetectorYOLO: ObjectRecoginzerYOLO?
+  
+  
 
 
   init() {
@@ -54,7 +57,11 @@ class ImageAnalysis : ObservableObject {
   }
   
   func setupSubscriptions() {
-
+    
+    
+    objectDetectorYOLO?.$results.receive(on: RunLoop.main)
+      .assign(to: &$objects)
+    
     poseRecognizer?.$frameData
       .receive(on: RunLoop.main)
       .map { frameData in
@@ -78,6 +85,9 @@ class ImageAnalysis : ObservableObject {
         
       }
       .assign(to: &$sportData)
+    
+
+    
   }
     
   
@@ -89,7 +99,7 @@ class ImageAnalysis : ObservableObject {
       
       let buffer = image.scalePreservingAspectRatio(targetSize: CGSize(width: 640, height: 640)).toCVPixelBuffer()
       
-      self.objectDetectorYOLO?.detectObject(in: buffer!, imageSize: image.size)
+      self.objectDetectorYOLO?.detectObject(in: buffer!, imageSize: image.size, currentTime: currentTime)
       self.findPoses(image: visionImage, request: request, currentTime: currentTime)
       
     }
