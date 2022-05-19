@@ -1,4 +1,4 @@
-/// Copyright (c) 2021 Razeware LLC
+/// Copyright (c) 2022 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -32,18 +32,14 @@
 
 import SwiftUI
 
-@main
-struct AppMain: App {
-  @StateObject var sportManager = SportsManager()
-  @StateObject var imageAnalysor = ImageAnalysis()
-  
-//  let test = TestPublishedStruct()
-  var body: some Scene {
-    WindowGroup {
-      ContentView()
-//        .environmentObject(sportManager)
-//        .environmentObject(test)
-//        .environmentObject(imageAnalysor)
+struct ContentView: View {
+    var body: some View {
+        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
-  }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
