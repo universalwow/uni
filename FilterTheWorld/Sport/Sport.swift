@@ -41,6 +41,8 @@ struct Sport: Identifiable, Hashable, Codable {
 
 extension Sport {
   
+  static var newSport: Sport = Sport(name: "New")
+  
   var sportFileName : String {
     "\(self.id).json"
   }
@@ -141,6 +143,7 @@ extension Sport {
       transform.to == toSportState.id
       
     }) {
+        print("addStateTransform \(fromSportState.name) -> \(toSportState.name)")
       stateTransForm.append(SportStateTransform(from: fromSportState.id, to: toSportState.id))
     }
   }
@@ -160,6 +163,10 @@ extension Sport {
   mutating func deleteSportStateScoreSequence() {
     scoreStateSequence.removeAll()
   }
+    
+    mutating func deleteSportStateFromScoreSequence(stateIndex: Int) {
+        scoreStateSequence.remove(at: stateIndex)
+    }
   
   
   mutating private func updateScoreStateSequence() {

@@ -22,11 +22,11 @@ extension CGPoint {
 
   }
   
-  func viewPointToImagePoint(imageSize: CGSize, viewSize: CGSize) -> CGPoint {
-    let scale = viewSize.width / imageSize.width
-    print("viewPointToImagePoint--------------- \((self.vector2d).cgPoint.roundedString) --- \(viewSize.roundedString)")
-    return (self.vector2d / scale).cgPoint
-  }
+//  func viewPointToImagePoint(imageSize: CGSize, viewSize: CGSize) -> CGPoint {
+//    let scale = viewSize.width / imageSize.width
+//    print("viewPointToImagePoint--------------- \((self.vector2d).cgPoint.roundedString) --- \(viewSize.roundedString)")
+//    return (self.vector2d / scale).cgPoint
+//  }
   
   func viewPointToImagePoint(imageOffset: CGSize, imageSize: CGSize,
                              viewSize: CGSize, scale: CGFloat) -> CGPoint {

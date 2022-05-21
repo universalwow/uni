@@ -41,7 +41,7 @@ struct AppMain: App {
   var body: some Scene {
     WindowGroup {
       ContentView()
-//        .environmentObject(sportManager)
+        .environmentObject(sportManager)
 //        .environmentObject(test)
 //        .environmentObject(imageAnalysor)
     }

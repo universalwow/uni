@@ -33,13 +33,25 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+  var body: some View {
+    TabView {
+      VStack {
+        SportsView().padding()
+      }
+      .tabItem{
+        Text("Sports")
+      }
+      VStack {
+        LoginView()
+      }.tabItem{
+        Text("Login")
+      }
     }
+  }
 }
 
 struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+  static var previews: some View {
+    ContentView()
+  }
 }
