@@ -5,15 +5,18 @@ import SwiftUI
 struct SportView: View {
     
     var sport:Sport
-    @State var sportName: String = ""
-    @State var sportDescription:String = ""
-    @State var stateName:String = ""
-    @State var stateDescription:String = ""
+    @State var sportName = ""
+    @State var sportDescription = ""
+    @State var stateName = ""
+    @State var stateDescription = ""
     
-    @State var fromState: SportState = SportState.startState
-    @State var toState:SportState = SportState.endState
+    @State var fromState = SportState.startState
+    @State var toState = SportState.endState
     
-    @State var scoreState: SportState = SportState.startState
+    @State var scoreState = SportState.startState
+    
+    @State var keyFrameFlag = false
+    @State var editRuleFlag = false
     
     
     @EnvironmentObject var sportManager: SportsManager
@@ -35,7 +38,7 @@ struct SportView: View {
             }) {
                 Text("保存名称/简介")
             }
-        }
+        }.padding()
     }
     
     var stateMessage: some View {
@@ -65,17 +68,35 @@ struct SportView: View {
                 }
                 
                 ForEach(sport.allStates) {state in
+                    Divider()
                     HStack {
                         Text(state.name)
                         Spacer()
+                        
+                        Button(action: {
+                            
+                            sportManager.setCurrentSportState(editedSport: sport, editedSportState: state)
+                            self.keyFrameFlag = true
+                            
+                        }) {
+                            Text("添加关键帧")
+                        }
+                        
+                        Button(action: {
+                            
+                            sportManager.setCurrentSportState(editedSport: sport, editedSportState: state)
+                            self.editRuleFlag = true
+                            
+                        }) {
+                            Text("添加规则")
+                        }
                         Button(action: {
                             sportManager.deleteSportState(editedSport: sport, editedSportState: state)
                             
                         }) {
                             Text("删除")
                         }
-                    }
-                    
+                    }.padding([.vertical])
                 }
                 Divider()
                 HStack{
@@ -149,13 +170,8 @@ struct SportView: View {
                     }
                     
                 }
-                
-                
-                
-                
-                
             }
-        }
+        }.padding()
         
     }
     
@@ -167,6 +183,16 @@ struct SportView: View {
                 stateMessage
                 Spacer()
             }
+        }
+        .sheet(isPresented: $editRuleFlag, onDismiss: {
+            
+        }) {
+            RuleView()
+        }
+        .sheet(isPresented: $keyFrameFlag, onDismiss: {
+            
+        }) {
+            FramesView()
         }
         
         .task {

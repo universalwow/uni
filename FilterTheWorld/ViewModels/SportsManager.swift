@@ -164,6 +164,7 @@ extension SportsManager {
     //MARK: sport state
     
     func setCurrentSportState(editedSport : Sport, editedSportState: SportState) {
+        currentSportId = editedSport.id
         currentStateId = editedSportState.id
     }
     

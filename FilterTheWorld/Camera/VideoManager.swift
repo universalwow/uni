@@ -5,85 +5,93 @@ import SwiftUI
 
 
 class VideoManager: ObservableObject {
-  
-  var videoUrl:URL? = Bundle.main.url(forResource: "IMG_1389", withExtension: "MOV") // use your own url
-  
-  @Published var frame: CGImage?
-  @Published var frames: [CGImage] = [] {
-    didSet {
-      if frames.count > 0 && frame == nil {
-        frame = frames[0]
-      }
-    }
-  }
-  
-  private var generator:AVAssetImageGenerator!
-  private var asset: AVURLAsset!
-  init() {
-    initAssetGenerator()
-  }
-  
-  
-  private func initAssetGenerator() {
-    if let videoUrl = videoUrl {
-        asset = AVURLAsset(url: videoUrl, options: nil)
-        generator = AVAssetImageGenerator(asset: asset)
-        generator.requestedTimeToleranceAfter = .zero;
-        generator.requestedTimeToleranceBefore = .zero;
-    }
-  }
-  
-  func getFrame(time:Double) {
-    if let generator = generator {
-      let currentTime = Int64(time * Double(asset.duration.timescale))
-      let cmTime =
-        CMTimeMake(value: currentTime, timescale: Int32(asset.duration.timescale))
-      generator.generateCGImagesAsynchronously(forTimes: [cmTime as NSValue], completionHandler: {requestedTime, image, actualTime, result, error in
-        
-          DispatchQueue.main.async {
-              if let image = image {
-                self.frame = image
-              }
-          }
-      })
-    }
-  }
-  
-  func generatorFrames(videoUrl: URL?, framePerSecond: Double) {
-    if let videoUrl = videoUrl {
-      self.videoUrl = videoUrl
-      self.initAssetGenerator()
+    
+    
+    
+    var videoUrl:URL? =
+//    URL(string: "file:///private/var/mobile/Containers/Data/Application/92CD8861-62C0-44D4-B7CF-A6A2BB61FE1C/tmp/.com.apple.Foundation.NSItemProvider.NUNjl7/IMG_1732.mov")
+    Bundle.main.url(forResource: "IMG_1389", withExtension: "MOV") // use your own url
+    
+    @Published var frame: CGImage?
+    @Published var frames: [CGImage] = [] {
+        didSet {
+            if frames.count > 0 && frame == nil {
+                frame = frames[0]
+            }
+        }
     }
     
-    if let generator = generator {
-  
-      var frameForTimes = [NSValue]()
-      let videoDuration = asset.duration
-      let sampleCounts = (framePerSecond * videoDuration.seconds).toInt
-      let totalTimeLength = Int(videoDuration.seconds * Double(videoDuration.timescale))
-      let step = totalTimeLength / sampleCounts
-      self.frames = []
-      self.frame = nil
-      for i in 0 ..< sampleCounts {
-        let cmTime =
-          CMTimeMake(value: Int64(i * step), timescale: Int32(videoDuration.timescale))
-        frameForTimes.append(NSValue(time: cmTime))
-      }
+    private var generator:AVAssetImageGenerator!
+    private var asset: AVURLAsset!
+    init() {
+        initAssetGenerator()
+    }
+    
+    
+    private func initAssetGenerator() {
+        if let videoUrl = videoUrl {
+            
+            asset = AVURLAsset(url: videoUrl)
+            print( "file exit \(FileManager.default.fileExists(atPath: videoUrl.path))")
+
+            print("initAssetGenerator \(videoUrl) \n \(asset.duration.seconds)")
+            generator = AVAssetImageGenerator(asset: asset)
+            generator.requestedTimeToleranceAfter = .zero;
+            generator.requestedTimeToleranceBefore = .zero;
+        }
+    }
+    
+    func getFrame(time:Double) {
+        if let generator = generator {
+            let currentTime = Int64(time * Double(asset.duration.timescale))
+            let cmTime =
+            CMTimeMake(value: currentTime, timescale: Int32(asset.duration.timescale))
+            generator.generateCGImagesAsynchronously(forTimes: [cmTime as NSValue], completionHandler: {requestedTime, image, actualTime, result, error in
+                
+                DispatchQueue.main.async {
+                    if let image = image {
+                        self.frame = image
+                    }
+                }
+            })
+        }
+    }
+    
+    func generatorFrames(videoUrl: URL?, framePerSecond: Double) {
+        if let videoUrl = videoUrl {
+            self.videoUrl = videoUrl
+            self.initAssetGenerator()
+        }
         
-      generator.generateCGImagesAsynchronously(forTimes: frameForTimes, completionHandler: {requestedTime, image, actualTime, result, error in
-          
-          DispatchQueue.main.async {
-              if let image = image {
-              print("""
+        if let generator = generator {
+            
+            var frameForTimes = [NSValue]()
+            let videoDuration = asset.duration
+            let sampleCounts = (framePerSecond * videoDuration.seconds).toInt
+            let totalTimeLength = Int(videoDuration.seconds * Double(videoDuration.timescale))
+            let step = totalTimeLength / sampleCounts
+            self.frames = []
+            self.frame = nil
+            for i in 0 ..< sampleCounts {
+                let cmTime =
+                CMTimeMake(value: Int64(i * step), timescale: Int32(videoDuration.timescale))
+                frameForTimes.append(NSValue(time: cmTime))
+            }
+            
+            generator.generateCGImagesAsynchronously(forTimes: frameForTimes, completionHandler: {requestedTime, image, actualTime, result, error in
+                
+                DispatchQueue.main.async {
+                    if let image = image {
+                        print("""
                     frame size \(image.width)/\(image.height)/\(UIImage(cgImage:image).imageOrientation.rawValue)
               """)
-                self.frames.append(image)
-              }
-          }
-      })
-      
+                        self.frames.append(image)
+                    }
+                }
+            })
+            
+        }
+        
     }
     
-  }
-  
 }
