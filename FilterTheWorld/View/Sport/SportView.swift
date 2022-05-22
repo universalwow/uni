@@ -176,7 +176,7 @@ struct SportView: View {
     }
     
     var body: some View {
-        ScrollView{
+        UniScrollView{
             VStack {
                 basicMessage
                 Divider()

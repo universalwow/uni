@@ -85,9 +85,6 @@ class ImageAnalysis : ObservableObject {
         
       }
       .assign(to: &$sportData)
-    
-
-    
   }
     
   
@@ -180,6 +177,12 @@ extension ImageAnalysis {
   func selectHumanPose(selectedHumanPose: HumanPose) {
     self.sportData.frameData.selectePose(pose: selectedHumanPose)
   }
+    
+    func selectedHumanPose() -> HumanPose? {
+        self.sportData.frameData.poses.first { pose in
+            pose.isSelected
+        }
+    }
   
   func selectLandmarkSegment(selectedHumanPose: HumanPose, selectedlandmarkSegment: LandmarkSegment) {
     
@@ -192,8 +195,6 @@ extension ImageAnalysis {
     self.sportData.frameData.poses[(self.sportData.frameData.poses.firstIndex { humanPose in
       humanPose.id == selectedHumanPose.id
     })!].updateSegmentAngleRange(selectedlandmarkSegment: selectedlandmarkSegment)
-    
-    
   }
 }
 

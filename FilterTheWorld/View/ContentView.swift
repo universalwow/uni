@@ -33,25 +33,27 @@
 import SwiftUI
 
 struct ContentView: View {
-  var body: some View {
-    TabView {
-      VStack {
-        SportsView().padding()
-      }
-      .tabItem{
-        Text("Sports")
-      }
-      VStack {
-        LoginView()
-      }.tabItem{
-        Text("Login")
-      }
+    
+    
+    var body: some View {
+        TabView {
+            VStack {
+                SportsView().padding()
+            }
+            .tabItem{
+                Text("Sports")
+            }
+            VStack {
+                LoginView()
+            }.tabItem{
+                Text("Login")
+            }
+        }
     }
-  }
 }
 
 struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView()
-  }
+    static var previews: some View {
+        ContentView()
+    }
 }

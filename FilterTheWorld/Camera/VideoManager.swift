@@ -8,9 +8,7 @@ class VideoManager: ObservableObject {
     
     
     
-    var videoUrl:URL? =
-//    URL(string: "file:///private/var/mobile/Containers/Data/Application/92CD8861-62C0-44D4-B7CF-A6A2BB61FE1C/tmp/.com.apple.Foundation.NSItemProvider.NUNjl7/IMG_1732.mov")
-    Bundle.main.url(forResource: "IMG_1389", withExtension: "MOV") // use your own url
+    var videoUrl:URL?
     
     @Published var frame: CGImage?
     @Published var frames: [CGImage] = [] {
@@ -20,6 +18,7 @@ class VideoManager: ObservableObject {
             }
         }
     }
+    
     
     private var generator:AVAssetImageGenerator!
     private var asset: AVURLAsset!

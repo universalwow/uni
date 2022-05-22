@@ -20,7 +20,7 @@ struct FrameShowData {
       let humanPose = poses[index]
       if humanPose.id == pose.id {
         poses[index].toggle()
-      }else {
+      } else {
         poses[index].noselected()
       }
       

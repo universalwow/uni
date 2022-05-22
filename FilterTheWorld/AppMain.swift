@@ -43,7 +43,7 @@ struct AppMain: App {
       ContentView()
         .environmentObject(sportManager)
 //        .environmentObject(test)
-//        .environmentObject(imageAnalysor)
+        .environmentObject(imageAnalysor)
     }
   }
 }
