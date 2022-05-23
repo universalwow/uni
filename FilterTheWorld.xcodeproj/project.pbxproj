@@ -80,6 +80,7 @@
 		95E79E3327A13D0600AC36E1 /* ImageAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E2F27A13D0600AC36E1 /* ImageAnalysis.swift */; };
 		95E79E3427A13D0600AC36E1 /* LineRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */; };
 		95E79E3527A13D0600AC36E1 /* SportsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E3127A13D0600AC36E1 /* SportsManager.swift */; };
+		95EE17D2283B8A4B0089CE04 /* SetupRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */; };
 		95F67542277DC8F80049B03A /* kangaroo.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95F6753E277DC87E0049B03A /* kangaroo.usdz */; };
 		95F67546277EA9B90049B03A /* biped_robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95F67545277EA9B80049B03A /* biped_robot.usdz */; };
 		9F69EE4C26942A8A00746CD7 /* CameraError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F69EE4B26942A8A00746CD7 /* CameraError.swift */; };
@@ -167,6 +168,7 @@
 		95E79E2F27A13D0600AC36E1 /* ImageAnalysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageAnalysis.swift; sourceTree = "<group>"; };
 		95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineRecognizer.swift; sourceTree = "<group>"; };
 		95E79E3127A13D0600AC36E1 /* SportsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SportsManager.swift; sourceTree = "<group>"; };
+		95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupRuleView.swift; sourceTree = "<group>"; };
 		95F67540277DC8C10049B03A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = en; path = en.lproj/kangaroo.usdz; sourceTree = "<group>"; };
 		95F67544277DC9A80049B03A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; name = Base; path = Base.lproj/kangaroo.usdz; sourceTree = "<group>"; };
 		95F67545277EA9B80049B03A /* biped_robot.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = biped_robot.usdz; sourceTree = "<group>"; };
@@ -271,6 +273,7 @@
 				951FB32E2839E57700A62931 /* RuleView.swift */,
 				951ABE45283A5526009AB8F6 /* PoseView.swift */,
 				951ABE47283A6A01009AB8F6 /* ObjectsView.swift */,
+				95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */,
 			);
 			path = Sport;
 			sourceTree = "<group>";
@@ -634,6 +637,7 @@
 				95171C9727CE140B0051249D /* Sporter.swift in Sources */,
 				95E79E0327A13C3000AC36E1 /* Card.swift in Sources */,
 				95E79E3527A13D0600AC36E1 /* SportsManager.swift in Sources */,
+				95EE17D2283B8A4B0089CE04 /* SetupRuleView.swift in Sources */,
 				95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */,
 				951FB3342839EB1500A62931 /* FramesView.swift in Sources */,
 				95E79DF627A13AEC00AC36E1 /* SimpleRule.swift in Sources */,

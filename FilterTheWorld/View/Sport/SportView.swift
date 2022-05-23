@@ -78,7 +78,7 @@ struct SportView: View {
                     }
                 }
                 
-                ForEach(sport.allStates) {state in
+                ForEach(sport.allStates) { state in
                     Divider()
                     HStack {
                         Text(state.name)
@@ -96,7 +96,7 @@ struct SportView: View {
                         Button(action: {
                             sportManager.addNewSportStateRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
 
-                            self.editRuleFlag = true
+//                            self.editRuleFlag = true
                             
                         }) {
                             Text("添加计分规则集")
@@ -104,7 +104,7 @@ struct SportView: View {
                         
                         Button(action: {
                             sportManager.addNewSportStateRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
-                            self.editRuleFlag = true
+//                            self.editRuleFlag = true
                             
                         }) {
                             Text("添加违规规则集")
@@ -117,6 +117,32 @@ struct SportView: View {
                             Text("删除")
                         }
                     }.padding([.vertical])
+                    
+                    // 规则集
+                    ForEach(state.complexScoreRules) { scoreRules in
+                        Divider()
+                        HStack {
+                            Text(scoreRules.description)
+                            Spacer()
+                            
+                            Button(action: {
+                                
+                                sportManager.setCurrentSportStateRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .SCORE)
+                                self.editRuleFlag = true
+                            }) {
+                                Text("添加规则")
+                            }
+                            
+                            Button(action: {
+                                sportManager.deleteSportStateRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE)
+                            }) {
+                                Text("删除")
+                            }
+                        }.padding([.top], StaticValue.padding)
+                        
+                    }
+                    
+                    
                 }
                 Divider()
                 HStack{

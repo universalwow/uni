@@ -124,18 +124,24 @@ extension SportState {
     }
   }
   
-  func firstIndexOfLandmarkSegment(editedSportStateRuleId: String) -> Int? {
+  func firstIndexOfLandmarkSegment(editedSportStateRuleId: String?) -> Int? {
     landmarkSegments.firstIndex(where: { landmarkSegment in
       landmarkSegment.landmarkSegmentType.id == editedSportStateRuleId
     })
   }
   
-  func findselectedSegment(editedSportStateRuleId: String) -> LandmarkSegment? {
+  func findselectedSegment(editedSportStateRuleId: String?) -> LandmarkSegment? {
     if let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId) {
       return landmarkSegments[index]
     }
     return nil
   }
+    func segmentSelected(segment: LandmarkSegment) -> Bool? {
+        if let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: segment.id) {
+            return landmarkSegments[index].selected
+        }
+        return nil
+    }
   
   mutating func setSegmentToSelected(editedSportStateRuleId: String?) {
     let range = 0..<landmarkSegments.count
@@ -146,6 +152,10 @@ extension SportState {
         let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId){
         landmarkSegments[index].selected = true
       print("editedSportStateRuleId \(landmarkSegments[index].selected)")
+    }else{
+        landmarkSegments.indices.forEach{ index in
+            landmarkSegments[index].selected = false
+        }
     }
   }
   

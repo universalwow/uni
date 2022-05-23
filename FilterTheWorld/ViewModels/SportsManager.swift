@@ -309,6 +309,7 @@ extension SportsManager {
     }
     
     
+    
     private func upsertCurrentRule(rule: ComplexRule) {
         if let sportIndex = firstIndex() {
             sports[sportIndex].updateSportStateRule(editedSportStateUUID: self.currentStateId!, editedSportStateRulesId: currentSportStateRulesId!, editedRule: rule, ruleType: currentSportStateRuleType!)
@@ -875,7 +876,11 @@ extension SportsManager {
     }
     
     func findselectedSegment() -> LandmarkSegment? {
-        findFirstSportState()?.findselectedSegment(editedSportStateRuleId: currentSportStateRuleId!)
+        findFirstSportState()?.findselectedSegment(editedSportStateRuleId: currentSportStateRuleId)
+    }
+    
+    func segmentSelected(segment: LandmarkSegment) -> Bool? {
+        findFirstSportState()?.segmentSelected(segment: segment)
     }
     
     func findlandmarkSegment(landmarkSegment: LandmarkSegment) -> LandmarkSegment {
