@@ -49,7 +49,7 @@ extension CGRect {
 
 
 
-struct Observation: Identifiable, Codable, Equatable {
+struct Observation: Selectable, Codable, Equatable {
   var id: String
   var label: String
   var confidence: String

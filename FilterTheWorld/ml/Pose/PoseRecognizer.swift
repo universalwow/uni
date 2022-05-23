@@ -15,16 +15,23 @@ struct FrameShowData {
   var currentTime = 0.0
   var poses: [HumanPose] = []
   
-  mutating func selectePose(pose: HumanPose) {
-    poses.indices.forEach { index in
-      let humanPose = poses[index]
-      if humanPose.id == pose.id {
-        poses[index].toggle()
-      } else {
-        poses[index].noselected()
+  mutating func selectePose(pose: HumanPose?) {
+      if let pose = pose {
+          poses.indices.forEach { index in
+            let humanPose = poses[index]
+            if humanPose.id == pose.id {
+              poses[index].toggle()
+            } else {
+              poses[index].noselected()
+            }
+            
+          }
+
+      }else{
+          poses.indices.forEach { index in
+              poses[index].noselected()
+          }
       }
-      
-    }
     
   }
   

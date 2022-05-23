@@ -6,16 +6,21 @@ struct ObjectView: View {
     var object:Observation
     var imageSize:CGSize
     var viewSize:CGSize
+    
+    var objectColor: Color {
+        object.selected ? Color.yellow : object.color
+    }
+    
     var body: some View {
         let rect = object.rect.rectToFit(imageSize: imageSize, viewSize: viewSize)
         Rectangle()
-            .stroke(object.color, lineWidth: 2)
+            .stroke(objectColor, lineWidth: 2)
             .frame(width: rect.width, height: rect.height)
             .position(rect.center)
             .overlay(content: {
-                Text("\(object.label)-\(object.confidence)")
+                Text("\(object.id)")
                     .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 20)
-                    .foregroundColor(object.color)
+                    .foregroundColor(objectColor)
             })
     }
 }
@@ -30,10 +35,12 @@ struct ObjectsView: View {
         ForEach(objects) { object in
             ObjectView(object: object, imageSize: imageSize, viewSize: viewSize)
                 .onTapGesture {
+                    // 选择检测框
+                    imageAnalysis.selectObject(object: object)
                     
-//                    sportManager.updateSportState(image: , objects: <#T##[Observation]#>)
+                    sportManager.updateSportState(image: imageAnalysis.sportData.frame, objects: imageAnalysis.selectedObjects())
                 }
-           
+            
             
         }
         

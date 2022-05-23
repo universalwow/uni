@@ -22,8 +22,24 @@ struct SportView: View {
     @EnvironmentObject var sportManager: SportsManager
     
     
+    struct StaticValue {
+        static let padding: CGFloat = 5
+    }
+    
+    
     var basicMessage: some View {
         VStack {
+            HStack {
+                Text("基础信息")
+                Spacer()
+                Button(action: {
+                    sportManager.updateSport(editedSport: sport, sportName: sportName, sportDescription: sportDescription)
+                    
+                }) {
+                    Text("保存名称/简介")
+                }
+            }
+            
             HStack{
                 Text("名称")
                 TextField("名称", text: $sportName)
@@ -32,12 +48,7 @@ struct SportView: View {
                 Text("简介")
                 TextField("简介", text: $sportDescription)
             }
-            Button(action: {
-                sportManager.updateSport(editedSport: sport, sportName: sportName, sportDescription: sportDescription)
-                
-            }) {
-                Text("保存名称/简介")
-            }
+          
         }.padding()
     }
     
@@ -83,13 +94,22 @@ struct SportView: View {
                         }
                         
                         Button(action: {
-                            
-                            sportManager.setCurrentSportState(editedSport: sport, editedSportState: state)
+                            sportManager.addNewSportStateRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
+
                             self.editRuleFlag = true
                             
                         }) {
-                            Text("添加规则")
+                            Text("添加计分规则集")
                         }
+                        
+                        Button(action: {
+                            sportManager.addNewSportStateRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
+                            self.editRuleFlag = true
+                            
+                        }) {
+                            Text("添加违规规则集")
+                        }
+                        
                         Button(action: {
                             sportManager.deleteSportState(editedSport: sport, editedSportState: state)
                             
@@ -116,6 +136,7 @@ struct SportView: View {
                 }
                 HStack {
                     Text("状态转换列表")
+                    Spacer()
                     Button(action: {
                         sportManager.addSportStatetransform(sport: sport, fromSportState: fromState, toSportState: toState)
                         let _fromState = fromState
@@ -130,11 +151,19 @@ struct SportView: View {
                 
                 ForEach(sport.stateTransForm) { transform in
                     if let fromState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from), let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+//                        Divider()
                         HStack {
-                            Text(fromState.name)
+                            Text("\(fromState.name) -> \(toState.name)")
                             Spacer()
-                            Text(toState.name)
-                        }
+                            Button(action: {
+                                sportManager.deleteSportStateTransForm(sport: sport, fromSportState: fromState, toSportState: toState)
+
+                            }) {
+                                Text("删除")
+                            }
+                            
+                        }.padding([.top], StaticValue.padding)
+                       
                     }
                     
                 }
@@ -163,11 +192,11 @@ struct SportView: View {
                         Spacer()
                         Button(action: {
                             sportManager.deleteSportStateFromScoreSequence(sport: sport, stateIndex: stateIndex)
-                            print("scoreStateSequence \(sportManager.findFirstSport(sport: sport)?.scoreStateSequence.count)")
+//                            print("scoreStateSequence \(sportManager.findFirstSport(sport: sport)?.scoreStateSequence.count)")
                         }) {
                             Text("删除")
                         }
-                    }
+                    }.padding([.top], StaticValue.padding)
                     
                 }
             }

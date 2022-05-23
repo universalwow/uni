@@ -242,8 +242,8 @@ extension SportsManager {
         }
     }
     
-    func deleteSportStateTransForm(fromSportState: SportState, toSportState: SportState) {
-        if let sportIndex = firstIndex() {
+    func deleteSportStateTransForm(sport:Sport, fromSportState: SportState, toSportState: SportState) {
+        if let sportIndex = firstIndex(editedSportId: sport.id) {
             sports[sportIndex].deleteStateTransForm(fromSportState: fromSportState, toSportState: toSportState)
         }
     }
@@ -851,6 +851,10 @@ extension SportsManager {
     
     
     func addNewSportStateRules(editedSport: Sport, editedSportState: SportState, ruleType: RuleType) {
+        self.currentSportId = editedSport.id
+        self.currentStateId = editedSportState.id
+        self.currentSportStateRuleType = ruleType
+        
         if let sportIndex = firstIndex(editedSportId: editedSport.id) {
             sports[sportIndex].addNewSportStateRules(editedSportState: editedSportState, ruleType: ruleType)
         }
