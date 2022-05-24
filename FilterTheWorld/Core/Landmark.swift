@@ -203,11 +203,21 @@ extension LandmarkType {
     }
     
     static let landmarkSegmentTypes: [LandmarkTypeSegment] = {
-        rightBodyLines.map { lines in
-            lines[: lines.count - 1]
+        return needAnglePairs.map { lines in
+            zip(lines[0..<lines.count - 1], lines[1..<lines.count])
+        }.reduce([LandmarkTypeSegment]()) { result, next in
             
+            var appendResult = next.map { startLandmarkType, endLandmarkType in
+                    LandmarkTypeSegment(
+                        startLandmarkType: startLandmarkType,
+                        endLandmarkType: endLandmarkType)
+
+            }
+            appendResult.append(contentsOf: result)
+            return appendResult
         }
-    }
+ 
+    }()
     
     
 }

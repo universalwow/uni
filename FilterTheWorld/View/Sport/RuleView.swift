@@ -1,6 +1,9 @@
 
 import SwiftUI
 
+
+
+
 struct RuleView: View {
     @EnvironmentObject var sportManager:SportsManager
     
@@ -18,8 +21,10 @@ struct RuleView: View {
                     GeometryReader { geometry in
                         ZStack {
                             PosesViewForSetupRule(landmarkSegments: state.landmarkSegments, imageSize: pngImage.imageSize, viewSize: geometry.size)
-                            
                             ObjectsViewForSetupRule(objects: state.objects, imageSize: pngImage.imageSize, viewSize: geometry.size)
+                            RectView(viewSize: geometry.size)
+                            
+                            
                         }
                         
                     }
@@ -49,6 +54,7 @@ struct RuleView: View {
             }
             .sheet(isPresented: self.$showSetupRule) {
                 SetupRuleView()
+ 
             }
     }
 }

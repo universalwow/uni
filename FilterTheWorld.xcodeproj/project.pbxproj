@@ -44,6 +44,11 @@
 		958F8C352760560500F6DF48 /* SVC6.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C302760560500F6DF48 /* SVC6.mlmodel */; };
 		959A61E627D610E600B2818B /* LandmarkInArea+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959A61E527D610E600B2818B /* LandmarkInArea+Extension.swift */; };
 		95A3E60427E2DDEC0005E364 /* Warning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A3E60327E2DDEC0005E364 /* Warning.swift */; };
+		95A9921B283C81AB00F79FB1 /* BackgroundClearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921A283C81AB00F79FB1 /* BackgroundClearView.swift */; };
+		95A9921D283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921C283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift */; };
+		95A99220283CE0A200F79FB1 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921F283CE0A200F79FB1 /* Constants.swift */; };
+		95A99222283CEF1C00F79FB1 /* LandmarkInAreaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99221283CEF1C00F79FB1 /* LandmarkInAreaView.swift */; };
+		95A99224283CF5B600F79FB1 /* LandmarkAngleRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99223283CF5B600F79FB1 /* LandmarkAngleRuleView.swift */; };
 		95AA02CA277959D300C6E340 /* robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95AA02CC277959D300C6E340 /* robot.usdz */; };
 		95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B7627327F18C45000DE18C /* AnnotationManager.swift */; };
 		95B7BFE4283668740037EC55 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B7BFE3283668740037EC55 /* ContentView.swift */; };
@@ -133,6 +138,11 @@
 		958F8C302760560500F6DF48 /* SVC6.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SVC6.mlmodel; sourceTree = "<group>"; };
 		959A61E527D610E600B2818B /* LandmarkInArea+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LandmarkInArea+Extension.swift"; sourceTree = "<group>"; };
 		95A3E60327E2DDEC0005E364 /* Warning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warning.swift; sourceTree = "<group>"; };
+		95A9921A283C81AB00F79FB1 /* BackgroundClearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundClearView.swift; sourceTree = "<group>"; };
+		95A9921C283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkSegmentRelativeLengthRuleView.swift; sourceTree = "<group>"; };
+		95A9921F283CE0A200F79FB1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		95A99221283CEF1C00F79FB1 /* LandmarkInAreaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkInAreaView.swift; sourceTree = "<group>"; };
+		95A99223283CF5B600F79FB1 /* LandmarkAngleRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkAngleRuleView.swift; sourceTree = "<group>"; };
 		95B7627327F18C45000DE18C /* AnnotationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationManager.swift; sourceTree = "<group>"; };
 		95B7BFE3283668740037EC55 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95BF354A27A16D81006F5D80 /* VideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
@@ -205,6 +215,7 @@
 		18D775BF22AD944300AE281E /* FilterTheWorld */ = {
 			isa = PBXGroup;
 			children = (
+				95A9921E283CE08900F79FB1 /* Tool */,
 				95B7BFE5283668950037EC55 /* View */,
 				95D6E438276F4D1200C0F1CD /* Sport */,
 				95D6E424276C6EE200C0F1CD /* Videos */,
@@ -274,6 +285,9 @@
 				951ABE45283A5526009AB8F6 /* PoseView.swift */,
 				951ABE47283A6A01009AB8F6 /* ObjectsView.swift */,
 				95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */,
+				95A9921C283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift */,
+				95A99221283CEF1C00F79FB1 /* LandmarkInAreaView.swift */,
+				95A99223283CF5B600F79FB1 /* LandmarkAngleRuleView.swift */,
 			);
 			path = Sport;
 			sourceTree = "<group>";
@@ -337,6 +351,14 @@
 			path = ml;
 			sourceTree = "<group>";
 		};
+		95A9921E283CE08900F79FB1 /* Tool */ = {
+			isa = PBXGroup;
+			children = (
+				95A9921F283CE0A200F79FB1 /* Constants.swift */,
+			);
+			path = Tool;
+			sourceTree = "<group>";
+		};
 		95B7BFE5283668950037EC55 /* View */ = {
 			isa = PBXGroup;
 			children = (
@@ -347,6 +369,7 @@
 				951FB32A283893A100A62931 /* CardView.swift */,
 				951ABE43283A3344009AB8F6 /* UniScrollView.swift */,
 				951ABE4B283B2555009AB8F6 /* MultiSelector.swift */,
+				95A9921A283C81AB00F79FB1 /* BackgroundClearView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -593,6 +616,7 @@
 				958F8C312760560500F6DF48 /* Facenet6.mlmodel in Sources */,
 				95E79E0427A13C3000AC36E1 /* Storage.swift in Sources */,
 				95E79E0E27A13C9700AC36E1 /* PoseRecognizer.swift in Sources */,
+				95A99220283CE0A200F79FB1 /* Constants.swift in Sources */,
 				95E79DF827A13AEC00AC36E1 /* CancellableDelayedTask.swift in Sources */,
 				95B7BFE4283668740037EC55 /* ContentView.swift in Sources */,
 				95E79E0527A13C3000AC36E1 /* Landmark.swift in Sources */,
@@ -607,12 +631,14 @@
 				951FB32F2839E57700A62931 /* RuleView.swift in Sources */,
 				958F8C322760560500F6DF48 /* FaceRecognizer.swift in Sources */,
 				95E79E0D27A13C9700AC36E1 /* UIUtilities.swift in Sources */,
+				95A9921D283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift in Sources */,
 				95E79E1627A13CBE00AC36E1 /* Vector3D.swift in Sources */,
 				95E79E1027A13C9700AC36E1 /* RectangleRecoginzer.swift in Sources */,
 				9545750527BB846100129153 /* ObjectRecoginzerYOLO.swift in Sources */,
 				9545750F27BBA98A00129153 /* Observation.swift in Sources */,
 				95E79E0727A13C3000AC36E1 /* BlackWhiteFilter.swift in Sources */,
 				9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */,
+				95A99224283CF5B600F79FB1 /* LandmarkAngleRuleView.swift in Sources */,
 				951FB324283747AB00A62931 /* LoginView.swift in Sources */,
 				9F69EE5226957E1300746CD7 /* FrameManager.swift in Sources */,
 				95E79E2D27A13CED00AC36E1 /* CGFloat+Extension.swift in Sources */,
@@ -643,6 +669,7 @@
 				95E79DF627A13AEC00AC36E1 /* SimpleRule.swift in Sources */,
 				95E79DF727A13AEC00AC36E1 /* SportState.swift in Sources */,
 				950F555D27EEE71900480F17 /* ObservableState.swift in Sources */,
+				95A99222283CEF1C00F79FB1 /* LandmarkInAreaView.swift in Sources */,
 				9F69EE4C26942A8A00746CD7 /* CameraError.swift in Sources */,
 				95E79E2727A13CED00AC36E1 /* Binding+Extension.swift in Sources */,
 				959A61E627D610E600B2818B /* LandmarkInArea+Extension.swift in Sources */,
@@ -653,6 +680,7 @@
 				951FB329283892F700A62931 /* SportsView.swift in Sources */,
 				951ABE48283A6A01009AB8F6 /* ObjectsView.swift in Sources */,
 				951ABE46283A5526009AB8F6 /* PoseView.swift in Sources */,
+				95A9921B283C81AB00F79FB1 /* BackgroundClearView.swift in Sources */,
 				95A3E60427E2DDEC0005E364 /* Warning.swift in Sources */,
 				95878ED327DF277600F31A9B /* UIView+Extension.swift in Sources */,
 				95107FF427D73FB600C9C83D /* RoundedString.swift in Sources */,

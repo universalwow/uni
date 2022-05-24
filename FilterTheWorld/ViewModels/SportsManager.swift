@@ -400,12 +400,12 @@ extension SportsManager {
         return rule?.landmarkInArea
     }
     
-    func updateSportStateRule(firstPoint: CGPoint, secondPoint: CGPoint, thirdPoint:CGPoint, fourthPoint: CGPoint) {
+    func updateSportStateRule(firstPoint: Point2D, secondPoint: Point2D, thirdPoint:Point2D, fourthPoint: Point2D) {
         
         if let  rule = findCurrentSportStateRule() {
             var newRule = rule
             newRule.landmarkInArea!.area =
-            [firstPoint.point2d, secondPoint.point2d, thirdPoint.point2d, fourthPoint.point2d]
+            [firstPoint, secondPoint, thirdPoint, fourthPoint]
             self.upsertCurrentRule(rule: newRule)
         }
         
@@ -583,7 +583,6 @@ extension SportsManager {
     
     
     
-    
     func setCurrentSportStateRuleWarning(warning: String) {
         if let rule = findCurrentSportStateRule() {
             var newRule = rule
@@ -593,15 +592,15 @@ extension SportsManager {
     }
     
     
-    func getCurrentSportStateRuleLength(fromAxis: CoordinateAxis) -> RelativeLandmarkSegmentsToAxis {
+    func getCurrentSportStateRuleLength(fromAxis: CoordinateAxis) -> RelativeLandmarkSegmentsToAxis? {
         let rule = findCurrentSportStateRule()!
         switch fromAxis {
         case .X:
-            return rule.lengthX!
+            return rule.lengthX
         case .Y:
-            return rule.lengthY!
+            return rule.lengthY
         case .XY:
-            return rule.lengthXY!
+            return rule.lengthXY
         }
     }
     
@@ -629,21 +628,19 @@ extension SportsManager {
         }
     }
     
-    func updateSportStateRule(axis: CoordinateAxis, lowerBound: String, upperBound: String) {
+    func updateSportStateRule(axis: CoordinateAxis, lowerBound: Double, upperBound: Double) {
         if let rule = self.findCurrentSportStateRule() {
             var newRule = rule
-            if let lowerBound = Double(lowerBound), let upperBound =  Double(upperBound){
-                switch axis {
-                case .X:
-                    newRule.lengthX!.lowerBound = lowerBound
-                    newRule.lengthX!.upperBound = upperBound
-                case .Y:
-                    newRule.lengthY!.lowerBound = lowerBound
-                    newRule.lengthY!.upperBound = upperBound
-                case .XY:
-                    newRule.lengthXY!.lowerBound = lowerBound
-                    newRule.lengthXY!.upperBound = upperBound
-                }
+            switch axis {
+            case .X:
+                newRule.lengthX!.lowerBound = lowerBound
+                newRule.lengthX!.upperBound = upperBound
+            case .Y:
+                newRule.lengthY!.lowerBound = lowerBound
+                newRule.lengthY!.upperBound = upperBound
+            case .XY:
+                newRule.lengthXY!.lowerBound = lowerBound
+                newRule.lengthXY!.upperBound = upperBound
             }
             self.upsertCurrentRule(rule: newRule)
         }
@@ -763,7 +760,6 @@ extension SportsManager {
                 from: LandmarkSegmentToAxis(landmarkSegment: self.findselectedSegment()!, axis: fromAxis),
                 to: LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis)
             )
-            print()
             switch fromAxis {
             case .X:
                 newRule.lengthX = length
@@ -772,6 +768,23 @@ extension SportsManager {
                 newRule.lengthY = length
             case .XY:
                 newRule.lengthXY = length
+            }
+            self.upsertCurrentRule(rule: newRule)
+        }
+        
+        
+    }
+    
+    func removeSportStateRuleLength(fromAxis: CoordinateAxis) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+            switch fromAxis {
+            case .X:
+                newRule.lengthX = nil
+            case .Y:
+                newRule.lengthY = nil
+            case .XY:
+                newRule.lengthXY = nil
             }
             self.upsertCurrentRule(rule: newRule)
         }
@@ -850,6 +863,13 @@ extension SportsManager {
         }
     }
     
+    func getCurrentSportStateRuleAngle() -> AngleRange? {
+        if let rule = findCurrentSportStateRule() {
+            return rule.angle
+        }
+        return nil
+    }
+    
     
     func addNewSportStateRules(editedSport: Sport, editedSportState: SportState, ruleType: RuleType) {
         self.currentSportId = editedSport.id
@@ -883,9 +903,9 @@ extension SportsManager {
         findFirstSportState()?.segmentSelected(segment: segment)
     }
     
-    func findlandmarkSegment(landmarkSegment: LandmarkSegment) -> LandmarkSegment {
+    func findlandmarkSegment(landmarkTypeSegment: LandmarkTypeSegment) -> LandmarkSegment {
         findSelectedSegments().first{ segment in
-            segment.id == landmarkSegment.id
+            segment.id == landmarkTypeSegment.id
         }!
     }
     
