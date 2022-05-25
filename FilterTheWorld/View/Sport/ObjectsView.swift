@@ -39,13 +39,13 @@ struct RectView: View {
             let rect = landmarkInArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
             
             Rectangle()
-                .stroke(.white, lineWidth: 2)
+                .stroke(.pink, lineWidth: 2)
                 .frame(width: rect.width, height: rect.height)
                 .position(rect.center)
                 .overlay(content: {
                     Text("\(landmarkInArea.landmarkType.rawValue)")
                         .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
-                        .foregroundColor(.white)
+                        .foregroundColor(.pink)
                 })
 
         }

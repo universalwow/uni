@@ -230,9 +230,13 @@ extension Sport {
   mutating func deleteSportStateRules(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType) {
     if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
       states[index].deleteSportStateRules(rulesId: editedRulesId, ruleType: ruleType)
-
     }
   }
+    mutating func deleteSportStateRule(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType, ruleId:String) {
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          states[index].deleteSportStateRule(rulesId: editedRulesId, ruleType: ruleType, ruleId: ruleId)
+      }
+    }
   
 
   

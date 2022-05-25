@@ -123,6 +123,21 @@ extension SportState {
       }
     }
   }
+    
+    mutating func deleteSportStateRule(rulesId: UUID, ruleType: RuleType, ruleId:String) {
+      if let index = firstIndexOfComplexRules(editedRulesId: rulesId, ruleType: ruleType) {
+        switch ruleType {
+        case .SCORE:
+            complexScoreRules[index].rules.removeAll{ rule in
+                rule.id == ruleId
+            }
+        case .VIOLATE:
+          complexViolateRules[index].rules.removeAll{ rule in
+              rule.id == ruleId
+          }
+        }
+      }
+    }
   
   func firstIndexOfLandmarkSegment(editedSportStateRuleId: String?) -> Int? {
     landmarkSegments.firstIndex(where: { landmarkSegment in

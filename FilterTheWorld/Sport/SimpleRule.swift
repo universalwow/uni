@@ -14,7 +14,7 @@ enum RuleType {
     case SCORE, VIOLATE
 }
 
-struct LandmarkSegmentToAxis: Codable{
+struct LandmarkSegmentToAxis: Codable {
     var landmarkSegment: LandmarkSegment
     var axis:CoordinateAxis
     

@@ -14,6 +14,33 @@ struct LandmarkAngleRuleView: View {
     @State var maxAngle = 0.0
     @State var angleWarning = ""
     @State var angleToggle = false
+    
+    
+    
+    func toggleOff() {
+        minAngle = 0.0
+        maxAngle = 0.0
+        angleWarning = ""
+    }
+    
+    func setInitData() {
+        if angleToggle {
+            let landmarkSegment = sportManager.findselectedSegment()!
+            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: landmarkSegment.angle2d, upperBound: landmarkSegment.angle2d))
+            minAngle = landmarkSegment.angle2d
+            maxAngle = landmarkSegment.angle2d
+            
+        }
+        
+    }
+    
+    func updateRemoteData() {
+        if angleToggle {
+            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
+        }
+        
+    }
+    
     //角度
     var minAngleslider: some View {
         HStack {
@@ -29,8 +56,9 @@ struct LandmarkAngleRuleView: View {
                         .resizable()
                         .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
-                            //                            self.minAngle = min(min(0, self.minAngle - 1), self.maxAngle)
                             self.minAngle = max(0, self.minAngle - 1)
+                            updateRemoteData()
+
                         }
                 },
                 maximumValueLabel: {
@@ -38,13 +66,17 @@ struct LandmarkAngleRuleView: View {
                         .resizable()
                         .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
-                            //                            self.minAngle = min(min(360, self.minAngle + 1), self.maxAngle)
                             self.minAngle = min(360, self.minAngle + 1)
+                            updateRemoteData()
                         }
                 },
-                onEditingChanged: { _ in
-                    //                    self.minAngle = min(self.minAngle, self.maxAngle)
-                    //                    self.minAngle = min(self.minAngle, self.maxAngle)
+                
+                onEditingChanged: { flag in
+                    print("---------\(flag)")
+                    if !flag {
+                        updateRemoteData()
+                    }
+                    
                     
                 }).background(content: {
                     Text("\(self.minAngle)")
@@ -70,9 +102,9 @@ struct LandmarkAngleRuleView: View {
                         .resizable()
                         .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
-                            //                            self.maxAngle = max(min(0, self.maxAngle - 1),self.minAngle)
                             self.maxAngle = max(0, self.maxAngle - 1)
-                            
+                            updateRemoteData()
+
                         }
                 },
                 maximumValueLabel: {
@@ -81,13 +113,16 @@ struct LandmarkAngleRuleView: View {
                         .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                     
                         .onTapGesture {
-                            //                            self.maxAngle = max(min(360, self.maxAngle + 1), self.minAngle)
                             self.maxAngle = min(360, self.maxAngle + 1)
+                            updateRemoteData()
                             
                         }
                 },
-                onEditingChanged: { _ in
-                    //                    self.maxAngle = max(self.minAngle, self.maxAngle)
+                onEditingChanged: { flag in
+                    print("1---------\(flag)")
+                    if !flag {
+                        updateRemoteData()
+                    }
                 }).background(content: {
                     Text("\(self.maxAngle)")
                         .offset(y: StaticValue.angleTextOffsetY)
@@ -101,14 +136,13 @@ struct LandmarkAngleRuleView: View {
     
     var body: some View {
         VStack {
-            Toggle("角度", isOn: $angleToggle.didSet{ _ in
-                if angleToggle {
-                    let landmarkSegment = sportManager.findselectedSegment()!
-                    sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: landmarkSegment.angle2d, upperBound: landmarkSegment.angle2d))
-                    minAngle = landmarkSegment.angle2d
-                    maxAngle = landmarkSegment.angle2d
+            Toggle("角度", isOn: $angleToggle.didSet{ isOn in
+                if isOn {
+                    setInitData()
+                    
                 }else{
                     sportManager.setCurrentSportStateRuleAngle(angle: nil)
+                    toggleOff()
                 }
                 
             })
@@ -117,7 +151,7 @@ struct LandmarkAngleRuleView: View {
                     Text("提醒:")
                     TextField("提醒...", text: $angleWarning) { flag in
                         if !flag {
-                            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
+                            updateRemoteData()
                         }
                         
                     }
@@ -133,7 +167,6 @@ struct LandmarkAngleRuleView: View {
                 HStack {
                     Text("最大角度")
                         .onTapGesture {
-                            //                            self.maxAngle = max(min(0, self.maxAngle - 1),self.minAngle)
                             self.maxAngle = max(0, self.maxAngle - 1)
                             
                         }
@@ -141,12 +174,8 @@ struct LandmarkAngleRuleView: View {
                 }
             }.disabled(!angleToggle)
             
-        }.onChange(of: minAngle) { _ in
-            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
         }
-        .onChange(of: maxAngle) { _ in
-            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
-        }
+
         .onAppear(perform: {
             if let angle = sportManager.getCurrentSportStateRuleAngle() {
                 self.angleToggle = true

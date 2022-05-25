@@ -42,6 +42,7 @@
 		958F8C322760560500F6DF48 /* FaceRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C2D2760560500F6DF48 /* FaceRecognizer.swift */; };
 		958F8C332760560500F6DF48 /* labels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 958F8C2E2760560500F6DF48 /* labels.txt */; };
 		958F8C352760560500F6DF48 /* SVC6.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C302760560500F6DF48 /* SVC6.mlmodel */; };
+		95986F33283E3E430090B22C /* RuleDescriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95986F32283E3E430090B22C /* RuleDescriptionView.swift */; };
 		959A61E627D610E600B2818B /* LandmarkInArea+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959A61E527D610E600B2818B /* LandmarkInArea+Extension.swift */; };
 		95A3E60427E2DDEC0005E364 /* Warning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A3E60327E2DDEC0005E364 /* Warning.swift */; };
 		95A9921B283C81AB00F79FB1 /* BackgroundClearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921A283C81AB00F79FB1 /* BackgroundClearView.swift */; };
@@ -49,6 +50,7 @@
 		95A99220283CE0A200F79FB1 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921F283CE0A200F79FB1 /* Constants.swift */; };
 		95A99222283CEF1C00F79FB1 /* LandmarkInAreaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99221283CEF1C00F79FB1 /* LandmarkInAreaView.swift */; };
 		95A99224283CF5B600F79FB1 /* LandmarkAngleRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99223283CF5B600F79FB1 /* LandmarkAngleRuleView.swift */; };
+		95A99226283E207400F79FB1 /* LandmarkToStateLengthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99225283E207400F79FB1 /* LandmarkToStateLengthView.swift */; };
 		95AA02CA277959D300C6E340 /* robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95AA02CC277959D300C6E340 /* robot.usdz */; };
 		95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B7627327F18C45000DE18C /* AnnotationManager.swift */; };
 		95B7BFE4283668740037EC55 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B7BFE3283668740037EC55 /* ContentView.swift */; };
@@ -136,6 +138,7 @@
 		958F8C2D2760560500F6DF48 /* FaceRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FaceRecognizer.swift; sourceTree = "<group>"; };
 		958F8C2E2760560500F6DF48 /* labels.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = labels.txt; sourceTree = "<group>"; };
 		958F8C302760560500F6DF48 /* SVC6.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SVC6.mlmodel; sourceTree = "<group>"; };
+		95986F32283E3E430090B22C /* RuleDescriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleDescriptionView.swift; sourceTree = "<group>"; };
 		959A61E527D610E600B2818B /* LandmarkInArea+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LandmarkInArea+Extension.swift"; sourceTree = "<group>"; };
 		95A3E60327E2DDEC0005E364 /* Warning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warning.swift; sourceTree = "<group>"; };
 		95A9921A283C81AB00F79FB1 /* BackgroundClearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundClearView.swift; sourceTree = "<group>"; };
@@ -143,6 +146,7 @@
 		95A9921F283CE0A200F79FB1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		95A99221283CEF1C00F79FB1 /* LandmarkInAreaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkInAreaView.swift; sourceTree = "<group>"; };
 		95A99223283CF5B600F79FB1 /* LandmarkAngleRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkAngleRuleView.swift; sourceTree = "<group>"; };
+		95A99225283E207400F79FB1 /* LandmarkToStateLengthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkToStateLengthView.swift; sourceTree = "<group>"; };
 		95B7627327F18C45000DE18C /* AnnotationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationManager.swift; sourceTree = "<group>"; };
 		95B7BFE3283668740037EC55 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95BF354A27A16D81006F5D80 /* VideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
@@ -287,7 +291,9 @@
 				95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */,
 				95A9921C283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift */,
 				95A99221283CEF1C00F79FB1 /* LandmarkInAreaView.swift */,
+				95986F32283E3E430090B22C /* RuleDescriptionView.swift */,
 				95A99223283CF5B600F79FB1 /* LandmarkAngleRuleView.swift */,
+				95A99225283E207400F79FB1 /* LandmarkToStateLengthView.swift */,
 			);
 			path = Sport;
 			sourceTree = "<group>";
@@ -611,6 +617,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				95E79E2827A13CED00AC36E1 /* Color+Extension.swift in Sources */,
+				95A99226283E207400F79FB1 /* LandmarkToStateLengthView.swift in Sources */,
 				958F8C352760560500F6DF48 /* SVC6.mlmodel in Sources */,
 				95E79E2C27A13CED00AC36E1 /* CGPoint+Extension.swift in Sources */,
 				958F8C312760560500F6DF48 /* Facenet6.mlmodel in Sources */,
@@ -666,6 +673,7 @@
 				95EE17D2283B8A4B0089CE04 /* SetupRuleView.swift in Sources */,
 				95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */,
 				951FB3342839EB1500A62931 /* FramesView.swift in Sources */,
+				95986F33283E3E430090B22C /* RuleDescriptionView.swift in Sources */,
 				95E79DF627A13AEC00AC36E1 /* SimpleRule.swift in Sources */,
 				95E79DF727A13AEC00AC36E1 /* SportState.swift in Sources */,
 				950F555D27EEE71900480F17 /* ObservableState.swift in Sources */,

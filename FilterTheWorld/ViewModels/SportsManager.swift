@@ -16,23 +16,25 @@ class SportsManager: ObservableObject {
     
     var updateTimer: Timer?
     
-    @Published var currentSportStateRuleId: String? {
-        didSet {
-            if currentSportStateRuleId != nil {
-                if let _ = self.findCurrentSportStateRule() {
-                    print("修改规则。。。。。。。。")
-                }else{
-                    
-                    self.addStateRule()
-                    print("添加新规则。。。。。。。。")
-                }
-                print("setSegmentToSelected \(currentSportStateRuleId)")
-            }
-            
-            setSegmentToSelected()
-            
-        }
-    }
+    @Published var currentSportStateRuleId: String?
+//    {
+//        didSet {
+//            if currentSportStateRuleId != nil {
+//                if let _ = self.findCurrentSportStateRule() {
+//                    print("修改规则。。。。。。。。")
+//                }else{
+//
+//                    self.addStateRule()
+//                    print("添加新规则。。。。。。。。")
+//                }
+//                print("setSegmentToSelected \(currentSportStateRuleId)")
+//            }
+//
+//            setSegmentToSelected()
+//
+//        }
+//    }
+    
     
     var currentSportStateRuleType:RuleType?
     var dispather = Dispatcher()
@@ -307,6 +309,8 @@ extension SportsManager {
     
     func setCurrentSportStateRule(landmarkSegment: LandmarkSegment) {
         currentSportStateRuleId = landmarkSegment.id
+        setSegmentToSelected()
+
     }
     
     
@@ -314,6 +318,21 @@ extension SportsManager {
         let rule = ComplexRule(ruleId: self.currentSportStateRuleId!)
         self.upsertCurrentRule(rule: rule)
     }
+    
+    func setStateRule() {
+        if currentSportStateRuleId != nil {
+            if let _ = self.findCurrentSportStateRule() {
+                print("修改规则。。。。。。。。")
+            }else{
+
+                self.addStateRule()
+                print("添加新规则。。。。。。。。")
+            }
+            print("setSegmentToSelected \(currentSportStateRuleId)")
+        }
+    }
+    
+    
     
     
     
@@ -347,6 +366,14 @@ extension SportsManager {
         return complexRulex?.findFirstComplexRule(ruleId: currentSportStateRuleId)
         
     }
+    
+    func findCurrentSportStateRule(sport:Sport, state:SportState,rules:ComplexRules, rule: ComplexRule, ruleType: RuleType) -> ComplexRule? {
+        if let state = findFirstSportState(editedSport: sport, sportStateUUID: state.id), let rules = state.firstComplexRulesById(editedRulesId: rules.id, ruleType: ruleType), let rule = rules.findFirstComplexRule(ruleId: rule.id) {
+            return rule
+        }
+        return nil
+    }
+    
     
     func findCurrentSportStateRuleMutiFrameLength(fromAxis: CoordinateAxis) -> LandmarkToAxisAndState? {
         let rule = findComplexRulex()?.findFirstComplexRule(ruleId: currentSportStateRuleId)
@@ -407,25 +434,25 @@ extension SportsManager {
         return rule?.landmarkInArea
     }
     
-    func updateSportStateRule(firstPoint: Point2D, secondPoint: Point2D, thirdPoint:Point2D, fourthPoint: Point2D) {
-        
-        if let  rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.landmarkInArea!.area =
-            [firstPoint, secondPoint, thirdPoint, fourthPoint]
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
+//    func updateSportStateRule(firstPoint: Point2D, secondPoint: Point2D, thirdPoint:Point2D, fourthPoint: Point2D) {
+//
+//        if let  rule = findCurrentSportStateRule() {
+//            var newRule = rule
+//            newRule.landmarkInArea!.area =
+//            [firstPoint, secondPoint, thirdPoint, fourthPoint]
+//            self.upsertCurrentRule(rule: newRule)
+//        }
+//
+//    }
     
-    func updateSportStateRule(landmarkType: LandmarkType, landmarkInAreaWarning: String) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.landmarkInArea!.landmarkType = landmarkType
-            newRule.landmarkInArea!.warning = landmarkInAreaWarning
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
+//    func updateSportStateRule(landmarkType: LandmarkType, landmarkInAreaWarning: String) {
+//        if let rule = findCurrentSportStateRule() {
+//            var newRule = rule
+//            newRule.landmarkInArea!.landmarkType = landmarkType
+//            newRule.landmarkInArea!.warning = landmarkInAreaWarning
+//            self.upsertCurrentRule(rule: newRule)
+//        }
+//    }
     
     
     func updateSportStateRuleMutiFrame(fromAxis: CoordinateAxis, landmarkType: LandmarkType, stateId: Int, landmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, warning: String) {
@@ -905,6 +932,12 @@ extension SportsManager {
     func deleteSportStateRules(editedSport: Sport, editedSportState: SportState, editedRules: ComplexRules, ruleType: RuleType) {
         if let sportIndex = firstIndex(editedSportId: editedSport.id) {
             sports[sportIndex].deleteSportStateRules(editedSportState: editedSportState, editedRulesId: editedRules.id, ruleType: ruleType)
+        }
+    }
+    
+    func deleteSportStateRule(editedSport: Sport, editedSportState: SportState, editedRules: ComplexRules, ruleType: RuleType, ruleId: String) {
+        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+            sports[sportIndex].deleteSportStateRule(editedSportState: editedSportState, editedRulesId: editedRules.id, ruleType: ruleType, ruleId: ruleId)
         }
     }
     

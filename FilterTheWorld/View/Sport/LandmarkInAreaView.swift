@@ -14,6 +14,7 @@ struct LandmarkInAreaView: View {
     @State var rightBottomY = 0.0
     @State var landmarkInAreaToggle = false
     @State var landmarkInAreaWarning = ""
+    
     var landmarkInAreaTextColor : Color {
         return (self.leftTopX < self.rightBottomX && self.leftTopY < self.rightBottomY) ? .black : .red
     }
@@ -24,18 +25,43 @@ struct LandmarkInAreaView: View {
             let secondPoint = Point2D(x: rightBottomX*imageSize.width, y: leftTopY * imageSize.height)
             let thirdPoint = Point2D(x: rightBottomX*imageSize.width, y: rightBottomY * imageSize.height)
             let fourthPoint = Point2D(x: leftTopX*imageSize.width, y: rightBottomY * imageSize.height)
-            
             return [firstPoint, secondPoint, thirdPoint, fourthPoint]
         }
         return []
     }
     
-    func updateArea() {
-        let area = initArea
-        if !area.isEmpty {
-            sportManager.updateSportStateRule(firstPoint: area[0], secondPoint: area[1], thirdPoint: area[2], fourthPoint: area[3])
+    //    func updateArea() {
+    //        if landmarkInAreaToggle {
+    //            let area = initArea
+    //            if !area.isEmpty {
+    //                sportManager.updateSportStateRule(firstPoint: area[0], secondPoint: area[1], thirdPoint: area[2], fourthPoint: area[3])
+    //            }
+    //        }
+    //    }
+    
+    func resetInitData() {
+        if landmarkInAreaToggle {
+            if leftTopX <= rightBottomX && leftTopY <= rightBottomY {
+                self.sportManager.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: self.landmarkTypeInArea, area: initArea, warning: landmarkInAreaWarning))
+            }
+            
         }
-        
+    }
+    
+    func setInitData() {
+        if landmarkInAreaToggle {
+            self.sportManager.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: self.landmarkTypeInArea, area: initArea))
+            
+        }
+    }
+    
+    func toggleOff() {
+        landmarkTypeInArea = self.sportManager.findselectedSegment()!.landmarkTypes.first!
+        leftTopX = 0.0
+        leftTopY = 0.0
+        rightBottomX = 0.0
+        rightBottomY = 0.0
+        landmarkInAreaWarning = ""
     }
     
     
@@ -43,9 +69,11 @@ struct LandmarkInAreaView: View {
         VStack {
             Toggle("关节点在区域", isOn: $landmarkInAreaToggle.didSet{ isOn in
                 if isOn {
-                    self.sportManager.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: self.landmarkTypeInArea, area: initArea))
+                    setInitData()
+                    
                 }else {
                     self.sportManager.setLandmarkArea(landmarkinArea: nil)
+                    toggleOff()
                 }
                 
             })
@@ -54,7 +82,7 @@ struct LandmarkInAreaView: View {
                     Text("提醒:")
                     TextField("提醒...", text: $landmarkInAreaWarning) { flag in
                         if !flag {
-                            self.sportManager.updateSportStateRule(landmarkType: self.landmarkTypeInArea, landmarkInAreaWarning: self.landmarkInAreaWarning)
+                            resetInitData()
                         }
                         
                     }
@@ -62,12 +90,7 @@ struct LandmarkInAreaView: View {
                 HStack {
                     Text("当前关节:")
                     Picker("当前关节", selection: $landmarkTypeInArea.didSet{ _ in
-                            if leftTopX < rightBottomX && leftTopY < rightBottomY {
-                                self.sportManager.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: self.landmarkTypeInArea, area: initArea))
-                                
-                            }else {
-                                self.sportManager.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: self.landmarkTypeInArea, area: []))
-                            }
+                        resetInitData()
                     }) {
                         ForEach(self.sportManager.findselectedSegment()!.landmarkTypes) { landmarkType in
                             Text(landmarkType.rawValue).tag(landmarkType)
@@ -78,58 +101,50 @@ struct LandmarkInAreaView: View {
                         HStack {
                             TextField("leftTopX", value: $leftTopX, formatter: formatter) {flag in
                                 if !flag {
-                                    if leftTopX < rightBottomX {
-                                        updateArea()
-                                    }
+                                    resetInitData()
                                 }
                                 
                             }
-                                .foregroundColor(landmarkInAreaTextColor)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
                             TextField("leftTopY", value: $leftTopY, formatter: formatter) {flag in
                                 if !flag {
-                                    if leftTopY < rightBottomY {
-                                        updateArea()
-                                    }
+                                    resetInitData()
                                 }
                                 
                             }
-                                .foregroundColor(landmarkInAreaTextColor)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
                         }
                         HStack {
                             TextField("rightBottomX", value: $rightBottomX, formatter: formatter) {flag in
                                 if !flag {
-                                    if leftTopX < rightBottomX {
-                                        updateArea()
-                                    }
+                                    resetInitData()
                                 }
                                 
                             }
-                                .foregroundColor(landmarkInAreaTextColor)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
                             
                             TextField("rightBottomY", value: $rightBottomY, formatter: formatter){flag in
                                 if !flag {
-                                    if leftTopY < rightBottomY {
-                                        updateArea()
-                                    }
+                                    resetInitData()
                                 }
                                 
                             }
-                          
-                                .foregroundColor(landmarkInAreaTextColor)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .keyboardType(.decimalPad)
+                            
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
                         }
                     }
-            }
-            .disabled(!landmarkInAreaToggle)
+                }
+
                 
-            }
+            }.disabled(!landmarkInAreaToggle)
         }
         .onAppear{
             if let imageSize = sportManager.findFirstSportState()?.image?.imageSize,

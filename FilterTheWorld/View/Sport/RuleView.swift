@@ -2,8 +2,6 @@
 import SwiftUI
 
 
-
-
 struct RuleView: View {
     @EnvironmentObject var sportManager:SportsManager
     
@@ -42,6 +40,7 @@ struct RuleView: View {
                 }
                 Button(action: {
                     self.showSetupRule = true
+                    sportManager.setStateRule()
                 }) {
                     Text("设置规则")
                 }
@@ -49,13 +48,14 @@ struct RuleView: View {
             }
             
         }.padding()
-            .onChange(of: self.selectedLandmarkSegment) { _ in
-                sportManager.setCurrentSportStateRule(landmarkSegment: selectedLandmarkSegment)
-            }
-            .sheet(isPresented: self.$showSetupRule) {
-                SetupRuleView()
- 
-            }
+        .onChange(of: self.selectedLandmarkSegment) { _ in
+            sportManager.setCurrentSportStateRule(landmarkSegment: selectedLandmarkSegment)
+        }
+        .sheet(isPresented: self.$showSetupRule) {
+            SetupRuleView()
+        }.onAppear{
+            sportManager.setCurrentSportStateRule(landmarkSegment: selectedLandmarkSegment)
+        }
     }
 }
 
