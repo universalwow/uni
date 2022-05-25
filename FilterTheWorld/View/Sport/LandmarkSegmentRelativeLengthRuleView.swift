@@ -17,25 +17,70 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     @State var relativeLengthToggle = false
     @State var relativeLengthWarning = ""
     
+    func resetInitData() {
+        if relativeLengthToggle {
+            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
+            sportManager.updateCurrentSportStateRule(fromAxis: currentAxis, toAxis: relativeAxis, relativeSegment: relativeSegment, warning: relativeLengthWarning)
+        }
 
+    }
+    func setInitData() {
+        if relativeLengthToggle {
+            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
+            sportManager.setSportStateRuleLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis)
+        }
+        
+    }
+    
+    func toggleOff() {
+        currentAxis = .X
+        relativeAxis = .X
+        relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
+        minRelativeLength = 0.0
+        maxRelativeLength = 0.0
+        relativeLengthWarning = ""
+    }
+    
+    func updateLocalLength() {
+        if relativeLengthToggle {
+            let length = sportManager.getCurrentSportStateRuleLength(fromAxis: currentAxis)!
+            minRelativeLength = length.lowerBound
+            maxRelativeLength = length.upperBound
+            print("2 \(minRelativeLength)  - \(maxRelativeLength)")
+        }
+        
+    }
+    
+    func updateRemoveLength() {
+        if relativeLengthToggle {
+            self.sportManager.updateSportStateRule(axis: currentAxis, lowerBound: minRelativeLength , upperBound: maxRelativeLength)
+
+        }
+    }
+    
     var body : some View {
         VStack {
-            Toggle("关节对相对值:", isOn: $relativeLengthToggle.didSet{ isOn in
+            Toggle("关节对相对值", isOn: $relativeLengthToggle.didSet{ isOn in
                     if isOn {
-                        let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-                        sportManager.setSportStateRuleLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis)
-                        let length = sportManager.getCurrentSportStateRuleLength(fromAxis: currentAxis)!
-                        minRelativeLength = length.lowerBound
-                        maxRelativeLength = length.upperBound
+                        
+                        setInitData()
+                        updateLocalLength()
              
                     }else {
                         self.sportManager.removeSportStateRuleLength(fromAxis: currentAxis)
+                        toggleOff()
+                        
                     }
             })
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $relativeLengthWarning)
+                    TextField("提醒...", text: $relativeLengthWarning, onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
                 }
                 HStack {
                     Text("当前轴")
@@ -48,11 +93,9 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     Spacer()
                     Text("相对关节对")
                     Picker("相对关节对", selection: $relativelandmarkSegmentType.didSet{ _ in
-                        let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-                        sportManager.updateCurrentSportStateRule(fromAxis: currentAxis, toAxis: relativeAxis, relativeSegment: relativeSegment, warning: relativeLengthWarning)
-                        let length = sportManager.getCurrentSportStateRuleLength(fromAxis: currentAxis)!
-                        minRelativeLength = length.lowerBound
-                        maxRelativeLength = length.upperBound
+                        print("相对关节对")
+                        resetInitData()
+                        updateLocalLength()
                         
                     }) {
                         ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
@@ -62,11 +105,8 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     
                     Text("相对轴")
                     Picker("相对轴", selection: $relativeAxis.didSet{ _ in
-                        let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-                        sportManager.updateCurrentSportStateRule(fromAxis: currentAxis, toAxis: relativeAxis, relativeSegment: relativeSegment, warning: relativeLengthWarning)
-                        let length = sportManager.getCurrentSportStateRuleLength(fromAxis: currentAxis)!
-                        minRelativeLength = length.lowerBound
-                        maxRelativeLength = length.upperBound
+                        resetInitData()
+                        updateLocalLength()
                     }) {
                         ForEach(CoordinateAxis.allCases) { axis in
                             Text(axis.rawValue).tag(axis)
@@ -76,15 +116,28 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                 
                 HStack {
                     Text("最小值:")
-                    TextField("最小值", value: $minRelativeLength, formatter: formatter)
-                        .foregroundColor(self.maxRelativeLength > self.minRelativeLength ? .black : .red)
+                    TextField("最小值", value: $minRelativeLength, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            print("0 \(minRelativeLength)  - \(maxRelativeLength)")
+                            updateRemoveLength()
+                        }
+                        
+                    })
+                        .foregroundColor(self.maxRelativeLength >= self.minRelativeLength ? .black : .red)
                     
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .keyboardType(.decimalPad)
                     Spacer()
                     Text("最大值:")
-                    TextField("最大值", value: $maxRelativeLength, formatter: formatter)
-                        .foregroundColor(self.maxRelativeLength > self.minRelativeLength ? .black : .red)
+                    
+                    TextField("最大值", value: $maxRelativeLength, formatter: formatter, onEditingChanged: { flag in
+                        if !flag {
+                            print("1 \(minRelativeLength)  - \(maxRelativeLength)")
+                            updateRemoveLength()
+                        }
+                        
+                    })
+                        .foregroundColor(self.maxRelativeLength >= self.minRelativeLength ? .black : .red)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .keyboardType(.decimalPad)
                     
@@ -92,17 +145,6 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
             }
             .disabled(!relativeLengthToggle)
             
-        }.onChange(of: relativeLengthWarning) { _ in
-            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateCurrentSportStateRule(fromAxis: currentAxis, toAxis: relativeAxis, relativeSegment: relativeSegment, warning: relativeLengthWarning)
-            
-        }.onChange(of: minRelativeLength) { _ in
-            print("\(minRelativeLength) - \(maxRelativeLength)")
-            self.sportManager.updateSportStateRule(axis: currentAxis, lowerBound: minRelativeLength, upperBound: maxRelativeLength)
-        }
-        .onChange(of: maxRelativeLength) { _ in
-            print("\(minRelativeLength) - \(maxRelativeLength)")
-            self.sportManager.updateSportStateRule(axis: currentAxis, lowerBound: minRelativeLength, upperBound: maxRelativeLength)
         }
         .onAppear{
 //            存在时加载

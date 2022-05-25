@@ -91,6 +91,7 @@ struct SportView: View {
                             
                         }) {
                             Text("添加关键帧")
+                                .foregroundColor(sportManager.keyFrameSetted(sport: sport, state: state) ? Color.green : Color.blue)
                         }
                         
                         Button(action: {

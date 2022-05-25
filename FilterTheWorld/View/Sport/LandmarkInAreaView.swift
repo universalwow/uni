@@ -52,7 +52,12 @@ struct LandmarkInAreaView: View {
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $landmarkInAreaWarning)
+                    TextField("提醒...", text: $landmarkInAreaWarning) { flag in
+                        if !flag {
+                            self.sportManager.updateSportStateRule(landmarkType: self.landmarkTypeInArea, landmarkInAreaWarning: self.landmarkInAreaWarning)
+                        }
+                        
+                    }
                 }
                 HStack {
                     Text("当前关节:")
@@ -71,22 +76,51 @@ struct LandmarkInAreaView: View {
                     Text("区域:")
                     VStack {
                         HStack {
-                            TextField("leftTopX", value: $leftTopX, formatter: formatter)
+                            TextField("leftTopX", value: $leftTopX, formatter: formatter) {flag in
+                                if !flag {
+                                    if leftTopX < rightBottomX {
+                                        updateArea()
+                                    }
+                                }
+                                
+                            }
                                 .foregroundColor(landmarkInAreaTextColor)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.decimalPad)
-                            TextField("leftTopY", value: $leftTopY, formatter: formatter)
+                            TextField("leftTopY", value: $leftTopY, formatter: formatter) {flag in
+                                if !flag {
+                                    if leftTopY < rightBottomY {
+                                        updateArea()
+                                    }
+                                }
+                                
+                            }
                                 .foregroundColor(landmarkInAreaTextColor)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.decimalPad)
                         }
                         HStack {
-                            TextField("rightBottomX", value: $rightBottomX, formatter: formatter)
+                            TextField("rightBottomX", value: $rightBottomX, formatter: formatter) {flag in
+                                if !flag {
+                                    if leftTopX < rightBottomX {
+                                        updateArea()
+                                    }
+                                }
+                                
+                            }
                                 .foregroundColor(landmarkInAreaTextColor)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.decimalPad)
                             
-                            TextField("rightBottomY", value: $rightBottomY, formatter: formatter)
+                            TextField("rightBottomY", value: $rightBottomY, formatter: formatter){flag in
+                                if !flag {
+                                    if leftTopY < rightBottomY {
+                                        updateArea()
+                                    }
+                                }
+                                
+                            }
+                          
                                 .foregroundColor(landmarkInAreaTextColor)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                                 .keyboardType(.decimalPad)
@@ -97,31 +131,7 @@ struct LandmarkInAreaView: View {
                 
             }
         }
-        .onChange(of:landmarkInAreaWarning, perform: { _ in
-            self.sportManager.updateSportStateRule(landmarkType: self.landmarkTypeInArea, landmarkInAreaWarning: self.landmarkInAreaWarning)
-        })
-        .onChange(of: self.leftTopX) { _ in
-            if leftTopX < rightBottomX {
-                updateArea()
-            }
-        }
-        .onChange(of: self.leftTopY) {  _ in
-            if leftTopY < rightBottomY {
-                updateArea()
-            }
-            
-        }
-        .onChange(of: self.rightBottomX) { _ in
-            if leftTopX < rightBottomX {
-                updateArea()
-            }
-            
-        }
-        .onChange(of: self.rightBottomY) {  _ in
-            if leftTopY < rightBottomY {
-                updateArea()
-            }
-        }.onAppear{
+        .onAppear{
             if let imageSize = sportManager.findFirstSportState()?.image?.imageSize,
                let area = sportManager.findCurrentLandmarkArea(), !area.area.isEmpty {
                 landmarkTypeInArea = area.landmarkType

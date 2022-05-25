@@ -67,44 +67,47 @@ struct LandmarkToAxisAndState: Codable {
     }
     
     private mutating func initBound() {
+        var length = 0.0
+        var bound = 0.0
         switch (fromLandmarkToAxis.axis, toLandmarkSegmentToAxis.axis) {
         case (.X, .X):
-            let length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+
         case (.X, .Y):
-            let length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
         case (.X, .XY):
-            let length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
         case (.Y, .X):
-            let length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+
         case (.Y, .Y):
-            let length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
         case (.Y, .XY):
-            let length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
         case (.XY, .X):
-            let length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+
         case (.XY, .Y):
-            let length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
         case (.XY, .XY):
-            let length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
         }
+        
+        lowerBound = bound
+        upperBound = bound
     }
     
 }
@@ -179,44 +182,50 @@ struct ObjectToLandmark: Codable {
     }
     
     private mutating func initBound() {
+        var length = 0.0
+        var bound = 0.0
+        
+        
         switch (fromAxis, toLandmarkSegmentToAxis.axis) {
         case (.X, .X):
-            let length = fromPosition.point.x - toLandmark.position.x
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            length = fromPosition.point.x - toLandmark.position.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
         case (.X, .Y):
-            let length = fromPosition.point.x - toLandmark.position.x
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            length = fromPosition.point.x - toLandmark.position.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
         case (.X, .XY):
-            let length = fromPosition.point.x - toLandmark.position.x
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            length = fromPosition.point.x - toLandmark.position.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
         case (.Y, .X):
-            let length = fromPosition.point.y - toLandmark.position.y
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            length = fromPosition.point.y - toLandmark.position.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+
         case (.Y, .Y):
-            let length = fromPosition.point.y - toLandmark.position.y
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            length = fromPosition.point.y - toLandmark.position.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
         case (.Y, .XY):
-            let length = fromPosition.point.y - toLandmark.position.y
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            length = fromPosition.point.y - toLandmark.position.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
         case (.XY, .X):
-            let length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+    
         case (.XY, .Y):
-            let length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
         case (.XY, .XY):
-            let length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
-            lowerBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            upperBound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            
+            length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
         }
+        lowerBound = bound
+        upperBound = bound
     }
     
 }
@@ -251,56 +260,46 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
     }
     
     private mutating func initBound() {
+        var bound = 0.0
         switch (from.axis, to.axis) {
         case (.X, .X):
-            lowerBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceX
-            upperBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceX
+            bound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceX
+
             
         case (.X, .Y):
-            
-            lowerBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceY
-            upperBound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceY
+            bound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceY
+
             
         case (.X, .XY):
-            
-            lowerBound = from.landmarkSegment.distanceX/to.landmarkSegment.distance
-            upperBound = from.landmarkSegment.distanceX/to.landmarkSegment.distance
+            bound = from.landmarkSegment.distanceX/to.landmarkSegment.distance
             
             // from Y
             
         case (.Y, .X):
-            
-            lowerBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceX
-            upperBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceX
+            bound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceX
             
         case (.Y, .Y):
-            
-            lowerBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceY
-            upperBound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceY
+            bound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceY
             
         case (.Y, .XY):
-            
-            lowerBound = from.landmarkSegment.distanceY/to.landmarkSegment.distance
-            upperBound = from.landmarkSegment.distanceY/to.landmarkSegment.distance
+            bound = from.landmarkSegment.distanceY/to.landmarkSegment.distance
             
             
             // from XY
             
         case (.XY, .X):
-            
-            lowerBound = from.landmarkSegment.distance/to.landmarkSegment.distanceX
-            upperBound = from.landmarkSegment.distance/to.landmarkSegment.distanceX
+            bound = from.landmarkSegment.distance/to.landmarkSegment.distanceX
             
         case (.XY, .Y):
-            
-            lowerBound = from.landmarkSegment.distance/to.landmarkSegment.distanceY
-            upperBound = from.landmarkSegment.distance/to.landmarkSegment.distanceY
+            bound = from.landmarkSegment.distance/to.landmarkSegment.distanceY
+
             
         case (.XY, .XY):
-            
-            lowerBound = from.landmarkSegment.distance/to.landmarkSegment.distance
-            upperBound = from.landmarkSegment.distance/to.landmarkSegment.distance
+            bound = from.landmarkSegment.distance/to.landmarkSegment.distance
+
         }
+        lowerBound = bound
+        upperBound = bound
     }
     
 }

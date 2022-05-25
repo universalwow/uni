@@ -25,8 +25,14 @@ extension Point3D {
   var point2D: Point2D {
     Point2D(x: x, y: y)
   }
-  
 }
+
+extension Double {
+    var decimel: Decimal {
+        Decimal(self)
+    }
+}
+
 
 extension Point2D {
   var cgPoint: CGPoint {

@@ -115,7 +115,12 @@ struct LandmarkAngleRuleView: View {
             VStack {
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $angleWarning)
+                    TextField("提醒...", text: $angleWarning) { flag in
+                        if !flag {
+                            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
+                        }
+                        
+                    }
                 }
                 HStack {
                     Text("最小角度")
@@ -140,9 +145,6 @@ struct LandmarkAngleRuleView: View {
             sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
         }
         .onChange(of: maxAngle) { _ in
-            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
-        }
-        .onChange(of: angleWarning) { _ in
             sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
         }
         .onAppear(perform: {

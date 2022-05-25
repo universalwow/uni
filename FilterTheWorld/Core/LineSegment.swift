@@ -103,6 +103,7 @@ extension LandmarkSegment {
     }
     
     var distanceX:Double {
+        
         abs(startLandmark.position.x - endLandmark.position.x)
     }
     
