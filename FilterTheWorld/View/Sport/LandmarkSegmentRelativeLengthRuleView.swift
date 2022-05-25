@@ -84,12 +84,15 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                 }
                 HStack {
                     Text("当前轴")
-                    Text(currentAxis.rawValue)
-//                    Picker("当前轴", selection: $currentAxis) {
-//                        ForEach(CoordinateAxis.allCases) { axis in
-//                            Text(axis.rawValue).tag(axis)
-//                        }
-//                    }.disabled(true)
+                    Picker("当前轴", selection: $currentAxis.didSet { _ in
+                                                    setInitData()
+                                                    updateLocalLength()
+                                                    
+                                                }) {
+                        ForEach(CoordinateAxis.allCases) { axis in
+                            Text(axis.rawValue).tag(axis)
+                        }
+                    }
                     Spacer()
                     Text("相对关节对")
                     Picker("相对关节对", selection: $relativelandmarkSegmentType.didSet{ _ in

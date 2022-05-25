@@ -17,7 +17,12 @@ struct SportView: View {
     
     @State var keyFrameFlag = false
     @State var editRuleFlag = false
+    @State var selectedLandmarkSegment = LandmarkSegment.initValue()
     
+    @State var ruleTranferToState = SportState.startState
+    @State var ruleTransferToRulesIndex = 0
+    @State var ruleTransferToRulesType = RuleType.SCORE
+
     
     @EnvironmentObject var sportManager: SportsManager
     
@@ -141,20 +146,35 @@ struct SportView: View {
                             }
                         }.padding([.top], StaticValue.padding)
                         ForEach(scoreRules.rules) { rule in
+                            Divider()
                             VStack {
+                                
                                 HStack {
                                     Text("当前规则")
-                                    Spacer()
                                     Text(rule.id)
+                                    
+                                    Spacer()
+                                    
+                                    
+                                    Button(action: {
+                                        sportManager.setCurrentSportStateRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE)
+                                        
+                                        selectedLandmarkSegment = LandmarkSegment.init(startLandmark: Landmark.init(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.startLandmarkType), endLandmark: Landmark(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.endLandmarkType))
+                                        self.editRuleFlag = true
+                                    }) {
+                                        Text("修改")
+                                    }
                                     Button(action: {
                                         sportManager.deleteSportStateRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE, ruleId: rule.id)
                                     }) {
                                         Text("删除")
                                     }
+                                    
+                                    
                                 }.padding([.top], StaticValue.padding)
                                 
+                                
                                 RuleDescriptionView(rule: Binding.constant(rule))
-
                                 
                             }
                         }
@@ -257,7 +277,7 @@ struct SportView: View {
         .sheet(isPresented: $editRuleFlag, onDismiss: {
             
         }) {
-            RuleView()
+            RuleView(selectedLandmarkSegment: selectedLandmarkSegment)
         }
         .sheet(isPresented: $keyFrameFlag, onDismiss: {
             

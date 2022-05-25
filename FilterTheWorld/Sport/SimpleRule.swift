@@ -411,8 +411,10 @@ struct ComplexRules: Identifiable, Hashable, Codable {
         // MARK: 新规则
         rules.removeAll { editedRule in
             if editedRule.angle == nil && editedRule.landmarkInArea == nil &&
-                editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil &&
-                editedRule.lengthXToState == nil && editedRule.lengthYToState == nil && editedRule.lengthXYToState == nil &&
+//                editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil &&
+                editedRule.length == nil &&
+                editedRule.lengthToState == nil &&
+//                editedRule.lengthXToState == nil && editedRule.lengthYToState == nil && editedRule.lengthXYToState == nil &&
                 editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionXYToLandmark == nil
                 
             {
@@ -489,12 +491,13 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     var warning:String = ""
     // 角度
     var angle:AngleRange?
-    // X 轴间距
-    var lengthX: RelativeLandmarkSegmentsToAxis?
-    // Y 轴间距
-    var lengthY: RelativeLandmarkSegmentsToAxis?
-    // 距离
-    var lengthXY: RelativeLandmarkSegmentsToAxis?
+//    // X 轴间距
+//    var lengthX: RelativeLandmarkSegmentsToAxis?
+//    // Y 轴间距
+//    var lengthY: RelativeLandmarkSegmentsToAxis?
+//    // 距离
+//    var lengthXY: RelativeLandmarkSegmentsToAxis?
+    var length: RelativeLandmarkSegmentsToAxis?
     
     // 关节点在区域内
     var landmarkInArea:LandmarkInArea?
@@ -502,9 +505,11 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     //MARK:  1. 物体在区域内 2. 物体与关节点的关系 3.物体相对自身位移 关节相对自身位移
     
     // 基于多帧的规则
-    var lengthXToState: LandmarkToAxisAndState?
-    var lengthYToState: LandmarkToAxisAndState?
-    var lengthXYToState: LandmarkToAxisAndState?
+//    var lengthXToState: LandmarkToAxisAndState?
+//    var lengthYToState: LandmarkToAxisAndState?
+//    var lengthXYToState: LandmarkToAxisAndState?
+    
+    var lengthToState:LandmarkToAxisAndState?
     
     // 物体位置相对于关节点
     var objectPositionXToLandmark: ObjectToLandmark?
@@ -537,17 +542,19 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?) -> (Bool, Set<String>) {
         // 单帧
-        var lengthXSatisfy: Bool? = true
-        var lengthYSatisfy: Bool? = true
-        var lengthXYSatisfy: Bool? = true
+//        var lengthXSatisfy: Bool? = true
+//        var lengthYSatisfy: Bool? = true
+//        var lengthXYSatisfy: Bool? = true
+        var lengthSatisfy: Bool? = true
+
         var angleSatisfy: Bool? = true
         var landmarkInAreaSatisfy: Bool? = true
         
         // 多帧
-        var lengthXToStateSatisfy: Bool? = true
-        var lengthYToStateSatisfy: Bool? = true
-        var lengthXYToStateSatisfy: Bool? = true
-        
+//        var lengthXToStateSatisfy: Bool? = true
+//        var lengthYToStateSatisfy: Bool? = true
+//        var lengthXYToStateSatisfy: Bool? = true
+        var lengthToStateSatisfy: Bool? = true
         // 物体相对于关节点
         
         var objectXToLandmarkSatisfy: Bool? = true
@@ -557,26 +564,33 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         
         var warnings : Set<String> = []
         
-        if let length = lengthX {
-            lengthXSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
-            if lengthXSatisfy == false {
-                warnings.insert(length.warning)
-            }
-        }
+//        if let length = lengthX {
+//            lengthXSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
+//            if lengthXSatisfy == false {
+//                warnings.insert(length.warning)
+//            }
+//        }
+//
+//        if let length = lengthY {
+//            lengthYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
+//            if lengthYSatisfy == false {
+//                warnings.insert(length.warning)
+//            }
+//        }
+//
+//        if let length = lengthXY {
+//            lengthXYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
+//            if lengthXYSatisfy == false {
+//                warnings.insert(length.warning)
+//            }
+//        }
         
-        if let length = lengthY {
-            lengthYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
-            if lengthYSatisfy == false {
-                warnings.insert(length.warning)
-            }
-        }
-        
-        if let length = lengthXY {
-            lengthXYSatisfy = lengthSatisfy(relativeDistance: length, poseMap: poseMap)
-            if lengthXYSatisfy == false {
-                warnings.insert(length.warning)
-            }
-        }
+        if let length = length {
+            lengthSatisfy = self.lengthSatisfy(relativeDistance: length, poseMap: poseMap)
+                    if lengthSatisfy == false {
+                        warnings.insert(length.warning)
+                    }
+                }
         
         if let angleRange = angle {
             angleSatisfy = self.angleSatisfy(angleRange: angleRange, poseMap: poseMap)
@@ -593,24 +607,31 @@ struct ComplexRule: Identifiable, Hashable, Codable {
             }
         }
         
+//
+//        if let length = lengthXToState {
+//            lengthXToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+//            if lengthXToStateSatisfy == false {
+//                warnings.insert(length.warning)
+//            }
+//        }
+//
+//        if let length = lengthYToState {
+//            lengthYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+//            if lengthYToStateSatisfy == false {
+//                warnings.insert(length.warning)
+//            }
+//        }
+//
+//        if let length = lengthXYToState {
+//            lengthXYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+//            if lengthXYToStateSatisfy == false {
+//                warnings.insert(length.warning)
+//            }
+//        }
         
-        if let length = lengthXToState {
-            lengthXToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-            if lengthXToStateSatisfy == false {
-                warnings.insert(length.warning)
-            }
-        }
-        
-        if let length = lengthYToState {
-            lengthYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-            if lengthYToStateSatisfy == false {
-                warnings.insert(length.warning)
-            }
-        }
-        
-        if let length = lengthXYToState {
-            lengthXYToStateSatisfy = lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-            if lengthXYToStateSatisfy == false {
+        if let length = lengthToState {
+            lengthToStateSatisfy = self.lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            if lengthToStateSatisfy == false {
                 warnings.insert(length.warning)
             }
         }
@@ -653,9 +674,12 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         }
         
         // 每个规则至少要包含一个条件 且所有条件都必须满足
-        return (lengthXSatisfy == true && lengthYSatisfy == true && lengthXYSatisfy == true &&
+        return (
+//            lengthXSatisfy == true && lengthYSatisfy == true && lengthXYSatisfy == true &&
+            lengthSatisfy == true &&
                 angleSatisfy == true && landmarkInAreaSatisfy == true &&
-                lengthXToStateSatisfy == true && lengthYToStateSatisfy == true && lengthXYToStateSatisfy == true &&
+//                lengthXToStateSatisfy == true && lengthYToStateSatisfy == true && lengthXYToStateSatisfy == true &&
+                lengthToStateSatisfy == true &&
                 objectXToLandmarkSatisfy == true && objectYToLandmarkSatisfy == true && objectXYToLandmarkSatisfy == true
                 , warnings)
     }
