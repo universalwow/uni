@@ -51,7 +51,7 @@ struct LandmarkToStateLengthView: View {
     
     func toggleOff() {
         landmarkToStateWarning = ""
-        landmarkTypeToState = LandmarkType.LeftAnkle
+        landmarkTypeToState =  sportManager.findselectedSegment()!.landmarkTypes.first!
         currentAxis = CoordinateAxis.X
         relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
         relativeAxis = CoordinateAxis.X
@@ -188,6 +188,8 @@ struct LandmarkToStateLengthView: View {
                 relativeToState = length.toStateId
                 minRelativeLength = length.lowerBound
                 maxRelativeLength = length.upperBound
+            }else {
+                self.landmarkTypeToState = self.sportManager.findselectedSegment()!.landmarkTypes.first!
             }
             
         }

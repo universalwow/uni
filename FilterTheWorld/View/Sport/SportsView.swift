@@ -25,7 +25,7 @@ struct SportsView: View {
                     ForEach(sportManager.sports) { sport in
                         NavigationLink(
                             destination:
-                                        SportView(sport: sport)
+                                SportView(sport: Binding.constant(sport))
                             .navigationTitle(Text(sport.name))
                             .navigationBarTitleDisplayMode(.inline)
                             .navigationBarItems(trailing:

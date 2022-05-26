@@ -215,6 +215,12 @@ extension Sport {
       states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
     }
   }
+    
+    mutating func updateSportStateRule(editedSportStateUUID: Int, ruleType: RuleType, editedRulesIndex: Int, editedRule: ComplexRule) {
+      if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
+        states[stateIndex].updateSportStateRule(ruleType: ruleType, rulesIndex: editedRulesIndex, editedRule: editedRule)
+      }
+    }
   
   
   

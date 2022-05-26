@@ -10,7 +10,10 @@ enum CoordinateAxis: String, Identifiable, CaseIterable, Codable {
 }
 
 
-enum RuleType {
+enum RuleType: String, Identifiable, CaseIterable {
+    var id: String {
+        self.rawValue
+    }
     case SCORE, VIOLATE
 }
 
@@ -415,7 +418,9 @@ struct ComplexRules: Identifiable, Hashable, Codable {
                 editedRule.length == nil &&
                 editedRule.lengthToState == nil &&
 //                editedRule.lengthXToState == nil && editedRule.lengthYToState == nil && editedRule.lengthXYToState == nil &&
-                editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionXYToLandmark == nil
+//                editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionXYToLandmark == nil
+                editedRule.objectPositionToLandmark == nil
+            
                 
             {
                 return true
@@ -512,9 +517,10 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     var lengthToState:LandmarkToAxisAndState?
     
     // 物体位置相对于关节点
-    var objectPositionXToLandmark: ObjectToLandmark?
-    var objectPositionYToLandmark: ObjectToLandmark?
-    var objectPositionXYToLandmark: ObjectToLandmark?
+//    var objectPositionXToLandmark: ObjectToLandmark?
+//    var objectPositionYToLandmark: ObjectToLandmark?
+//    var objectPositionXYToLandmark: ObjectToLandmark?
+     var objectPositionToLandmark: ObjectToLandmark?
     
     // 物体位置相对于物体位置
     var objectPositionToObjectPosition: ObjectToObject?
@@ -557,11 +563,12 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         var lengthToStateSatisfy: Bool? = true
         // 物体相对于关节点
         
-        var objectXToLandmarkSatisfy: Bool? = true
-        var objectYToLandmarkSatisfy: Bool? = true
-        var objectXYToLandmarkSatisfy: Bool? = true
+//        var objectXToLandmarkSatisfy: Bool? = true
+//        var objectYToLandmarkSatisfy: Bool? = true
+//        var objectXYToLandmarkSatisfy: Bool? = true
         
-        
+        var objectToLandmarkSatisfy: Bool? = true
+
         var warnings : Set<String> = []
         
 //        if let length = lengthX {
@@ -637,38 +644,49 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         }
         
         
-        if let objectTolandmark = objectPositionXToLandmark {
+//        if let objectTolandmark = objectPositionXToLandmark {
+//            if let object = object {
+//                objectXToLandmarkSatisfy = objectToLandmarkSatisfy(objectToLandmark: objectTolandmark, poseMap: poseMap, object: object)
+//            } else {
+//                objectXToLandmarkSatisfy = false
+//            }
+//            if objectXToLandmarkSatisfy == false {
+//                warnings.insert(objectTolandmark.warning)
+//            }
+//        }
+        
+//        if let objectTolandmark = objectPositionYToLandmark {
+//            if let object = object {
+//                objectYToLandmarkSatisfy = objectToLandmarkSatisfy(objectToLandmark: objectTolandmark, poseMap: poseMap, object: object)
+//            }
+//            else {
+//                objectYToLandmarkSatisfy = false
+//            }
+//
+//            if objectYToLandmarkSatisfy == false {
+//                warnings.insert(objectTolandmark.warning)
+//            }
+//        }
+//
+//        if let objectTolandmark = objectPositionXYToLandmark {
+//            if let object = object {
+//                objectXYToLandmarkSatisfy = objectToLandmarkSatisfy(objectToLandmark: objectTolandmark, poseMap: poseMap, object: object)
+//            }
+//            else {
+//                objectXYToLandmarkSatisfy = false
+//            }
+//            if objectXYToLandmarkSatisfy == false {
+//                warnings.insert(objectTolandmark.warning)
+//            }
+//        }
+        
+        if let objectTolandmark = objectPositionToLandmark {
             if let object = object {
-                objectXToLandmarkSatisfy = objectToLandmarkSatisfy(objectToLandmark: objectTolandmark, poseMap: poseMap, object: object)
+                objectToLandmarkSatisfy = self.objectToLandmarkSatisfy(objectToLandmark: objectTolandmark, poseMap: poseMap, object: object)
             } else {
-                objectXToLandmarkSatisfy = false
+                objectToLandmarkSatisfy = false
             }
-            if objectXToLandmarkSatisfy == false {
-                warnings.insert(objectTolandmark.warning)
-            }
-        }
-        
-        if let objectTolandmark = objectPositionYToLandmark {
-            if let object = object {
-                objectYToLandmarkSatisfy = objectToLandmarkSatisfy(objectToLandmark: objectTolandmark, poseMap: poseMap, object: object)
-            }
-            else {
-                objectYToLandmarkSatisfy = false
-            }
-            
-            if objectYToLandmarkSatisfy == false {
-                warnings.insert(objectTolandmark.warning)
-            }
-        }
-        
-        if let objectTolandmark = objectPositionXYToLandmark {
-            if let object = object {
-                objectXYToLandmarkSatisfy = objectToLandmarkSatisfy(objectToLandmark: objectTolandmark, poseMap: poseMap, object: object)
-            }
-            else {
-                objectXYToLandmarkSatisfy = false
-            }
-            if objectXYToLandmarkSatisfy == false {
+            if objectToLandmarkSatisfy == false {
                 warnings.insert(objectTolandmark.warning)
             }
         }
@@ -680,7 +698,8 @@ struct ComplexRule: Identifiable, Hashable, Codable {
                 angleSatisfy == true && landmarkInAreaSatisfy == true &&
 //                lengthXToStateSatisfy == true && lengthYToStateSatisfy == true && lengthXYToStateSatisfy == true &&
                 lengthToStateSatisfy == true &&
-                objectXToLandmarkSatisfy == true && objectYToLandmarkSatisfy == true && objectXYToLandmarkSatisfy == true
+            objectToLandmarkSatisfy == true
+//                objectXToLandmarkSatisfy == true && objectYToLandmarkSatisfy == true && objectXYToLandmarkSatisfy == true
                 , warnings)
     }
     

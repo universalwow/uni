@@ -7,7 +7,7 @@ struct LandmarkInAreaView: View {
     @EnvironmentObject var sportManager:SportsManager
     // 关节点在区域内
     
-    @State var landmarkTypeInArea: LandmarkType = LandmarkType.LeftAnkle
+    @State var landmarkTypeInArea = LandmarkType.LeftAnkle
     @State var leftTopX = 0.0
     @State var leftTopY = 0.0
     @State var rightBottomX = 0.0

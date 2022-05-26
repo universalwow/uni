@@ -19,18 +19,8 @@ struct AngleDescriptionView: View {
                 }.disabled(true)
             }
             
-            HStack {
-                Text("提醒:")
-                Spacer()
-                Text(angle.warning)
-            }
-            HStack {
-                Text("最小值:")
-                Text(angle.lowerBound.roundedString)
-                Spacer()
-                Text("最大值:")
-                Text(angle.upperBound.roundedString)
-            }
+            Text("提醒:\(angle.warning)")
+            Text("范围:\(angle.lowerBound.roundedString)/\(angle.upperBound.roundedString)")
         }
         
     }
@@ -42,37 +32,21 @@ struct LengthDescriptionView: View {
     var body:some View {
         VStack {
             HStack {
-                Text("关节对")
+                Text("关节对相对值")
                 Spacer()
                 Button("删除") {
                     
-                }
+                }.disabled(true)
             }
-            HStack {
-                Text("提醒:")
-                Spacer()
-                Text(length.warning)
-            }
+            Text("提醒:\(length.warning)")
             
             HStack {
-                Text("当前关节:")
-                Text(length.from.landmarkSegment.id)
-                Text("当前轴:")
-                Text(length.from.axis.rawValue)
+                Text("关节对:\(length.from.landmarkSegment.id)/\(length.from.axis.rawValue) -> \(length.to.landmarkSegment.id)/\(length.to.axis.rawValue)")
                 Spacer()
-                Text("相对关节:")
-                Text(length.to.landmarkSegment.id)
-                Text("相对轴:")
-                Text(length.to.axis.rawValue)
+                Text("范围:\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
+                
             }
             
-            HStack {
-                Text("最小值:")
-                Text(length.lowerBound.roundedString)
-                Spacer()
-                Text("最大值:")
-                Text(length.upperBound.roundedString)
-            }
         }
         
     }
@@ -89,35 +63,16 @@ struct LengthToStateDescriptionView: View {
                     
                 }.disabled(true)
             }
-            HStack {
-                Text("提醒:")
-                Spacer()
-                Text(length.warning)
-            }
             
-            //            HStack {
-            //                Text("当前关节:")
-            //                Text(length.fromLandmarkToAxis.landmark.id)
-            //                Spacer()
-            //                Text("当前轴:")
-            //                Text(length.fromLandmarkToAxis.axis.rawValue)
-            //            }
+            Text("提醒:\(length.warning)")
+
+            
             HStack {
                 
-                Text("当前关节:\(length.fromLandmarkToAxis.landmark.id)")
-                Text("当前轴:\(length.fromLandmarkToAxis.axis.rawValue)")
+                Text("关节:\(length.fromLandmarkToAxis.landmark.id)/\(length.fromLandmarkToAxis.axis.rawValue) -> \(length.toStateId) -> \(length.toLandmarkSegmentToAxis.landmarkSegment.id)/\(length.toLandmarkSegmentToAxis.axis.rawValue)")
                 Spacer()
-                Text("相对状态:\(length.toStateId)")
-                Text("相对关节对:\(length.toLandmarkSegmentToAxis.landmarkSegment.id)")
-                Text("相对轴:\(length.toLandmarkSegmentToAxis.axis.rawValue)")
-            }
-            
-            HStack {
-                Text("最小值:")
-                Text(length.lowerBound.roundedString)
-                Spacer()
-                Text("最大值:")
-                Text(length.upperBound.roundedString)
+                Text("范围:\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
+
             }
         }
         
@@ -136,19 +91,37 @@ struct LandmarkInAreaDescriptionView: View {
                 }.disabled(true)
             }
             
-            HStack {
-                Text("提醒:")
-                Spacer()
-                Text(area.warning)
-            }
+            Text("提醒:\(area.warning)")
             
+            Text("关节:\(area.landmarkType.id) -> \(area.areaString)")
+
+            
+        }
+    }
+}
+
+
+struct ObjectToLandmarkDescriptionView: View {
+    var objectToLandmark: ObjectToLandmark
+    var body: some View {
+        VStack {
             HStack {
-                Text("当前关节:")
-                Text(area.landmarkType.id)
+                Text("物体相对关节点距离")
                 Spacer()
-                Text("区域:")
-                Text(area.areaString)
-                
+                Button("删除") {
+                    
+                }.disabled(true)
+            }
+            Text("提醒:\(objectToLandmark.warning)")
+
+            HStack {
+                Text("""
+                    当前物体:\(objectToLandmark.fromPosition.id)/\(objectToLandmark.fromPosition.position.rawValue)/\(objectToLandmark.fromAxis.rawValue) -> \(objectToLandmark.toLandmark.landmarkType.rawValue) -> \(objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToLandmark.toLandmarkSegmentToAxis.axis.rawValue)
+                    """
+                )
+                Spacer()
+                Text("范围:\(objectToLandmark.lowerBound.roundedString)/\(objectToLandmark.upperBound.roundedString)")
+
             }
         }
     }
@@ -163,23 +136,6 @@ struct RuleDescriptionView: View {
                 
                 
             }
-            
-            //            VStack {
-            //                if let length = rule.lengthX {
-            //                    LengthDescriptionView(length: length).padding([.top], StaticValue.padding)
-            //
-            //                }
-            //
-            //                if let length = rule.lengthY {
-            //                    LengthDescriptionView(length: length).padding([.top], StaticValue.padding)
-            //
-            //                }
-            //
-            //                if let length = rule.lengthXY {
-            //                    LengthDescriptionView(length: length).padding([.top], StaticValue.padding)
-            //
-            //                }
-            //            }
             if let length = rule.length {
                 LengthDescriptionView(length: length).padding([.top], StaticValue.padding)
             }
@@ -189,19 +145,13 @@ struct RuleDescriptionView: View {
                 LandmarkInAreaDescriptionView(area: area).padding([.top], StaticValue.padding)
             }
             
-            //            VStack {
-            //                if let length = rule.lengthXToState {
-            //                    LengthToStateDescriptionView(length: length)
-            //                }
-            //                if let length = rule.lengthYToState {
-            //                    LengthToStateDescriptionView(length: length)
-            //                }
-            //                if let length = rule.lengthXYToState {
-            //                    LengthToStateDescriptionView(length: length)
-            //                }
-            //            }
+            
             if let length = rule.lengthToState {
                 LengthToStateDescriptionView(length: length).padding([.top], StaticValue.padding)
+            }
+            
+            if let objectToLandmark = rule.objectPositionToLandmark {
+                ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
             }
             
         }

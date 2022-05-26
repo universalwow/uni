@@ -191,6 +191,7 @@ extension LandmarkType {
     
     static let needAnglePairs = [
         [LeftShoulder,RightShoulder],
+        [LeftHip, RightHip],
         [LeftShoulder,LeftElbow,LeftWrist],
         [RightShoulder,RightElbow,RightWrist],
         [LeftShoulder,LeftHip,LeftKnee,LeftAnkle,LeftHeel,LeftToe],

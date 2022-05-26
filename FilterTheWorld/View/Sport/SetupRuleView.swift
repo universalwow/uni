@@ -6,8 +6,212 @@ struct SetupRuleView: View {
     
     
     
-    @EnvironmentObject var sportManager: SportsManager
+ 
     @State var clearBackground = false
+    
+    @EnvironmentObject var sportManager: SportsManager
+    @State var toggle = false
+    
+    @State var currentAxis = CoordinateAxis.X
+    @State var lowerBound = 0.0
+    @State var upperBound = 0.0
+    @State var warning = ""
+    @State var objectId = ""
+    @State var objectPosition = ObjectPosition.middle
+    @State var toLandmarkType = LandmarkType.LeftShoulder
+    @State var toLandmarkSegmentAxis = CoordinateAxis.X
+    @State var toLandmarkSegmentType =  LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
+    
+    func setInitData(){
+        if toggle {
+            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: toLandmarkSegmentType)
+            sportManager.setSportStateRuleObjectToLandmark(fromAxis: currentAxis, fromObjectPosition: objectPosition, relativeSegment: relativeSegment, toAxis: toLandmarkSegmentAxis)
+        }
+        
+        
+    }
+    func resetInitData(){
+        if toggle {
+            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: toLandmarkSegmentType)
+            sportManager.updateSportStateRule(
+                fromAxis: currentAxis,
+                landmarkType: toLandmarkType,
+                objectId: objectId,
+                objectPosition: objectPosition,
+                landmarkSegment: relativeSegment,
+                toAxis: toLandmarkSegmentAxis,
+                warning: warning)
+        }
+    }
+    
+    func updateLocalData() {
+        if toggle {
+            let objectToLandmark = sportManager.getCurrentSportStateRuleObjectTolandmark(fromAxis: currentAxis)!
+            lowerBound = objectToLandmark.lowerBound
+            upperBound = objectToLandmark.upperBound
+        }
+    }
+    
+    func updateRemoteData() {
+        if toggle {
+            
+        }
+    }
+    
+    func toggleOff() {
+        currentAxis = CoordinateAxis.X
+        lowerBound = 0.0
+        upperBound = 0.0
+        warning = ""
+        objectId = sportManager.findSelectedObjects().first!.id
+        objectPosition = ObjectPosition.middle
+        toLandmarkType = sportManager.findselectedSegment()!.landmarkTypes.first!
+        toLandmarkSegmentAxis = CoordinateAxis.X
+        toLandmarkSegmentType =  LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
+    }
+    
+    var objectToLandmarkView: some View {
+        VStack {
+            Toggle("物体相对于关节位置", isOn: $toggle.didSet{ isOn in
+                if isOn {
+                    setInitData()
+                    updateLocalData()
+                }else{
+                    sportManager.removeSportStateRuleObjectToLandmark(fromAxis: currentAxis)
+                    toggleOff()
+                }
+                
+            })
+            VStack {
+                HStack {
+                    Text("提醒:")
+                    TextField("提醒...", text: $warning, onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                    })
+                }
+                
+                HStack {
+                    Text("物体")
+                    Picker("物体", selection: $objectId.didSet{ _ in
+                        resetInitData()
+                        updateLocalData()
+                        
+                    }) {
+                        ForEach(sportManager.findSelectedObjects()) { object in
+                            Text(object.id).tag(object.id)
+                        }
+                    }
+                    Spacer()
+                    Text("位置")
+                    Picker("位置", selection: $objectPosition.didSet{ _ in
+                        resetInitData()
+                        updateLocalData()
+                        
+                    }) {
+                        ForEach(ObjectPosition.allCases) { position in
+                            Text(position.rawValue).tag(position)
+                        }
+                    }
+                    Text("当前轴")
+                    Picker("当前轴", selection: $currentAxis.didSet { _ in
+                        resetInitData()
+                        updateLocalData()
+                        
+                    }) {
+                        ForEach(CoordinateAxis.allCases) { axis in
+                            Text(axis.rawValue).tag(axis)
+                        }
+                    }
+                }
+                
+                HStack {
+                    Text("当前关节:")
+                    Picker("当前关节", selection: $toLandmarkType.didSet{ _ in
+                        resetInitData()
+                        updateLocalData()
+                        
+                    }) {
+                        ForEach(self.sportManager.findselectedSegment()!.landmarkTypes) { landmarkType in
+                            Text(landmarkType.rawValue).tag(landmarkType)
+                        }
+                    }
+                    Spacer()
+
+                    Text("相对关节对")
+                    Picker("相对关节对", selection: $toLandmarkSegmentType.didSet{ _ in
+                        resetInitData()
+                        updateLocalData()
+                        
+                    }) {
+                        ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
+                            Text(landmarkSegmentType.id).tag(landmarkSegmentType)
+                        }
+                    }
+                    
+                    
+                    Text("相对轴")
+                    Picker("相对轴", selection: $toLandmarkSegmentAxis.didSet{ _ in
+                        resetInitData()
+                        updateLocalData()
+                    }) {
+                        ForEach(CoordinateAxis.allCases) { axis in
+                            Text(axis.rawValue).tag(axis)
+                        }
+                    }
+                    
+                    
+                    
+                }
+                HStack {
+                    Text("最小值:")
+                    TextField("最小值", value: $lowerBound, formatter: formatter) { flag in
+                        if !flag {
+                            updateRemoteData()
+
+                        }
+                        
+                    }
+                        .foregroundColor(self.upperBound >= self.lowerBound ? .black : .red)
+                    
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                    Spacer()
+                    Text("最大值:")
+                    TextField("最大值", value: $upperBound, formatter: formatter){ flag in
+                        if !flag {
+                            updateRemoteData()
+                        }
+
+                    }
+                        .foregroundColor(self.upperBound >= self.lowerBound ? .black : .red)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                    
+                }
+                
+                
+            }.disabled(!toggle)
+        }.onAppear{
+            if let objectToLandmark = sportManager.getCurrentSportStateRuleObjectTolandmark(fromAxis: .X) {
+                lowerBound = objectToLandmark.lowerBound
+                upperBound = objectToLandmark.upperBound
+                warning = objectToLandmark.warning
+                currentAxis = objectToLandmark.fromAxis
+                objectId = objectToLandmark.fromPosition.id
+                objectPosition = objectToLandmark.fromPosition.position
+                toLandmarkType = objectToLandmark.toLandmark.landmarkType
+                toLandmarkSegmentAxis = objectToLandmark.toLandmarkSegmentToAxis.axis
+                toLandmarkSegmentType = objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
+                
+                
+            }else {
+                self.toLandmarkType = sportManager.findselectedSegment()!.landmarkTypes.first!
+                objectId = sportManager.findSelectedObjects().first!.id
+            }
+        }
+    }
     
     var body: some View {
         
@@ -26,17 +230,14 @@ struct SetupRuleView: View {
             ScrollView {
                 LandmarkAngleRuleView()
                 Divider()
-                VStack {
-                    LandmarkSegmentRelativeLengthRuleView(currentAxis: .X)
-                    Divider()
-                    LandmarkSegmentRelativeLengthRuleView(currentAxis: .Y)
-                    Divider()
-                    LandmarkSegmentRelativeLengthRuleView(currentAxis: .XY)
-                }
+                LandmarkSegmentRelativeLengthRuleView()
+
                 Divider()
                 LandmarkInAreaView()
                 Divider()
                 LandmarkToStateLengthView()
+                Divider()
+                objectToLandmarkView
                 
                 Spacer()
             }
@@ -44,7 +245,7 @@ struct SetupRuleView: View {
             
             
         }.padding()
-            .background(BackgroundClearView(clearBackground: $clearBackground))
+        .background(BackgroundClearView(clearBackground: $clearBackground))
     }
 }
 

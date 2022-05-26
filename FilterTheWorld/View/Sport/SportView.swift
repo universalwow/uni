@@ -2,9 +2,75 @@
 
 import SwiftUI
 
+
+
+
+struct TransferToOtherRulesView: View {
+    @Binding var sport:Sport
+    var rule: ComplexRule
+    @State var ruleTranferToState = SportState.startState
+    @State var ruleTransferToRulesType = RuleType.SCORE
+    @State var ruleTransferToRulesIndex = 0
+    
+    @EnvironmentObject var sportManager: SportsManager
+    
+    var body: some View {
+        HStack {
+            Text("迁移到其他规则集")
+            
+            Spacer()
+            Text("状态")
+            Picker("状态", selection: $ruleTranferToState) {
+                ForEach(sport.allStates) { state in
+                    Text(state.name).tag(state)
+                }
+            }
+            Text("规则类型")
+            Picker("类型", selection: $ruleTransferToRulesType) {
+                ForEach(RuleType.allCases) { ruleType in
+                    Text(ruleType.rawValue).tag(ruleType)
+                }
+            }
+
+            Text("\(ruleTransferToRulesType.rawValue)规则集")
+            let state = sportManager.findFirstSportState(editedSport: sport, sportStateUUID: ruleTranferToState.id)!
+            if ruleTransferToRulesType == .SCORE {
+                Picker("规则集", selection: $ruleTransferToRulesIndex) {
+                    if ruleTransferToRulesType == .SCORE {
+                        ForEach(state.complexScoreRules.indices, id: \.self) { rulesIndex in
+                            Text("索引 \(rulesIndex)").tag(rulesIndex)
+                        }
+                    }else {
+                        ForEach(state.complexViolateRules.indices, id: \.self) { rulesIndex in
+                            Text("索引 \(rulesIndex)").tag(rulesIndex)
+                        }
+                    }
+                    
+                }.frame(width: 50)
+            }
+            
+            Button("迁移") {
+                sportManager.updateSportStateRule(
+                    sportId: sport.id,
+                    stateId:ruleTranferToState.id,
+                    ruleType:ruleTransferToRulesType,
+                    rulesIndex:ruleTransferToRulesIndex,
+                    rule: rule
+                )
+            }
+                
+            
+                                                
+        }.padding([.top], StaticValue.padding)
+    }
+}
+
+
+
+
 struct SportView: View {
     
-    var sport:Sport
+    @Binding var sport:Sport
     @State var sportName = ""
     @State var sportDescription = ""
     @State var stateName = ""
@@ -19,9 +85,9 @@ struct SportView: View {
     @State var editRuleFlag = false
     @State var selectedLandmarkSegment = LandmarkSegment.initValue()
     
-    @State var ruleTranferToState = SportState.startState
-    @State var ruleTransferToRulesIndex = 0
-    @State var ruleTransferToRulesType = RuleType.SCORE
+//    @State var ruleTranferToState = SportState.startState
+//    @State var ruleTransferToRulesIndex = 0
+//    @State var ruleTransferToRulesType = RuleType.SCORE
 
     
     @EnvironmentObject var sportManager: SportsManager
@@ -125,10 +191,11 @@ struct SportView: View {
                     }.padding([.vertical])
                     
                     // 规则集
-                    ForEach(state.complexScoreRules) { scoreRules in
+                    ForEach(state.complexScoreRules.indices, id: \.self) { scoreRulesIndex in
+                        let scoreRules = state.complexScoreRules[scoreRulesIndex]
                         Divider()
                         HStack {
-                            Text(scoreRules.description)
+                            Text("\(state.name)/\(scoreRules.description)/\(scoreRulesIndex)")
                             Spacer()
                             
                             Button(action: {
@@ -150,7 +217,7 @@ struct SportView: View {
                             VStack {
                                 
                                 HStack {
-                                    Text("当前规则")
+                                    Text("规则:")
                                     Text(rule.id)
                                     
                                     Spacer()
@@ -172,11 +239,12 @@ struct SportView: View {
                                     
                                     
                                 }.padding([.top], StaticValue.padding)
-                                
-                                
+                                   
+                                TransferToOtherRulesView(sport: $sport, rule: rule)
                                 RuleDescriptionView(rule: Binding.constant(rule))
+
                                 
-                            }
+                            }.background(Color.yellow)
                         }
                     }
                 }
@@ -296,6 +364,6 @@ struct SportView: View {
 
 struct SportView_Previews: PreviewProvider {
     static var previews: some View {
-        SportView(sport: Sport.newSport)
+        SportView(sport: Binding.constant(Sport.newSport))
     }
 }

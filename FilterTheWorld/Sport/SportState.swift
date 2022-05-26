@@ -97,6 +97,17 @@ extension SportState {
     }
     
   }
+    
+mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRule: ComplexRule) {
+    switch ruleType {
+      case .SCORE:
+        complexScoreRules[rulesIndex].updateSportStateRule(editedRule: editedRule)
+
+      case .VIOLATE:
+        complexViolateRules[rulesIndex].updateSportStateRule(editedRule: editedRule)
+      }
+      
+    }
   
   mutating func dropInvalidRules(editedSportStateRulesId: UUID, ruleType: RuleType) {
       if let rulesIndex = firstIndexOfComplexRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {

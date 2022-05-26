@@ -392,16 +392,17 @@ extension SportsManager {
     
     func findCurrentSportStateRuleObjectToLandmark(fromAxis: CoordinateAxis) -> ObjectToLandmark? {
         let rule = findComplexRulex()?.findFirstComplexRule(ruleId: currentSportStateRuleId)
-        switch fromAxis {
-            
-        case .X:
-            return rule?.objectPositionXToLandmark
-            
-        case .Y:
-            return rule?.objectPositionYToLandmark
-        case .XY:
-            return rule?.objectPositionXYToLandmark
-        }
+//        switch fromAxis {
+//
+//        case .X:
+//            return rule?.objectPositionXToLandmark
+//
+//        case .Y:
+//            return rule?.objectPositionYToLandmark
+//        case .XY:
+//            return rule?.objectPositionXYToLandmark
+//        }
+        return rule?.objectPositionToLandmark
         
     }
     
@@ -546,15 +547,17 @@ extension SportsManager {
     func updateCurrentSportStateRule(axis: CoordinateAxis, objectToLandmark: ObjectToLandmark?) {
         if let rule = findCurrentSportStateRule() {
             var newRule = rule
-            switch axis {
-            case .X:
-                newRule.objectPositionXToLandmark = objectToLandmark
-            case .Y:
-                newRule.objectPositionYToLandmark = objectToLandmark
-                
-            case .XY:
-                newRule.objectPositionXYToLandmark = objectToLandmark
-            }
+//            switch axis {
+//            case .X:
+//                newRule.objectPositionXToLandmark = objectToLandmark
+//            case .Y:
+//                newRule.objectPositionYToLandmark = objectToLandmark
+//
+//            case .XY:
+//                newRule.objectPositionXYToLandmark = objectToLandmark
+//            }
+            newRule.objectPositionToLandmark = objectToLandmark
+
             self.upsertCurrentRule(rule: newRule)
         }
     }
@@ -569,7 +572,6 @@ extension SportsManager {
         warning: String
     ) {
         if let rule = findCurrentSportStateRule() {
-            print("warning ............... \(warning)")
             
             let landmark = findFirstSportState()!
                 .findLandmarkSegment(id: rule.id)
@@ -582,58 +584,66 @@ extension SportsManager {
             }!
             
             var newRule = rule
-            switch fromAxis {
-            case .X:
-                newRule.objectPositionXToLandmark?.fromAxis = fromAxis
-                newRule.objectPositionXToLandmark?.toLandmark = landmark
-                newRule.objectPositionXToLandmark?.fromPosition.id = objectId
-                newRule.objectPositionXToLandmark?.fromPosition.position = objectPosition
-                newRule.objectPositionXToLandmark?.fromPosition.point =  selectedObject.rect.pointOf(
-                    position: objectPosition).point2d
-                newRule.objectPositionXToLandmark?.toLandmarkSegmentToAxis.axis = toAxis
-                newRule.objectPositionXToLandmark?.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-                newRule.objectPositionXToLandmark?.warning = warning
-                
-                
-            case .Y:
-                newRule.objectPositionYToLandmark?.fromAxis = fromAxis
-                newRule.objectPositionYToLandmark?.toLandmark = landmark
-                
-                newRule.objectPositionYToLandmark?.fromPosition.id = objectId
-                
-                newRule.objectPositionYToLandmark?.fromPosition.position = objectPosition
-                newRule.objectPositionYToLandmark?.fromPosition.point =  selectedObject.rect.pointOf(
-                    position: objectPosition).point2d
-                newRule.objectPositionYToLandmark?.toLandmarkSegmentToAxis.axis = toAxis
-                newRule.objectPositionYToLandmark?.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-                
-                newRule.objectPositionYToLandmark?.warning = warning
-                
-                
-            case .XY:
-                newRule.objectPositionXYToLandmark?.fromAxis = fromAxis
-                newRule.objectPositionXYToLandmark?.toLandmark = landmark
-                
-                newRule.objectPositionXYToLandmark?.fromPosition.id = objectId
-                
-                newRule.objectPositionXYToLandmark?.fromPosition.position = objectPosition
-                newRule.objectPositionXYToLandmark?.fromPosition.point =  selectedObject.rect.pointOf(
-                    position: objectPosition).point2d
-                newRule.objectPositionXYToLandmark?.toLandmarkSegmentToAxis.axis = toAxis
-                newRule.objectPositionXYToLandmark?.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-                
-                newRule.objectPositionXYToLandmark?.warning = warning
-                
-                
-            }
+//            switch fromAxis {
+//            case .X:
+//                newRule.objectPositionXToLandmark?.fromAxis = fromAxis
+//                newRule.objectPositionXToLandmark?.toLandmark = landmark
+//                newRule.objectPositionXToLandmark?.fromPosition.id = objectId
+//                newRule.objectPositionXToLandmark?.fromPosition.position = objectPosition
+//                newRule.objectPositionXToLandmark?.fromPosition.point =  selectedObject.rect.pointOf(
+//                    position: objectPosition).point2d
+//                newRule.objectPositionXToLandmark?.toLandmarkSegmentToAxis.axis = toAxis
+//                newRule.objectPositionXToLandmark?.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
+//                newRule.objectPositionXToLandmark?.warning = warning
+//
+//
+//            case .Y:
+//                newRule.objectPositionYToLandmark?.fromAxis = fromAxis
+//                newRule.objectPositionYToLandmark?.toLandmark = landmark
+//
+//                newRule.objectPositionYToLandmark?.fromPosition.id = objectId
+//
+//                newRule.objectPositionYToLandmark?.fromPosition.position = objectPosition
+//                newRule.objectPositionYToLandmark?.fromPosition.point =  selectedObject.rect.pointOf(
+//                    position: objectPosition).point2d
+//                newRule.objectPositionYToLandmark?.toLandmarkSegmentToAxis.axis = toAxis
+//                newRule.objectPositionYToLandmark?.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
+//
+//                newRule.objectPositionYToLandmark?.warning = warning
+//
+//
+//            case .XY:
+//                newRule.objectPositionXYToLandmark?.fromAxis = fromAxis
+//                newRule.objectPositionXYToLandmark?.toLandmark = landmark
+//
+//                newRule.objectPositionXYToLandmark?.fromPosition.id = objectId
+//
+//                newRule.objectPositionXYToLandmark?.fromPosition.position = objectPosition
+//                newRule.objectPositionXYToLandmark?.fromPosition.point =  selectedObject.rect.pointOf(
+//                    position: objectPosition).point2d
+//                newRule.objectPositionXYToLandmark?.toLandmarkSegmentToAxis.axis = toAxis
+//                newRule.objectPositionXYToLandmark?.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
+//
+//                newRule.objectPositionXYToLandmark?.warning = warning
+//
+//
+//            }
+//
+            newRule.objectPositionToLandmark?.fromAxis = fromAxis
+            newRule.objectPositionToLandmark?.toLandmark = landmark
+            newRule.objectPositionToLandmark?.fromPosition.id = objectId
+            newRule.objectPositionToLandmark?.fromPosition.position = objectPosition
+            newRule.objectPositionToLandmark?.fromPosition.point =  selectedObject.rect.pointOf(
+                position: objectPosition).point2d
+            newRule.objectPositionToLandmark?.toLandmarkSegmentToAxis.axis = toAxis
+            newRule.objectPositionToLandmark?.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
+            newRule.objectPositionToLandmark?.warning = warning
             
             self.upsertCurrentRule(rule: newRule)
             
         }
         
     }
-    
-    
     
     func setCurrentSportStateRuleWarning(warning: String) {
         if let rule = findCurrentSportStateRule() {
@@ -670,16 +680,17 @@ extension SportsManager {
         return rule.lengthToState
     }
     
-    func getCurrentSportStateRuleObjectTolandmark(fromAxis: CoordinateAxis) -> ObjectToLandmark {
+    func getCurrentSportStateRuleObjectTolandmark(fromAxis: CoordinateAxis) -> ObjectToLandmark? {
         let rule = findCurrentSportStateRule()!
-        switch fromAxis {
-        case .X:
-            return rule.objectPositionXToLandmark!
-        case .Y:
-            return rule.objectPositionYToLandmark!
-        case .XY:
-            return rule.objectPositionXYToLandmark!
-        }
+//        switch fromAxis {
+//        case .X:
+//            return rule.objectPositionXToLandmark!
+//        case .Y:
+//            return rule.objectPositionYToLandmark!
+//        case .XY:
+//            return rule.objectPositionXYToLandmark!
+//        }
+        return rule.objectPositionToLandmark
     }
     
     func updateSportStateRule(axis: CoordinateAxis, lowerBound: Double, upperBound: Double) {
@@ -707,17 +718,19 @@ extension SportsManager {
         if let rule = self.findCurrentSportStateRule() {
             var newRule = rule
             if let lowerBound = Double(lowerBound), let upperBound =  Double(upperBound){
-                switch axis {
-                case .X:
-                    newRule.objectPositionXToLandmark!.lowerBound = lowerBound
-                    newRule.objectPositionXToLandmark!.upperBound = upperBound
-                case .Y:
-                    newRule.objectPositionYToLandmark!.lowerBound = lowerBound
-                    newRule.objectPositionYToLandmark!.upperBound = upperBound
-                case .XY:
-                    newRule.objectPositionXYToLandmark!.lowerBound = lowerBound
-                    newRule.objectPositionXYToLandmark!.upperBound = upperBound
-                }
+//                switch axis {
+//                case .X:
+//                    newRule.objectPositionXToLandmark!.lowerBound = lowerBound
+//                    newRule.objectPositionXToLandmark!.upperBound = upperBound
+//                case .Y:
+//                    newRule.objectPositionYToLandmark!.lowerBound = lowerBound
+//                    newRule.objectPositionYToLandmark!.upperBound = upperBound
+//                case .XY:
+//                    newRule.objectPositionXYToLandmark!.lowerBound = lowerBound
+//                    newRule.objectPositionXYToLandmark!.upperBound = upperBound
+//                }
+                newRule.objectPositionToLandmark!.lowerBound = lowerBound
+                newRule.objectPositionToLandmark!.upperBound = upperBound
             }
             self.upsertCurrentRule(rule: newRule)
         }
@@ -795,17 +808,18 @@ extension SportsManager {
                 toLandmark: self.findselectedSegment()!.startLandmark,
                 toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis))
             
-            switch fromAxis {
-            case .X:
-                newRule.objectPositionXToLandmark = objectToLandmark
-                
-            case .Y:
-                newRule.objectPositionYToLandmark = objectToLandmark
-                
-            case .XY:
-                newRule.objectPositionXYToLandmark = objectToLandmark
-                
-            }
+//            switch fromAxis {
+//            case .X:
+//                newRule.objectPositionXToLandmark = objectToLandmark
+//
+//            case .Y:
+//                newRule.objectPositionYToLandmark = objectToLandmark
+//
+//            case .XY:
+//                newRule.objectPositionXYToLandmark = objectToLandmark
+//
+//            }
+            newRule.objectPositionToLandmark = objectToLandmark
             self.upsertCurrentRule(rule: newRule)
         }
     }
@@ -869,6 +883,23 @@ extension SportsManager {
         
         
     }
+    func removeSportStateRuleObjectToLandmark(fromAxis: CoordinateAxis) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+//            switch fromAxis {
+//            case .X:
+//                newRule.lengthXToState = nil
+//            case .Y:
+//                newRule.lengthYToState = nil
+//            case .XY:
+//                newRule.lengthXYToState = nil
+//            }
+                newRule.objectPositionToLandmark = nil
+            self.upsertCurrentRule(rule: newRule)
+        }
+        
+        
+    }
     
     func updateCurrentSportStateRuleLengthMutiFrame(axis: CoordinateAxis, length: LandmarkToAxisAndState?) {
         if let rule = findCurrentSportStateRule() {
@@ -899,6 +930,19 @@ extension SportsManager {
 //            }
             newRule.length = length
             self.upsertCurrentRule(rule: newRule)
+        }
+    }
+    
+    
+    func updateSportStateRule(
+        sportId: UUID,
+        stateId:Int,
+        ruleType: RuleType,
+        rulesIndex:Int,
+        rule: ComplexRule
+    ) {
+        if let sportIndex = firstIndex(editedSportId: sportId) {
+            sports[sportIndex].updateSportStateRule(editedSportStateUUID: stateId, ruleType: ruleType, editedRulesIndex: rulesIndex, editedRule: rule)
         }
     }
     
