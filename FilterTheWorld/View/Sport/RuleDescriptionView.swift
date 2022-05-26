@@ -10,17 +10,11 @@ struct AngleDescriptionView: View {
     @EnvironmentObject var sportManager: SportsManager
     var angle: AngleRange
     var body: some View {
-        VStack {
-            HStack {
-                Text("角度")
-                Spacer()
-                Button("删除") {
-//                    sportManager.setCurrentSportStateRuleAngle(sport: sport, state: state, rules: rules, ruleType: ruleType , rule: rule, angle: nil)
-                }.disabled(true)
-            }
-            
-            Text("提醒:\(angle.warning)")
-            Text("范围:\(angle.lowerBound.roundedString)/\(angle.upperBound.roundedString)")
+        HStack {
+            Text("角度:\(angle.warning)")
+            Spacer()
+            Text("\(angle.lowerBound.roundedString)/\(angle.upperBound.roundedString)")
+            Spacer()
         }
         
     }
@@ -30,23 +24,11 @@ struct AngleDescriptionView: View {
 struct LengthDescriptionView: View {
     var length: RelativeLandmarkSegmentsToAxis
     var body:some View {
-        VStack {
-            HStack {
-                Text("关节对相对值")
-                Spacer()
-                Button("删除") {
-                    
-                }.disabled(true)
-            }
-            Text("提醒:\(length.warning)")
-            
-            HStack {
-                Text("关节对:\(length.from.landmarkSegment.id)/\(length.from.axis.rawValue) -> \(length.to.landmarkSegment.id)/\(length.to.axis.rawValue)")
-                Spacer()
-                Text("范围:\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
-                
-            }
-            
+        HStack {
+            Text("关节对\(length.from.landmarkSegment.id)/\(length.from.axis.rawValue)相对 \(length.to.landmarkSegment.id)/\(length.to.axis.rawValue)长度:\(length.warning)")
+            Spacer()
+            Text("\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
+            Spacer()
         }
         
     }
@@ -55,25 +37,11 @@ struct LengthDescriptionView: View {
 struct LengthToStateDescriptionView: View {
     var length:LandmarkToAxisAndState
     var body:some View {
-        VStack {
-            HStack {
-                Text("关节相对于状态位移")
-                Spacer()
-                Button("删除") {
-                    
-                }.disabled(true)
-            }
-            
-            Text("提醒:\(length.warning)")
-
-            
-            HStack {
-                
-                Text("关节:\(length.fromLandmarkToAxis.landmark.id)/\(length.fromLandmarkToAxis.axis.rawValue) -> \(length.toStateId) -> \(length.toLandmarkSegmentToAxis.landmarkSegment.id)/\(length.toLandmarkSegmentToAxis.axis.rawValue)")
-                Spacer()
-                Text("范围:\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
-
-            }
+        HStack {
+            Text("同状态\(length.toStateId)关节\(length.fromLandmarkToAxis.landmark.id)/\(length.fromLandmarkToAxis.axis.rawValue)相对\(length.toLandmarkSegmentToAxis.landmarkSegment.id)/\(length.toLandmarkSegmentToAxis.axis.rawValue)位移:\(length.warning)")
+            Spacer()
+            Text("\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
+            Spacer()
         }
         
     }
@@ -82,20 +50,11 @@ struct LengthToStateDescriptionView: View {
 struct LandmarkInAreaDescriptionView: View {
     var area:LandmarkInArea
     var body:some View {
-        VStack {
-            HStack {
-                Text("关节在区域")
-                Spacer()
-                Button("删除") {
-                    
-                }.disabled(true)
-            }
-            
-            Text("提醒:\(area.warning)")
-            
-            Text("关节:\(area.landmarkType.id) -> \(area.areaString)")
-
-            
+        HStack {
+            Text("关节\(area.landmarkType.id)在区域:\(area.warning)")
+            Spacer()
+            Text(area.areaString)
+            Spacer()
         }
     }
 }
@@ -104,25 +63,11 @@ struct LandmarkInAreaDescriptionView: View {
 struct ObjectToLandmarkDescriptionView: View {
     var objectToLandmark: ObjectToLandmark
     var body: some View {
-        VStack {
-            HStack {
-                Text("物体相对关节点距离")
-                Spacer()
-                Button("删除") {
-                    
-                }.disabled(true)
-            }
-            Text("提醒:\(objectToLandmark.warning)")
-
-            HStack {
-                Text("""
-                    当前物体:\(objectToLandmark.fromPosition.id)/\(objectToLandmark.fromPosition.position.rawValue)/\(objectToLandmark.fromAxis.rawValue) -> \(objectToLandmark.toLandmark.landmarkType.rawValue) -> \(objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToLandmark.toLandmarkSegmentToAxis.axis.rawValue)
-                    """
-                )
-                Spacer()
-                Text("范围:\(objectToLandmark.lowerBound.roundedString)/\(objectToLandmark.upperBound.roundedString)")
-
-            }
+        HStack {
+            Text("物体\(objectToLandmark.fromPosition.id)/\(objectToLandmark.fromPosition.position.rawValue)/\(objectToLandmark.fromAxis.rawValue)与关节\(objectToLandmark.toLandmark.landmarkType.rawValue)相对\(objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToLandmark.toLandmarkSegmentToAxis.axis.rawValue)距离:\(objectToLandmark.warning)")
+            Spacer()
+            Text("\(objectToLandmark.lowerBound.roundedString)/\(objectToLandmark.upperBound.roundedString)")
+            Spacer()
         }
     }
 }
