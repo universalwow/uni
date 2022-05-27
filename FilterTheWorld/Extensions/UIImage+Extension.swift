@@ -12,6 +12,8 @@ import CoreML
 import VideoToolbox
 import Vision
 import PerspectiveTransform
+import CoreImage
+import CoreImage.CIFilterBuiltins
 
 
 extension UIImage {
@@ -141,19 +143,19 @@ extension UIImage {
               let transformImage  = UIImage(cgImage: cgimg)
           }
           
-//          let noiseReductionFilter = CIFilter.gaussianBlur()
-//          noiseReductionFilter.radius = 0.5
-//          noiseReductionFilter.inputImage = transform
-//
-//          let blackAndWhite = BlackWhiteFilter()
-//          blackAndWhite.inputImage = noiseReductionFilter.outputImage!
-//          let filteredImage = blackAndWhite.outputImage!
-//
-//          inputImage = filteredImage
+          let noiseReductionFilter = CIFilter.gaussianBlur()
+          noiseReductionFilter.radius = 0.5
+          noiseReductionFilter.inputImage = transform
 
-//          if let cgimg = context.createCGImage(filteredImage, from: filteredImage.extent) {
-//              let preProcessImage = UIImage(cgImage: cgimg)
-//          }
+          let blackAndWhite = BlackWhiteFilter()
+          blackAndWhite.inputImage = noiseReductionFilter.outputImage!
+          let filteredImage = blackAndWhite.outputImage!
+
+          inputImage = filteredImage
+
+          if let cgimg = context.createCGImage(filteredImage, from: filteredImage.extent) {
+              let preProcessImage = UIImage(cgImage: cgimg)
+          }
       }
 
     let requestHandler = VNImageRequestHandler.init(ciImage: inputImage, options: [:])
