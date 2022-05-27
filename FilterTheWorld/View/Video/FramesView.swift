@@ -1,6 +1,7 @@
 
 
 import SwiftUI
+import AVFAudio
 
 
 
@@ -38,6 +39,8 @@ struct FramesView: View {
     @State private var selectedPoseIndex = -1
     
     @State private var showSelectorAction = false
+    
+    @State private var orientation = UIImage.Orientation.up
     
     var poseSelector: some View {
         VStack {
@@ -109,22 +112,25 @@ struct FramesView: View {
     
     var body: some View {
         VStack {
-            FrameView(cgImage: self.videoManager.frame)
-                .scaledToFit()
-                .overlay{
-                    if let frame = self.videoManager.frame {
+            if let frame = self.videoManager.frame {
+                let uiImage = UIImage(cgImage: frame, scale: 1, orientation: orientation).fixedOrientation()!
+                FrameView(uiImage: uiImage)
+                    .scaledToFit()
+                    .overlay{
                         GeometryReader { geometry in
                             ZStack {
-                                PosesView(poses: imageAnalysis.sportData.frameData.poses, imageSize: CGSize(width: frame.width, height: frame.height), viewSize: geometry.size)
-                                ObjectsView(objects: imageAnalysis.objects, imageSize: CGSize(width: frame.width, height: frame.height), viewSize: geometry.size)
+                                PosesView(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
+                                ObjectsView(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
                             }
-                            
                         }
-                        
                     }
-                    
-                    
-                }
+            }else {
+                Image(systemName: "photo.fill")
+                    .resizable()
+                    .scaledToFit()
+            }
+            
+            
             Spacer()
             
             TrackableScrollView([.horizontal], showIndicators: false, contentOffset: $scrollViewContentOffset) {
@@ -153,10 +159,37 @@ struct FramesView: View {
                     Text("选择视频")
                 }
                 
+//                Picker("旋转旋转方向", selection: $orientation) {
+//                    ForEach(Image.Orientation.allCases) { direction in
+//                        Text(direction.rawValue).tag(direction)
+//                    }
+//                }
+                
+                Button(action: {
+                    switch self.orientation {
+                    case .up:
+                        self.orientation = .right
+                    case .right:
+                        self.orientation = .down
+                    case .down:
+                        self.orientation = .left
+                    case .left:
+                        self.orientation = .up
+                    
+                    default: break
+                        
+                
+                    }
+                    
+
+                }) {
+                    Text("旋转图片")
+                }
+                
                 
                 Button(action: {
                     if let frame = self.videoManager.frame {
-                        imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame), request: nil, currentTime: 0.0)
+                        imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: 0.0)
                     }
                     
                 }) {

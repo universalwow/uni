@@ -12,8 +12,7 @@ struct RuleView: View {
         VStack {
             let state = sportManager.findFirstSportState()!
             let pngImage = state.image!
-            let cgImage = UIImage(data: pngImage.photo)!.cgImage
-            FrameView(cgImage: cgImage)
+            FrameView(uiImage: UIImage(data: pngImage.photo)!)
                 .scaledToFit()
                 .overlay{
                     GeometryReader { geometry in

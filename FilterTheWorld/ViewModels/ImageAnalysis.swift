@@ -93,6 +93,7 @@ class ImageAnalysis : ObservableObject {
             
             let visionImage = VisionImage(image: image)
             visionImage.orientation = image.imageOrientation
+            print("detectorProcess \(image.imageOrientation)")
             
             let buffer = image.scalePreservingAspectRatio(targetSize: CGSize(width: 640, height: 640)).toCVPixelBuffer()
             
