@@ -2,7 +2,7 @@
 
 import SwiftUI
 
-struct SportsView: View {
+struct SportsManagerView: View {
     @EnvironmentObject var sportManager: SportsManager
 
     var newSport: some View {
@@ -29,11 +29,19 @@ struct SportsView: View {
                             .navigationTitle(Text(sport.name))
                             .navigationBarTitleDisplayMode(.inline)
                             .navigationBarItems(trailing:
-                                                    Button(action: {
-                                                        sportManager.saveSport(editedSport: sport)
-                                                    }) {
-                                                        Text("保存")
+                                                    HStack {
+                                                        Button(action: {
+                                                            sportManager.saveSport(editedSport: sport)
+                                                        }) {
+                                                            Text("保存")
+                                                        }
+                                                        Button(action: {
+                                                            sportManager.deleteSport(editedSport: sport)
+                                                        }) {
+                                                            Text("删除")
+                                                        }
                                                     }
+                                                    
                                                )
                             
                                        
@@ -61,6 +69,6 @@ struct SportsView: View {
 
 struct SportsView_Previews: PreviewProvider {
     static var previews: some View {
-        SportsView()
+        SportsManagerView()
     }
 }

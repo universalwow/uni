@@ -38,11 +38,19 @@ struct ContentView: View {
     var body: some View {
         TabView {
             VStack {
-                SportsView().padding()
+                SportsManagerView().padding()
+            }
+            .tabItem{
+                Text("Sports Manager")
+            }
+            
+            VStack {
+                SportsGroundView().padding()
             }
             .tabItem{
                 Text("Sports")
             }
+            
             VStack {
                 LoginView()
             }.tabItem{

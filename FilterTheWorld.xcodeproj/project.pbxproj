@@ -26,7 +26,7 @@
 		951ABE4C283B2555009AB8F6 /* MultiSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951ABE4B283B2555009AB8F6 /* MultiSelector.swift */; };
 		951FB324283747AB00A62931 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB323283747AB00A62931 /* LoginView.swift */; };
 		951FB326283789C200A62931 /* ServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB325283789C200A62931 /* ServiceManager.swift */; };
-		951FB329283892F700A62931 /* SportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB328283892F700A62931 /* SportsView.swift */; };
+		951FB329283892F700A62931 /* SportsManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB328283892F700A62931 /* SportsManagerView.swift */; };
 		951FB32B283893A100A62931 /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB32A283893A100A62931 /* CardView.swift */; };
 		951FB32D2838CDF600A62931 /* SportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB32C2838CDF600A62931 /* SportView.swift */; };
 		951FB32F2839E57700A62931 /* RuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB32E2839E57700A62931 /* RuleView.swift */; };
@@ -36,6 +36,7 @@
 		9545750527BB846100129153 /* ObjectRecoginzerYOLO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */; };
 		9545750F27BBA98A00129153 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750E27BBA98A00129153 /* Observation.swift */; };
 		9545751327BD1B1600129153 /* StandAndJump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545751227BD1B1500129153 /* StandAndJump.swift */; };
+		9554E8622840F468002D8345 /* SportsGroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8612840F468002D8345 /* SportsGroundView.swift */; };
 		95878ECD27DEDD8300F31A9B /* SportsGround.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95878ECC27DEDD8300F31A9B /* SportsGround.swift */; };
 		95878ED327DF277600F31A9B /* UIView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95878ED227DF277500F31A9B /* UIView+Extension.swift */; };
 		958F8C312760560500F6DF48 /* Facenet6.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */; };
@@ -123,7 +124,7 @@
 		951FB3222837443500A62931 /* FilterTheWorld.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilterTheWorld.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		951FB323283747AB00A62931 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		951FB325283789C200A62931 /* ServiceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceManager.swift; sourceTree = "<group>"; };
-		951FB328283892F700A62931 /* SportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsView.swift; sourceTree = "<group>"; };
+		951FB328283892F700A62931 /* SportsManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsManagerView.swift; sourceTree = "<group>"; };
 		951FB32A283893A100A62931 /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		951FB32C2838CDF600A62931 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		951FB32E2839E57700A62931 /* RuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleView.swift; sourceTree = "<group>"; };
@@ -133,6 +134,7 @@
 		9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectRecoginzerYOLO.swift; sourceTree = "<group>"; };
 		9545750E27BBA98A00129153 /* Observation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observation.swift; sourceTree = "<group>"; };
 		9545751227BD1B1500129153 /* StandAndJump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandAndJump.swift; sourceTree = "<group>"; };
+		9554E8612840F468002D8345 /* SportsGroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsGroundView.swift; sourceTree = "<group>"; };
 		95878ECC27DEDD8300F31A9B /* SportsGround.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsGround.swift; sourceTree = "<group>"; };
 		95878ED227DF277500F31A9B /* UIView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Extension.swift"; sourceTree = "<group>"; };
 		958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = Facenet6.mlmodel; sourceTree = "<group>"; };
@@ -285,18 +287,14 @@
 		951FB3272838928B00A62931 /* Sport */ = {
 			isa = PBXGroup;
 			children = (
-				951FB328283892F700A62931 /* SportsView.swift */,
+				9554E85E2840F259002D8345 /* Rule */,
+				951FB328283892F700A62931 /* SportsManagerView.swift */,
 				951FB32C2838CDF600A62931 /* SportView.swift */,
 				951FB32E2839E57700A62931 /* RuleView.swift */,
 				951ABE45283A5526009AB8F6 /* PoseView.swift */,
 				951ABE47283A6A01009AB8F6 /* ObjectsView.swift */,
 				95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */,
-				95A9921C283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift */,
-				95A99221283CEF1C00F79FB1 /* LandmarkInAreaRuleView.swift */,
 				95986F32283E3E430090B22C /* RuleDescriptionView.swift */,
-				95A99223283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift */,
-				95A99225283E207400F79FB1 /* ToStateLandmarkRuleView.swift */,
-				95986F3428406CEE0090B22C /* ObjectToLandmarkRuleView.swift */,
 			);
 			path = Sport;
 			sourceTree = "<group>";
@@ -336,6 +334,26 @@
 			path = Object;
 			sourceTree = "<group>";
 		};
+		9554E85E2840F259002D8345 /* Rule */ = {
+			isa = PBXGroup;
+			children = (
+				95A9921C283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift */,
+				95A99221283CEF1C00F79FB1 /* LandmarkInAreaRuleView.swift */,
+				95A99223283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift */,
+				95A99225283E207400F79FB1 /* ToStateLandmarkRuleView.swift */,
+				95986F3428406CEE0090B22C /* ObjectToLandmarkRuleView.swift */,
+			);
+			path = Rule;
+			sourceTree = "<group>";
+		};
+		9554E8602840F41F002D8345 /* Sporter */ = {
+			isa = PBXGroup;
+			children = (
+				9554E8612840F468002D8345 /* SportsGroundView.swift */,
+			);
+			path = Sporter;
+			sourceTree = "<group>";
+		};
 		958F8C282760529300F6DF48 /* Geometric */ = {
 			isa = PBXGroup;
 			children = (
@@ -371,6 +389,7 @@
 		95B7BFE5283668950037EC55 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				9554E8602840F41F002D8345 /* Sporter */,
 				951FB3322839EA8100A62931 /* Video */,
 				951FB3272838928B00A62931 /* Sport */,
 				95B7BFE3283668740037EC55 /* ContentView.swift */,
@@ -646,6 +665,7 @@
 				95E79E1027A13C9700AC36E1 /* RectangleRecoginzer.swift in Sources */,
 				9545750527BB846100129153 /* ObjectRecoginzerYOLO.swift in Sources */,
 				9545750F27BBA98A00129153 /* Observation.swift in Sources */,
+				9554E8622840F468002D8345 /* SportsGroundView.swift in Sources */,
 				95E79E0727A13C3000AC36E1 /* BlackWhiteFilter.swift in Sources */,
 				9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */,
 				95A99224283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift in Sources */,
@@ -689,7 +709,7 @@
 				95E79E2327A13CED00AC36E1 /* String+Extension.swift in Sources */,
 				95E79E3327A13D0600AC36E1 /* ImageAnalysis.swift in Sources */,
 				95E79E1527A13CBE00AC36E1 /* Vector2D.swift in Sources */,
-				951FB329283892F700A62931 /* SportsView.swift in Sources */,
+				951FB329283892F700A62931 /* SportsManagerView.swift in Sources */,
 				951ABE48283A6A01009AB8F6 /* ObjectsView.swift in Sources */,
 				951ABE46283A5526009AB8F6 /* PoseView.swift in Sources */,
 				95A9921B283C81AB00F79FB1 /* BackgroundClearView.swift in Sources */,
