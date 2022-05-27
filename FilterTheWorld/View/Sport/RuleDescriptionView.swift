@@ -72,31 +72,65 @@ struct ObjectToLandmarkDescriptionView: View {
     }
 }
 
+struct ObjectToObjectDescriptionView: View {
+    var objectToObject: ObjectToObject
+    var body: some View {
+        HStack {
+            Text("物体\(objectToObject.fromPosition.id)/\(objectToObject.fromPosition.position.rawValue)/\(objectToObject.fromAxis.rawValue)与物体\(objectToObject.toPosition.id)/\(objectToObject.toPosition.position.rawValue)相对\(objectToObject.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToObject.toLandmarkSegmentToAxis.axis.rawValue)距离:\(objectToObject.warning)")
+            Spacer()
+            Text("\(objectToObject.lowerBound.roundedString(number: 4))/\(objectToObject.upperBound.roundedString(number: 4))")
+            Spacer()
+        }
+    }
+}
+
 struct RuleDescriptionView: View {
     @Binding var rule:ComplexRule
     var body : some View {
         VStack {
             if let angle = rule.angle {
-                AngleDescriptionView(angle: angle).padding([.top], StaticValue.padding)
+                
+                VStack {
+                    AngleDescriptionView(angle: angle)
+                    Divider()
+
+                }
                 
                 
             }
             if let length = rule.length {
-                LengthDescriptionView(length: length).padding([.top], StaticValue.padding)
+                VStack{
+                    LengthDescriptionView(length: length)
+                    Divider()
+                }
             }
             
             //                                    关节点在区域
             if let area = rule.landmarkInArea {
-                LandmarkInAreaDescriptionView(area: area).padding([.top], StaticValue.padding)
+                VStack{
+                    LandmarkInAreaDescriptionView(area: area)
+                    Divider()
+                }
             }
             
             
             if let length = rule.lengthToState {
-                LengthToStateDescriptionView(length: length).padding([.top], StaticValue.padding)
+                VStack{
+                    LengthToStateDescriptionView(length: length)
+                    Divider()
+                }
             }
             
             if let objectToLandmark = rule.objectPositionToLandmark {
-                ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
+                VStack{
+                    ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
+                    Divider()
+                }
+            }
+            
+            if let objectToOBject = rule.objectPositionToObjectPosition {
+                ObjectToObjectDescriptionView(objectToObject: objectToOBject)
+
             }
             
         }
