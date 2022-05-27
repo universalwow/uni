@@ -50,7 +50,7 @@ struct TransferToOtherRulesView: View {
             }
             
             Button("迁移") {
-                sportManager.updateSportStateRule(
+                sportManager.upsertRule(
                     sportId: sport.id,
                     stateId:ruleTranferToState.id,
                     ruleType:ruleTransferToRulesType,
@@ -166,7 +166,7 @@ struct SportView: View {
                         }
                         
                         Button(action: {
-                            sportManager.addNewSportStateRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
+                            sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
                             
                             //                            self.editRuleFlag = true
                             
@@ -175,7 +175,7 @@ struct SportView: View {
                         }
                         
                         Button(action: {
-                            sportManager.addNewSportStateRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
+                            sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
                             //                            self.editRuleFlag = true
                             
                         }) {
@@ -207,7 +207,7 @@ struct SportView: View {
                             }
                             
                             Button(action: {
-                                sportManager.deleteSportStateRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE)
+                                sportManager.deleteRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE)
                             }) {
                                 Text("删除")
                             }
@@ -232,7 +232,7 @@ struct SportView: View {
                                         Text("修改")
                                     }
                                     Button(action: {
-                                        sportManager.deleteSportStateRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE, ruleId: rule.id)
+                                        sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE, ruleId: rule.id)
                                     }) {
                                         Text("删除")
                                     }

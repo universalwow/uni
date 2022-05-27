@@ -2,7 +2,7 @@
 
 import SwiftUI
 
-struct LandmarkToStateLengthView: View {
+struct ToStateLandmarkRuleView: View {
     
     @EnvironmentObject var sportManager: SportsManager
     
@@ -17,41 +17,42 @@ struct LandmarkToStateLengthView: View {
     @State var relativeToState = SportState.startState.id
     
     
-    func resetInitData() {
-        if landmarkToStateToggle {
-            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateSportStateRuleMutiFrame(fromAxis: currentAxis, landmarkType: landmarkTypeToState, stateId: relativeToState, landmarkSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning)
-        }
-       
-    }
-    
     func setInitData() {
         if landmarkToStateToggle {
-            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setSportStateRuleMultiFrameLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, toStateId: relativeToState)
+            let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
+            sportManager.setRuleToStateLandmark(toStateId: relativeToState, fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning)
         }
 
     }
     
-    func updateLocalLength() {
+    func resetInitData() {
         if landmarkToStateToggle {
-            let length = sportManager.getCurrentSportStateRuleMultiFrameLength(fromAxis: currentAxis)!
+            let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
+            sportManager.updateRuleToStateLandmark(stateId: relativeToState, fromAxis: currentAxis, landmarkType: landmarkTypeToState,  landmarkSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning)
+        }
+       
+    }
+ 
+    
+    func updateLocalData() {
+        if landmarkToStateToggle {
+            let length = sportManager.getRuleToStateLandmark()!
             minRelativeLength = length.lowerBound
             maxRelativeLength = length.upperBound
         }
  
     }
     
-    func updateRemoveLength() {
+    func updateRemoteData() {
         if landmarkToStateToggle {
-            sportManager.updateCurrentRuleMultiFrame(axis: currentAxis, lowerBound: minRelativeLength, upperBound: maxRelativeLength)
+            sportManager.updateRuleToStateLandmark(lowerBound: minRelativeLength, upperBound: maxRelativeLength)
         }
     }
     
     
     func toggleOff() {
         landmarkToStateWarning = ""
-        landmarkTypeToState =  sportManager.findselectedSegment()!.landmarkTypes.first!
+        landmarkTypeToState =  sportManager.findSelectedSegment()!.landmarkTypes.first!
         currentAxis = CoordinateAxis.X
         relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
         relativeAxis = CoordinateAxis.X
@@ -65,9 +66,9 @@ struct LandmarkToStateLengthView: View {
             Toggle("关节相对状态位移", isOn: $landmarkToStateToggle.didSet { isOn in
                 if isOn {
                     setInitData()
-                    updateLocalLength()
+                    updateLocalData()
                 } else {
-                    sportManager.removeSportStateRuleLengthMutiFrame(fromAxis: currentAxis)
+                    sportManager.setRuleToStateLandmark(toStateLandmark: nil)
                     toggleOff()
                 }
                 
@@ -87,10 +88,10 @@ struct LandmarkToStateLengthView: View {
                         Text("当前关节:")
                         Picker("当前关节", selection: $landmarkTypeToState.didSet{ _ in
                             resetInitData()
-                            updateLocalLength()
+                            updateLocalData()
                             
                         }) {
-                            ForEach(self.sportManager.findselectedSegment()!.landmarkTypes) { landmarkType in
+                            ForEach(self.sportManager.findSelectedSegment()!.landmarkTypes) { landmarkType in
                                 Text(landmarkType.rawValue).tag(landmarkType)
                             }
                         }
@@ -99,10 +100,9 @@ struct LandmarkToStateLengthView: View {
 
                         Text("当前轴")
                         Picker("当前轴", selection: $currentAxis.didSet { _ in
-//                            resetInitData()
-//                            updateLocalLength()
-                            setInitData()
-                            updateLocalLength()
+
+                            resetInitData()
+                            updateLocalData()
                             
                         }) {
                             ForEach(CoordinateAxis.allCases) { axis in
@@ -116,7 +116,7 @@ struct LandmarkToStateLengthView: View {
                         Picker("相对状态", selection: $relativeToState.didSet{ _ in
                             print("相对状态-------\(relativeToState)")
                             resetInitData()
-                            updateLocalLength()
+                            updateLocalData()
                         }) {
                             ForEach(sportManager.findFirstSport()!.allStates) { state in
                                 Text(state.name).tag(state.id)
@@ -127,7 +127,7 @@ struct LandmarkToStateLengthView: View {
                         Text("相对关节对")
                         Picker("相对关节对", selection: $relativelandmarkSegmentType.didSet{ _ in
                             resetInitData()
-                            updateLocalLength()
+                            updateLocalData()
                             
                         }) {
                             ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
@@ -138,7 +138,7 @@ struct LandmarkToStateLengthView: View {
                         Text("相对轴")
                         Picker("相对轴", selection: $relativeAxis.didSet{ _ in
                             resetInitData()
-                            updateLocalLength()
+                            updateLocalData()
                         }) {
                             ForEach(CoordinateAxis.allCases) { axis in
                                 Text(axis.rawValue).tag(axis)
@@ -149,7 +149,7 @@ struct LandmarkToStateLengthView: View {
                         Text("最小值:")
                         TextField("最小值", value: $minRelativeLength, formatter: formatter) { flag in
                             if !flag {
-                                updateRemoveLength()
+                                updateRemoteData()
 
                             }
                             
@@ -162,7 +162,7 @@ struct LandmarkToStateLengthView: View {
                         Text("最大值:")
                         TextField("最大值", value: $maxRelativeLength, formatter: formatter){ flag in
                             if !flag {
-                                updateRemoveLength()
+                                updateRemoteData()
 
                             }
                             
@@ -178,8 +178,7 @@ struct LandmarkToStateLengthView: View {
             }.disabled(!landmarkToStateToggle)
         }
         .onAppear{
-            if let length = sportManager.getCurrentSportStateRuleMultiFrameLength(fromAxis: currentAxis) {
-                landmarkToStateToggle = true
+            if let length = sportManager.getRuleToStateLandmark() {
                 landmarkToStateWarning = length.warning
                 landmarkTypeToState = length.fromLandmarkToAxis.landmark.landmarkType
                 currentAxis = length.fromLandmarkToAxis.axis
@@ -188,8 +187,10 @@ struct LandmarkToStateLengthView: View {
                 relativeToState = length.toStateId
                 minRelativeLength = length.lowerBound
                 maxRelativeLength = length.upperBound
+                landmarkToStateToggle = true
+
             }else {
-                self.landmarkTypeToState = self.sportManager.findselectedSegment()!.landmarkTypes.first!
+                self.landmarkTypeToState = self.sportManager.findSelectedSegment()!.landmarkTypes.first!
             }
             
         }
@@ -198,6 +199,6 @@ struct LandmarkToStateLengthView: View {
 
 struct LandmarkToStateLengthView_Previews: PreviewProvider {
     static var previews: some View {
-        LandmarkToStateLengthView()
+        ToStateLandmarkRuleView()
     }
 }

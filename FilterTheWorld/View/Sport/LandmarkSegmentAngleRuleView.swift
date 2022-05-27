@@ -2,7 +2,7 @@
 
 import SwiftUI
 
-struct LandmarkAngleRuleView: View {
+struct LandmarkSegmentAngleRuleView: View {
     @EnvironmentObject var sportManager:SportsManager
     
     struct StaticValue {
@@ -12,7 +12,7 @@ struct LandmarkAngleRuleView: View {
     
     @State var minAngle = 0.0
     @State var maxAngle = 0.0
-    @State var angleWarning = ""
+    @State var warning = ""
     @State var angleToggle = false
     
     
@@ -20,23 +20,33 @@ struct LandmarkAngleRuleView: View {
     func toggleOff() {
         minAngle = 0.0
         maxAngle = 0.0
-        angleWarning = ""
+        warning = ""
     }
     
     func setInitData() {
         if angleToggle {
-            let landmarkSegment = sportManager.findselectedSegment()!
-            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: landmarkSegment.angle2d, upperBound: landmarkSegment.angle2d))
-            minAngle = landmarkSegment.angle2d
-            maxAngle = landmarkSegment.angle2d
-            
+            let landmarkSegment = sportManager.findSelectedSegment()!
+            sportManager.setRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning)
         }
-        
+    }
+    
+    func resetInitData() {
+        if angleToggle {
+            let landmarkSegment = sportManager.findSelectedSegment()!
+            sportManager.updateRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning)
+        }
+    }
+    
+    
+    func updateLocalData() {
+        let angle = sportManager.getRuleLandmarkSegmentAngle()!
+        minAngle = angle.lowerBound
+        maxAngle = angle.upperBound
     }
     
     func updateRemoteData() {
         if angleToggle {
-            sportManager.setCurrentSportStateRuleAngle(angle: AngleRange(lowerBound: self.minAngle, upperBound: self.maxAngle, warning: angleWarning))
+            sportManager.updateRuleLandmarkSegmentAngle(lowerBound: minAngle, upperBound: maxAngle)
         }
         
     }
@@ -72,7 +82,6 @@ struct LandmarkAngleRuleView: View {
                 },
                 
                 onEditingChanged: { flag in
-                    print("---------\(flag)")
                     if !flag {
                         updateRemoteData()
                     }
@@ -119,7 +128,6 @@ struct LandmarkAngleRuleView: View {
                         }
                 },
                 onEditingChanged: { flag in
-                    print("1---------\(flag)")
                     if !flag {
                         updateRemoteData()
                     }
@@ -139,9 +147,10 @@ struct LandmarkAngleRuleView: View {
             Toggle("角度", isOn: $angleToggle.didSet{ isOn in
                 if isOn {
                     setInitData()
+                    updateLocalData()
                     
                 }else{
-                    sportManager.setCurrentSportStateRuleAngle(angle: nil)
+                    sportManager.setRuleLandmarkSegmentAngle(angle: nil)
                     toggleOff()
                 }
                 
@@ -149,7 +158,7 @@ struct LandmarkAngleRuleView: View {
             VStack {
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $angleWarning) { flag in
+                    TextField("提醒...", text: $warning) { flag in
                         if !flag {
                             updateRemoteData()
                         }
@@ -177,12 +186,11 @@ struct LandmarkAngleRuleView: View {
         }
 
         .onAppear(perform: {
-            if let angle = sportManager.getCurrentSportStateRuleAngle() {
-                self.angleToggle = true
+            if let angle = sportManager.getRuleLandmarkSegmentAngle() {
                 self.minAngle = angle.lowerBound
                 self.maxAngle = angle.upperBound
-                self.angleWarning = angle.warning
-                
+                self.warning = angle.warning
+                self.angleToggle = true
             }
         })
     }

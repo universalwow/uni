@@ -17,20 +17,22 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     @State var relativeLengthToggle = false
     @State var relativeLengthWarning = ""
     
-    func resetInitData() {
-        if relativeLengthToggle {
-            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateCurrentSportStateRule(fromAxis: currentAxis, toAxis: relativeAxis, relativeSegment: relativeSegment, warning: relativeLengthWarning)
-        }
-
-    }
     func setInitData() {
         if relativeLengthToggle {
-            let relativeSegment = self.sportManager.findlandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setSportStateRuleLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis)
+            let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
+            sportManager.setRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning)
         }
         
     }
+    
+    func resetInitData() {
+        if relativeLengthToggle {
+            let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
+            sportManager.updateRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning)
+        }
+
+    }
+    
     
     func toggleOff() {
         currentAxis = .X
@@ -41,9 +43,9 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
         relativeLengthWarning = ""
     }
     
-    func updateLocalLength() {
+    func updateLocalData() {
         if relativeLengthToggle {
-            let length = sportManager.getCurrentSportStateRuleLength(fromAxis: currentAxis)!
+            let length = sportManager.getRuleLandmarkSegmentLength()!
             minRelativeLength = length.lowerBound
             maxRelativeLength = length.upperBound
             print("2 \(minRelativeLength)  - \(maxRelativeLength)")
@@ -51,9 +53,9 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
         
     }
     
-    func updateRemoveLength() {
+    func updateRemoteData() {
         if relativeLengthToggle {
-            self.sportManager.updateSportStateRule(axis: currentAxis, lowerBound: minRelativeLength , upperBound: maxRelativeLength)
+            self.sportManager.updateRuleLandmarkSegmentLength(lowerBound: minRelativeLength , upperBound: maxRelativeLength)
 
         }
     }
@@ -64,11 +66,11 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     if isOn {
                         
                         setInitData()
-                        updateLocalLength()
+                        updateLocalData()
              
                     }else {
-                        self.sportManager.removeSportStateRuleLength(fromAxis: currentAxis)
-                        toggleOff()
+                    sportManager.setRuleLandmarkSegmentLength(length: nil)
+                    toggleOff()
                         
                     }
             })
@@ -85,8 +87,8 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                 HStack {
                     Text("当前轴")
                     Picker("当前轴", selection: $currentAxis.didSet { _ in
-                                                    setInitData()
-                                                    updateLocalLength()
+                                                    resetInitData()
+                                                    updateLocalData()
                                                     
                                                 }) {
                         ForEach(CoordinateAxis.allCases) { axis in
@@ -98,7 +100,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     Picker("相对关节对", selection: $relativelandmarkSegmentType.didSet{ _ in
                         print("相对关节对")
                         resetInitData()
-                        updateLocalLength()
+                        updateLocalData()
                         
                     }) {
                         ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
@@ -109,7 +111,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     Text("相对轴")
                     Picker("相对轴", selection: $relativeAxis.didSet{ _ in
                         resetInitData()
-                        updateLocalLength()
+                        updateLocalData()
                     }) {
                         ForEach(CoordinateAxis.allCases) { axis in
                             Text(axis.rawValue).tag(axis)
@@ -122,7 +124,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     TextField("最小值", value: $minRelativeLength, formatter: formatter,onEditingChanged: { flag in
                         if !flag {
                             print("0 \(minRelativeLength)  - \(maxRelativeLength)")
-                            updateRemoveLength()
+                            updateRemoteData()
                         }
                         
                     })
@@ -136,7 +138,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     TextField("最大值", value: $maxRelativeLength, formatter: formatter, onEditingChanged: { flag in
                         if !flag {
                             print("1 \(minRelativeLength)  - \(maxRelativeLength)")
-                            updateRemoveLength()
+                            updateRemoteData()
                         }
                         
                     })
@@ -151,7 +153,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
         }
         .onAppear{
 //            存在时加载
-            if let length = sportManager.getCurrentSportStateRuleLength(fromAxis: currentAxis) {
+            if let length = sportManager.getRuleLandmarkSegmentLength() {
                 self.currentAxis = length.from.axis
                 self.relativeAxis = length.to.axis
                 self.relativelandmarkSegmentType = length.to.landmarkSegment.landmarkSegmentType

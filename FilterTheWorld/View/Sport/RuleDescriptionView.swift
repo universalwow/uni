@@ -27,7 +27,7 @@ struct LengthDescriptionView: View {
         HStack {
             Text("关节对\(length.from.landmarkSegment.id)/\(length.from.axis.rawValue)相对 \(length.to.landmarkSegment.id)/\(length.to.axis.rawValue)长度:\(length.warning)")
             Spacer()
-            Text("\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
+            Text("\(length.lowerBound.roundedString(number: 4))/\(length.upperBound.roundedString(number: 4))")
             Spacer()
         }
         
@@ -40,7 +40,7 @@ struct LengthToStateDescriptionView: View {
         HStack {
             Text("同状态\(length.toStateId)关节\(length.fromLandmarkToAxis.landmark.id)/\(length.fromLandmarkToAxis.axis.rawValue)相对\(length.toLandmarkSegmentToAxis.landmarkSegment.id)/\(length.toLandmarkSegmentToAxis.axis.rawValue)位移:\(length.warning)")
             Spacer()
-            Text("\(length.lowerBound.roundedString)/\(length.upperBound.roundedString)")
+            Text("\(length.lowerBound.roundedString(number: 4))/\(length.upperBound.roundedString(number: 4))")
             Spacer()
         }
         
@@ -66,7 +66,7 @@ struct ObjectToLandmarkDescriptionView: View {
         HStack {
             Text("物体\(objectToLandmark.fromPosition.id)/\(objectToLandmark.fromPosition.position.rawValue)/\(objectToLandmark.fromAxis.rawValue)与关节\(objectToLandmark.toLandmark.landmarkType.rawValue)相对\(objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToLandmark.toLandmarkSegmentToAxis.axis.rawValue)距离:\(objectToLandmark.warning)")
             Spacer()
-            Text("\(objectToLandmark.lowerBound.roundedString)/\(objectToLandmark.upperBound.roundedString)")
+            Text("\(objectToLandmark.lowerBound.roundedString(number: 4))/\(objectToLandmark.upperBound.roundedString(number: 4))")
             Spacer()
         }
     }

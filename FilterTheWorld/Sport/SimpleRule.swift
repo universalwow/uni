@@ -35,8 +35,8 @@ struct LandmarkToAxis: Codable{
 struct LandmarkToAxisAndState: Codable {
     var lowerBound:Double = 0
     var upperBound:Double = 0
-    var warning:String = ""
-    
+
+    var toStateId:Int
     //相对
     var fromLandmarkToAxis: LandmarkToAxis {
         didSet {
@@ -50,26 +50,33 @@ struct LandmarkToAxisAndState: Codable {
         }
     }
     
-    var toStateId:Int
+    
     var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
         didSet {
             initBound()
         }
     }
     
+    var warning:String = ""
+    
     var length: Range<Double> {
         lowerBound..<upperBound
     }
     
-    init(fromLandmarkToAxis: LandmarkToAxis, toStateId: Int, toLandmarkToAxis: LandmarkToAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis) {
+    
+    init(toStateId: Int, fromLandmarkToAxis: LandmarkToAxis, toLandmarkToAxis: LandmarkToAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String) {
+        self.toStateId = toStateId
         self.fromLandmarkToAxis = fromLandmarkToAxis
         self.toLandmarkToAxis = toLandmarkToAxis
-        self.toStateId = toStateId
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
+        self.warning = warning
         initBound()
     }
     
+    
+    
     private mutating func initBound() {
+        
         var length = 0.0
         var bound = 0.0
         switch (fromLandmarkToAxis.axis, toLandmarkSegmentToAxis.axis) {
@@ -122,9 +129,114 @@ struct ObjectPositionPoint: Identifiable, Codable {
 }
 
 struct ObjectToObject: Codable {
-    var fromPosition: ObjectPositionPoint
-    var toPosition: ObjectPositionPoint
-    var axis: CoordinateAxis
+    var lowerBound = 0.0
+    var upperBound = 0.0
+    
+    var fromPosition: ObjectPositionPoint {
+        didSet {
+            initBound()
+        }
+    }
+    var toPosition: ObjectPositionPoint {
+        didSet {
+            initBound()
+        }
+    }
+    var fromAxis: CoordinateAxis {
+        didSet {
+            initBound()
+        }
+    }
+    
+    var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
+        didSet {
+            initBound()
+        }
+    }
+    
+    var warning = ""
+    
+    init(fromPosition:  ObjectPositionPoint, toPosition: ObjectPositionPoint,
+         fromAxis: CoordinateAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String) {
+        self.fromPosition = fromPosition
+        self.toPosition = toPosition
+        self.fromAxis = fromAxis
+        self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
+        self.warning = warning
+        initBound()
+    }
+    
+    var length: Range<Double> {
+        lowerBound..<upperBound
+    }
+    
+    func satisfy(poseMap: PoseMap, fromObject: Observation, toObject: Observation) -> Bool {
+        
+        let fromObjectPosition = fromObject.rect.pointOf(position: self.fromPosition.position)
+        let toObjectPosition = toObject.rect.pointOf(position: self.toPosition.position)
+
+        
+        let fromSegment = LandmarkSegment(startLandmark: Landmark(position: fromObjectPosition.point2d.point3D, landmarkType: LandmarkType.None), endLandmark: Landmark(position: toObjectPosition.point2d.point3D, landmarkType: LandmarkType.None))
+        
+        let toSegment = toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        
+        return ComplexRule.satisfyWithDirection(fromAxis: self.fromAxis, toAxis: self.toLandmarkSegmentToAxis.axis, lowerBound: self.lowerBound, upperBound: self.upperBound, fromSegment: fromSegment, toSegment: toSegment)
+        
+    }
+    
+    
+    private mutating func initBound() {
+        var length = 0.0
+        var bound = 0.0
+        print("initBound")
+        
+        switch (fromAxis, toLandmarkSegmentToAxis.axis) {
+        case (.X, .X):
+            length = fromPosition.point.x - toPosition.point.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+        case (.X, .Y):
+            length = fromPosition.point.x - toPosition.point.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
+        case (.X, .XY):
+            length = fromPosition.point.x - toPosition.point.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
+        case (.Y, .X):
+            length = fromPosition.point.y - toPosition.point.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+
+        case (.Y, .Y):
+            length = fromPosition.point.y - toPosition.point.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
+        case (.Y, .XY):
+            length = fromPosition.point.y - toPosition.point.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
+        case (.XY, .X):
+            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+    
+        case (.XY, .Y):
+            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+
+        case (.XY, .XY):
+            
+            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+
+        }
+        lowerBound = bound
+        upperBound = bound
+    }
+    
+    
+    
+    
+    
+    
 }
 
 struct ObjectToLandmark: Codable {
@@ -158,11 +270,12 @@ struct ObjectToLandmark: Codable {
     var warning = ""
     
     
-    init(fromAxis: CoordinateAxis, fromPosition: ObjectPositionPoint, toLandmark: Landmark, toLandmarkSegmentToAxis: LandmarkSegmentToAxis) {
+    init(fromAxis: CoordinateAxis, fromPosition: ObjectPositionPoint, toLandmark: Landmark, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String) {
         self.fromAxis = fromAxis
         self.fromPosition = fromPosition
         self.toLandmark = toLandmark
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
+        self.warning = warning
         initBound()
     }
     
@@ -255,11 +368,11 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
         lowerBound..<upperBound
     }
     
-    init(from: LandmarkSegmentToAxis, to: LandmarkSegmentToAxis) {
+    init(from: LandmarkSegmentToAxis, to: LandmarkSegmentToAxis, warning: String) {
         self.from = from
         self.to = to
+        self.warning = warning
         initBound()
-        print("length.........\(length)/\(from.landmarkSegment.id)/\(to.landmarkSegment.id)")
     }
     
     private mutating func initBound() {
@@ -308,8 +421,13 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
 }
 
 struct AngleRange: Codable {
-    var lowerBound:Double
-    var upperBound:Double
+    var lowerBound = 0.0
+    var upperBound = 0.0
+    var landmarkSegment: LandmarkSegment {
+        didSet {
+            initBound()
+        }
+    }
     var warning:String = ""
     
     var angle: Range<Int> {
@@ -318,9 +436,25 @@ struct AngleRange: Codable {
         }else {
             return lowerBound.toInt..<(upperBound + 360).toInt
         }
-        
     }
-    static var relativeAngleRange: AngleRange = AngleRange(lowerBound: 0, upperBound: 0)
+    
+    init(landmarkSegment: LandmarkSegment, warning: String) {
+        self.landmarkSegment = landmarkSegment
+        self.warning = warning
+    }
+    
+    
+    func satisfy(poseMap: PoseMap) -> Bool? {
+        let landmarkSegment = landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        return angle.contains(Int(landmarkSegment.angle2d))
+    }
+    
+    mutating func initBound() {
+        let angle = landmarkSegment.angle2d
+        self.lowerBound = angle
+        self.upperBound = angle
+    }
+    
     
 }
 
@@ -349,6 +483,13 @@ struct LandmarkInArea: Codable {
     //  左上角 顺时针
     var area: [Point2D]
     var warning:String = ""
+    
+    
+    init(landmarkType: LandmarkType, warning: String) {
+        self.landmarkType = landmarkType
+        self.warning = warning
+        self.area = [Point2D.zero,Point2D.zero,Point2D.zero,Point2D.zero]
+    }
     
     
     func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap) -> Bool? {
@@ -524,8 +665,6 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     
     // 物体位置相对于物体位置
     var objectPositionToObjectPosition: ObjectToObject?
-    
-    
     
     
     func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {

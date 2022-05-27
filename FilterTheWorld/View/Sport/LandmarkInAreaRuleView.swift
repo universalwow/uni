@@ -2,7 +2,7 @@
 
 import SwiftUI
 
-struct LandmarkInAreaView: View {
+struct LandmarkInAreaRuleView: View {
     
     @EnvironmentObject var sportManager:SportsManager
     // 关节点在区域内
@@ -30,33 +30,44 @@ struct LandmarkInAreaView: View {
         return []
     }
     
-    //    func updateArea() {
-    //        if landmarkInAreaToggle {
-    //            let area = initArea
-    //            if !area.isEmpty {
-    //                sportManager.updateSportStateRule(firstPoint: area[0], secondPoint: area[1], thirdPoint: area[2], fourthPoint: area[3])
-    //            }
-    //        }
-    //    }
+    func setInitData() {
+        if landmarkInAreaToggle {
+            self.sportManager.setRuleLandmarkInArea(landmarkType: landmarkTypeInArea, warning: landmarkInAreaWarning)
+        }
+    }
     
     func resetInitData() {
         if landmarkInAreaToggle {
-            if leftTopX <= rightBottomX && leftTopY <= rightBottomY {
-                self.sportManager.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: self.landmarkTypeInArea, area: initArea, warning: landmarkInAreaWarning))
-            }
+            sportManager.updateRuleLandmarkInArea(landmarkType: landmarkTypeInArea, warning: landmarkInAreaWarning)
             
         }
     }
     
-    func setInitData() {
+    
+    
+    func updateLocalData() {
         if landmarkInAreaToggle {
-            self.sportManager.setLandmarkArea(landmarkinArea: LandmarkInArea(landmarkType: self.landmarkTypeInArea, area: initArea))
+            if let imageSize = sportManager.findFirstSportState()?.image?.imageSize,
+               let area = sportManager.getRuleLandmarkInArea(), !area.area.isEmpty {
+                leftTopX = area.area[0].x/imageSize.width
+                leftTopY = area.area[0].y/imageSize.height
+                rightBottomX = area.area[2].x/imageSize.width
+                rightBottomY = area.area[2].y/imageSize.height
             
         }
+        }
     }
+        
+        func updateRemoteData() {
+            if landmarkInAreaToggle {
+                if self.leftTopX < self.rightBottomX && self.leftTopY < self.rightBottomY {
+                    sportManager.updateRuleLandmarkInArea(area: initArea)
+                }
+            }
+        }
     
     func toggleOff() {
-        landmarkTypeInArea = self.sportManager.findselectedSegment()!.landmarkTypes.first!
+        landmarkTypeInArea = self.sportManager.findSelectedSegment()!.landmarkTypes.first!
         leftTopX = 0.0
         leftTopY = 0.0
         rightBottomX = 0.0
@@ -70,9 +81,10 @@ struct LandmarkInAreaView: View {
             Toggle("关节点在区域", isOn: $landmarkInAreaToggle.didSet{ isOn in
                 if isOn {
                     setInitData()
+                    updateLocalData()
                     
                 }else {
-                    self.sportManager.setLandmarkArea(landmarkinArea: nil)
+                    self.sportManager.setRuleLandmarkInArea(landmarkinArea: nil)
                     toggleOff()
                 }
                 
@@ -91,8 +103,9 @@ struct LandmarkInAreaView: View {
                     Text("当前关节:")
                     Picker("当前关节", selection: $landmarkTypeInArea.didSet{ _ in
                         resetInitData()
+                        updateLocalData()
                     }) {
-                        ForEach(self.sportManager.findselectedSegment()!.landmarkTypes) { landmarkType in
+                        ForEach(self.sportManager.findSelectedSegment()!.landmarkTypes) { landmarkType in
                             Text(landmarkType.rawValue).tag(landmarkType)
                         }
                     }
@@ -101,7 +114,7 @@ struct LandmarkInAreaView: View {
                         HStack {
                             TextField("leftTopX", value: $leftTopX, formatter: formatter) {flag in
                                 if !flag {
-                                    resetInitData()
+                                    updateRemoteData()
                                 }
                                 
                             }
@@ -110,7 +123,7 @@ struct LandmarkInAreaView: View {
                             .keyboardType(.decimalPad)
                             TextField("leftTopY", value: $leftTopY, formatter: formatter) {flag in
                                 if !flag {
-                                    resetInitData()
+                                    updateRemoteData()
                                 }
                                 
                             }
@@ -121,7 +134,7 @@ struct LandmarkInAreaView: View {
                         HStack {
                             TextField("rightBottomX", value: $rightBottomX, formatter: formatter) {flag in
                                 if !flag {
-                                    resetInitData()
+                                    updateRemoteData()
                                 }
                                 
                             }
@@ -131,7 +144,7 @@ struct LandmarkInAreaView: View {
                             
                             TextField("rightBottomY", value: $rightBottomY, formatter: formatter){flag in
                                 if !flag {
-                                    resetInitData()
+                                    updateRemoteData()
                                 }
                                 
                             }
@@ -142,13 +155,11 @@ struct LandmarkInAreaView: View {
                         }
                     }
                 }
-
-                
             }.disabled(!landmarkInAreaToggle)
         }
         .onAppear{
             if let imageSize = sportManager.findFirstSportState()?.image?.imageSize,
-               let area = sportManager.findCurrentLandmarkArea(), !area.area.isEmpty {
+               let area = sportManager.getRuleLandmarkInArea(), !area.area.isEmpty {
                 landmarkTypeInArea = area.landmarkType
                 leftTopX = area.area[0].x/imageSize.width
                 leftTopY = area.area[0].y/imageSize.height
@@ -157,7 +168,7 @@ struct LandmarkInAreaView: View {
                 landmarkInAreaWarning = area.warning
                 landmarkInAreaToggle = true
             }else {
-                self.landmarkTypeInArea = self.sportManager.findselectedSegment()!.landmarkTypes.first!
+                self.landmarkTypeInArea = self.sportManager.findSelectedSegment()!.landmarkTypes.first!
             }
         }
     }
