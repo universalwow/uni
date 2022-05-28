@@ -391,10 +391,10 @@ extension SportsManager {
         }
     }
     
-    func setRuleLandmarkInArea(landmarkType: LandmarkType, warning: String) {
+    func setRuleLandmarkInArea(landmarkType: LandmarkType, imageSize: Point2D, warning: String) {
         if let rule = findCurrentSportStateRule() {
             var newRule = rule
-            newRule.landmarkInArea = LandmarkInArea(landmarkType: landmarkType, warning: warning)
+            newRule.landmarkInArea = LandmarkInArea(landmarkType: landmarkType, imageSize: imageSize, warning: warning)
             self.upsertCurrentRule(rule: newRule)
         }
     }

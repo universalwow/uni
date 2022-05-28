@@ -149,7 +149,6 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                 }
             }
             .disabled(!relativeLengthToggle)
-            
         }
         .onAppear{
 //            存在时加载

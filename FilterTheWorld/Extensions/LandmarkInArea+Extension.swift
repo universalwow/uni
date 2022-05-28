@@ -4,8 +4,17 @@ import Foundation
 import SwiftUI
 
 extension LandmarkInArea {
-  var path: Path {
+    func path(frameSize: Point2D) -> Path {
     var path = Path()
+    var area : [Point2D] = []
+    if imageSize.x == frameSize.x && imageSize.y == frameSize.y {
+        area = self.area
+    } else {
+        area = self.area.map { point in
+            Point2D(x: point.x/imageSize.x * frameSize.x,
+                    y: point.y/imageSize.y * frameSize.y)
+        }
+    }
     let areaIndics = area.indices
     area.indices.forEach{ index in
       if index == areaIndics.lowerBound {
@@ -15,7 +24,6 @@ extension LandmarkInArea {
       }else {
         path.addLine(to: area[index].cgPoint)
       }
-      
     }
     
     return path

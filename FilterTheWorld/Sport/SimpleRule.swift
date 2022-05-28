@@ -59,8 +59,42 @@ struct LandmarkToAxisAndState: Codable {
     
     var warning:String = ""
     
-    var length: Range<Double> {
+    var range: Range<Double> {
         lowerBound..<upperBound
+    }
+    
+    
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {
+        
+        if stateTimeHistory.isEmpty || stateTimeHistory.contains(where: { stateTime in
+            stateTime.sportState.id == SportState.startState.id
+        }) && stateTimeHistory.last { stateTime in
+            stateTime.sportState.id == self.toStateId
+        } == nil {
+            return true
+        }
+        
+        let fromLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
+        
+        // 依赖历史状态收集
+        let toLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(
+            poseMap: stateTimeHistory.last{ stateTime in
+                stateTime.sportState.id == self.toStateId
+            }!.poseMap
+        )
+        
+        
+        let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
+        let toSegment = self.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        
+        return ComplexRule.satisfy(fromAxis: self.fromLandmarkToAxis.axis,
+                                   toAxis: self.toLandmarkSegmentToAxis.axis,
+                                   range: self.range,
+                                   fromSegment: fromSegment,
+                                   toSegment: toSegment)
+        
+        
+        
     }
     
     
@@ -166,7 +200,7 @@ struct ObjectToObject: Codable {
         initBound()
     }
     
-    var length: Range<Double> {
+    var range: Range<Double> {
         lowerBound..<upperBound
     }
     
@@ -180,7 +214,7 @@ struct ObjectToObject: Codable {
         
         let toSegment = toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         
-        return ComplexRule.satisfyWithDirection(fromAxis: self.fromAxis, toAxis: self.toLandmarkSegmentToAxis.axis, lowerBound: self.lowerBound, upperBound: self.upperBound, fromSegment: fromSegment, toSegment: toSegment)
+        return ComplexRule.satisfyWithDirection(fromAxis: self.fromAxis, toAxis: self.toLandmarkSegmentToAxis.axis, range: self.range, fromSegment: fromSegment, toSegment: toSegment)
         
     }
     
@@ -279,7 +313,7 @@ struct ObjectToLandmark: Codable {
         initBound()
     }
     
-    var length: Range<Double> {
+    var range: Range<Double> {
         lowerBound..<upperBound
     }
     
@@ -293,7 +327,7 @@ struct ObjectToLandmark: Codable {
         
         let toSegment = toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         
-        return ComplexRule.satisfyWithDirection(fromAxis: self.fromAxis, toAxis: self.toLandmarkSegmentToAxis.axis, lowerBound: self.lowerBound, upperBound: self.upperBound, fromSegment: fromSegment, toSegment: toSegment)
+        return ComplexRule.satisfyWithDirection(fromAxis: self.fromAxis, toAxis: self.toLandmarkSegmentToAxis.axis, range: self.range, fromSegment: fromSegment, toSegment: toSegment)
         
     }
     
@@ -364,8 +398,21 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
         }
     }
     
-    var length: Range<Double> {
+    var range: Range<Double> {
         lowerBound..<upperBound
+    }
+    
+    
+    func satisfy(poseMap: PoseMap) -> Bool? {
+        
+        let fromSegment = self.from.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        let toSegment = self.to.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        
+        return ComplexRule.satisfy(fromAxis: self.from.axis,
+                                   toAxis: self.to.axis,
+                                   range: self.range,
+                                   fromSegment: fromSegment,
+                                   toSegment: toSegment)
     }
     
     init(from: LandmarkSegmentToAxis, to: LandmarkSegmentToAxis, warning: String) {
@@ -430,7 +477,7 @@ struct AngleRange: Codable {
     }
     var warning:String = ""
     
-    var angle: Range<Int> {
+    var range: Range<Int> {
         if lowerBound < upperBound {
             return lowerBound.toInt..<upperBound.toInt
         }else {
@@ -446,7 +493,7 @@ struct AngleRange: Codable {
     
     func satisfy(poseMap: PoseMap) -> Bool {
         let landmarkSegment = landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        return angle.contains(Int(landmarkSegment.angle2d)) || angle.contains(Int(landmarkSegment.angle2d + 360))
+        return range.contains(Int(landmarkSegment.angle2d)) || range.contains(Int(landmarkSegment.angle2d + 360))
     }
     
     mutating func initBound() {
@@ -479,23 +526,26 @@ extension LandmarkInArea {
 // MARK: 当前只考虑单区域
 struct LandmarkInArea: Codable {
     var landmarkType: LandmarkType
+    var imageSize:Point2D
     
     //  左上角 顺时针
     var area: [Point2D]
+    
     var warning:String = ""
     
     
-    init(landmarkType: LandmarkType, warning: String) {
+    init(landmarkType: LandmarkType, imageSize: Point2D, warning: String) {
         self.landmarkType = landmarkType
+        self.imageSize = imageSize
         self.warning = warning
         self.area = [Point2D.zero,Point2D.zero,Point2D.zero,Point2D.zero]
     }
     
     
-    func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap) -> Bool? {
+    func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap, frameSize: Point2D) -> Bool? {
         
         let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        
+        let path = self.path(frameSize: frameSize)
         if landmarkType == landmarkSegment.startLandmark.landmarkType {
             return path.contains(landmarkSegment.startLandmark.position.vector2d.toCGPoint)
         }else if landmarkType == landmarkSegment.endLandmark.landmarkType {
@@ -633,12 +683,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     var warning:String = ""
     // 角度
     var angle:AngleRange?
-//    // X 轴间距
-//    var lengthX: RelativeLandmarkSegmentsToAxis?
-//    // Y 轴间距
-//    var lengthY: RelativeLandmarkSegmentsToAxis?
-//    // 距离
-//    var lengthXY: RelativeLandmarkSegmentsToAxis?
+
     var length: RelativeLandmarkSegmentsToAxis?
     
     // 关节点在区域内
@@ -661,22 +706,30 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         return angleRange.satisfy(poseMap: poseMap)
     }
     
-    func landmarkInAreaSatisfy(landmarkInArea: LandmarkInArea, poseMap: PoseMap) -> Bool? {
-        return landmarkInArea.satisfy(landmarkSegmentType: landmarkSegmentType, poseMap: poseMap)
+    func lengthSatisfy(relativeDistance: RelativeLandmarkSegmentsToAxis, poseMap: PoseMap) -> Bool? {
+        return relativeDistance.satisfy(poseMap: poseMap)
+    }
+    
+    func landmarkInAreaSatisfy(landmarkInArea: LandmarkInArea, poseMap: PoseMap, frameSize: Point2D) -> Bool? {
+        return landmarkInArea.satisfy(landmarkSegmentType: landmarkSegmentType, poseMap: poseMap, frameSize: frameSize)
+    }
+    
+    func lengthToStateSatisfy(relativeDistance: LandmarkToAxisAndState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {
+        return relativeDistance.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        
     }
     
     func objectToLandmarkSatisfy(objectToLandmark: ObjectToLandmark, poseMap: PoseMap, object: Observation) -> Bool {
         return objectToLandmark.satisfy(poseMap: poseMap, object: object)
     }
     
+    func objectToObjectSatisfy(objectToObject: ObjectToObject, poseMap: PoseMap, object: Observation, targetObject: Observation) -> Bool {
+        return objectToObject.satisfy(poseMap: poseMap, fromObject: object, toObject: targetObject)
+    }
     
     
-    
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?) -> (Bool, Set<String>) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>) {
         // 单帧
-//        var lengthXSatisfy: Bool? = true
-//        var lengthYSatisfy: Bool? = true
-//        var lengthXYSatisfy: Bool? = true
         var lengthSatisfy: Bool? = true
 
         var angleSatisfy: Bool? = true
@@ -689,6 +742,9 @@ struct ComplexRule: Identifiable, Hashable, Codable {
 
         
         var objectToLandmarkSatisfy: Bool? = true
+        
+        //物体相对物体
+        var objectToObjectSatisfy: Bool? = true
 
         var warnings : Set<String> = []
         
@@ -709,7 +765,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         }
         
         if let landmarkInArea = landmarkInArea {
-            landmarkInAreaSatisfy = self.landmarkInAreaSatisfy(landmarkInArea: landmarkInArea, poseMap: poseMap)
+            landmarkInAreaSatisfy = self.landmarkInAreaSatisfy(landmarkInArea: landmarkInArea, poseMap: poseMap, frameSize: frameSize)
             if landmarkInAreaSatisfy == false {
                 warnings.insert(landmarkInArea.warning)
             }
@@ -735,67 +791,28 @@ struct ComplexRule: Identifiable, Hashable, Codable {
             }
         }
         
+        if let objectToObject = objectPositionToObjectPosition {
+            if let object = object, let targetObject = targetObject {
+                objectToObjectSatisfy = self.objectToObjectSatisfy(objectToObject: objectToObject, poseMap: poseMap, object: object, targetObject: targetObject)
+            } else {
+                objectToLandmarkSatisfy = false
+            }
+            if objectToLandmarkSatisfy == false {
+                warnings.insert(objectToObject.warning)
+            }
+        }
+        
         // 每个规则至少要包含一个条件 且所有条件都必须满足
         return (
             lengthSatisfy == true &&
                 angleSatisfy == true && landmarkInAreaSatisfy == true &&
                 lengthToStateSatisfy == true &&
-            objectToLandmarkSatisfy == true
+            objectToLandmarkSatisfy == true &&
+            objectToObjectSatisfy == true
                 , warnings)
     }
     
-    func lengthSatisfy(relativeDistance: RelativeLandmarkSegmentsToAxis, poseMap: PoseMap) -> Bool? {
-        let  lowerBound = relativeDistance.length.lowerBound
-        let  upperBound = relativeDistance.length.upperBound
-        
-        let fromSegment = relativeDistance.from.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        let toSegment = relativeDistance.to.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        
-        return ComplexRule.satisfy(fromAxis: relativeDistance.from.axis,
-                                   toAxis: relativeDistance.to.axis,
-                                   lowerBound: lowerBound,
-                                   upperBound: upperBound,
-                                   fromSegment: fromSegment,
-                                   toSegment: toSegment)
-    }
     
-    
-    func lengthToStateSatisfy(relativeDistance: LandmarkToAxisAndState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {
-        
-        if stateTimeHistory.isEmpty || stateTimeHistory.contains(where: { stateTime in
-            stateTime.sportState.id == SportState.startState.id
-        }) && stateTimeHistory.last { stateTime in
-            stateTime.sportState.id == relativeDistance.toStateId
-        } == nil {
-            return true
-        }
-        
-        let  lowerBound = relativeDistance.length.lowerBound
-        let  upperBound = relativeDistance.length.upperBound
-        
-        let fromLandmark = relativeDistance.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
-        
-        // 依赖历史状态收集
-        let toLandmark = relativeDistance.fromLandmarkToAxis.landmark.landmarkType.landmark(
-            poseMap: stateTimeHistory.last{ stateTime in
-                stateTime.sportState.id == relativeDistance.toStateId
-            }!.poseMap
-        )
-        
-        
-        let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
-        let toSegment = relativeDistance.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        
-        return ComplexRule.satisfy(fromAxis: relativeDistance.fromLandmarkToAxis.axis,
-                                   toAxis: relativeDistance.toLandmarkSegmentToAxis.axis,
-                                   lowerBound: lowerBound,
-                                   upperBound: upperBound,
-                                   fromSegment: fromSegment,
-                                   toSegment: toSegment)
-        
-        
-        
-    }
     
 }
 
@@ -820,108 +837,108 @@ struct StateTransition {
 
 extension ComplexRule {
     
-    static func satisfy(fromAxis: CoordinateAxis, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, fromSegment: LandmarkSegment, toSegment: LandmarkSegment) -> Bool {
+    static func satisfy(fromAxis: CoordinateAxis, toAxis: CoordinateAxis, range: Range<Double>, fromSegment: LandmarkSegment, toSegment: LandmarkSegment) -> Bool {
         switch (fromAxis, toAxis) {
         case (.X, .X):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceX/toSegment.distanceX
             )
             
         case (.X, .Y):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceX/toSegment.distanceY
             )
             
         case (.X, .XY):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceX/toSegment.distance
             )
             
             // from Y
             
         case (.Y, .X):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceY/toSegment.distanceX
             )
             
         case (.Y, .Y):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceY/toSegment.distanceY
             )
             
         case (.Y, .XY):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceY/toSegment.distance
             )
             
             // from XY
             
         case (.XY, .X) :
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distance/toSegment.distanceX
             )
             
         case (.XY, .Y):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distance/toSegment.distanceY
             )
             
         case (.XY, .XY):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distance/toSegment.distance
             )
         }
     }
     
     
-    static func satisfyWithDirection(fromAxis: CoordinateAxis, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, fromSegment: LandmarkSegment, toSegment: LandmarkSegment) -> Bool {
+    static func satisfyWithDirection(fromAxis: CoordinateAxis, toAxis: CoordinateAxis, range: Range<Double>, fromSegment: LandmarkSegment, toSegment: LandmarkSegment) -> Bool {
         switch (fromAxis, toAxis) {
         case (.X, .X):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceXWithDirection/toSegment.distanceX
             )
             
         case (.X, .Y):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceXWithDirection/toSegment.distanceY
             )
             
         case (.X, .XY):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceXWithDirection/toSegment.distance
             )
             
             // from Y
             
         case (.Y, .X):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceYWithDirection/toSegment.distanceX
             )
             
         case (.Y, .Y):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceYWithDirection/toSegment.distanceY
             )
             
         case (.Y, .XY):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distanceYWithDirection/toSegment.distance
             )
             
             // from XY
             
         case (.XY, .X) :
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distance/toSegment.distanceX
             )
             
         case (.XY, .Y):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distance/toSegment.distanceY
             )
             
         case (.XY, .XY):
-            return (lowerBound..<upperBound).contains(
+            return range.contains(
                 fromSegment.distance/toSegment.distance
             )
         }

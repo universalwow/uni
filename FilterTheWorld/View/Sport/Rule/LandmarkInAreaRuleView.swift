@@ -32,7 +32,10 @@ struct LandmarkInAreaRuleView: View {
     
     func setInitData() {
         if landmarkInAreaToggle {
-            self.sportManager.setRuleLandmarkInArea(landmarkType: landmarkTypeInArea, warning: landmarkInAreaWarning)
+            if let imageSize = sportManager.findFirstSportState()?.image?.imageSize {
+                self.sportManager.setRuleLandmarkInArea(landmarkType: landmarkTypeInArea, imageSize: Point2D(x: imageSize.width, y: imageSize.height), warning: landmarkInAreaWarning)
+            }
+            
         }
     }
     

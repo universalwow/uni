@@ -55,7 +55,7 @@ struct Sporter: Identifiable {
   }
   
   
-  mutating func play(poseMap:PoseMap, object: Observation?, currentTime: Double) {
+    mutating func play(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
     
     // 3秒没切换状态 则重置状态为开始
     if currentTime - currentStateTime.time > 3 {
@@ -73,7 +73,7 @@ struct Sporter: Identifiable {
       let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
       if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
       {
-        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
+        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object,targetObject: targetObject, frameSize: frameSize)
         if !satisfy.0 {
           allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
 //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
@@ -83,7 +83,7 @@ struct Sporter: Identifiable {
       // 之后的状态转换
       let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
       if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
+        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
         if !satisfy.0 {
           allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
 //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
@@ -97,7 +97,7 @@ struct Sporter: Identifiable {
       if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from),
          let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to)
       {
-        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
+        let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
         if satisfy.0 {
             currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
         } else {
@@ -110,7 +110,7 @@ struct Sporter: Identifiable {
       // 之后的状态转换
       let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
       if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
+        let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
         if satisfy.0  {
           currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
         } else {

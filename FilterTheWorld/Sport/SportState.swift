@@ -200,7 +200,7 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
     }
   }
   
-  func complexScoreRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?) -> (Bool, Set<String>) {
+    func complexScoreRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>) {
     
     var rules : [ComplexRules] = []
     switch ruleType {
@@ -214,7 +214,7 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
         // 每一组条件全部满足
   //      (!complexRules.rules.isEmpty) &&
       let rulesSatisfy = complexRules.rules.reduce((true, Set<String>()), { satisfy, complexRule in
-        let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
+        let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
 //        print("rule satisfy ... \(ruleSatisfy)")
         return (satisfy.0 && ruleSatisfy.0, satisfy.1.union(ruleSatisfy.1))
       })
