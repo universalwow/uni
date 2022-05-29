@@ -38,6 +38,8 @@
 		9545751327BD1B1600129153 /* StandAndJump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545751227BD1B1500129153 /* StandAndJump.swift */; };
 		9554E8622840F468002D8345 /* SportsGroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8612840F468002D8345 /* SportsGroundView.swift */; };
 		9554E8642841B6FB002D8345 /* ObjectToObjectRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8632841B6FB002D8345 /* ObjectToObjectRuleView.swift */; };
+		9554E8662841C717002D8345 /* LineDrawerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8652841C717002D8345 /* LineDrawerView.swift */; };
+		9554E8682841C971002D8345 /* LinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8672841C971002D8345 /* LinesView.swift */; };
 		95878ECD27DEDD8300F31A9B /* SportsGround.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95878ECC27DEDD8300F31A9B /* SportsGround.swift */; };
 		95878ED327DF277600F31A9B /* UIView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95878ED227DF277500F31A9B /* UIView+Extension.swift */; };
 		958F8C312760560500F6DF48 /* Facenet6.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */; };
@@ -137,6 +139,8 @@
 		9545751227BD1B1500129153 /* StandAndJump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandAndJump.swift; sourceTree = "<group>"; };
 		9554E8612840F468002D8345 /* SportsGroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsGroundView.swift; sourceTree = "<group>"; };
 		9554E8632841B6FB002D8345 /* ObjectToObjectRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectToObjectRuleView.swift; sourceTree = "<group>"; };
+		9554E8652841C717002D8345 /* LineDrawerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineDrawerView.swift; sourceTree = "<group>"; };
+		9554E8672841C971002D8345 /* LinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesView.swift; sourceTree = "<group>"; };
 		95878ECC27DEDD8300F31A9B /* SportsGround.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsGround.swift; sourceTree = "<group>"; };
 		95878ED227DF277500F31A9B /* UIView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Extension.swift"; sourceTree = "<group>"; };
 		958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = Facenet6.mlmodel; sourceTree = "<group>"; };
@@ -392,6 +396,8 @@
 		95B7BFE5283668950037EC55 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				9554E8652841C717002D8345 /* LineDrawerView.swift */,
+				9554E8672841C971002D8345 /* LinesView.swift */,
 				9554E8602840F41F002D8345 /* Sporter */,
 				951FB3322839EA8100A62931 /* Video */,
 				951FB3272838928B00A62931 /* Sport */,
@@ -694,6 +700,7 @@
 				95E79E2527A13CED00AC36E1 /* CIImage+Extension.swift in Sources */,
 				951ABE42283A13A9009AB8F6 /* MediaPicker.swift in Sources */,
 				95986F3528406CEE0090B22C /* ObjectToLandmarkRuleView.swift in Sources */,
+				9554E8662841C717002D8345 /* LineDrawerView.swift in Sources */,
 				9545751327BD1B1600129153 /* StandAndJump.swift in Sources */,
 				95171C9727CE140B0051249D /* Sporter.swift in Sources */,
 				95E79E0327A13C3000AC36E1 /* Card.swift in Sources */,
@@ -702,6 +709,7 @@
 				95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */,
 				951FB3342839EB1500A62931 /* FramesView.swift in Sources */,
 				95986F33283E3E430090B22C /* RuleDescriptionView.swift in Sources */,
+				9554E8682841C971002D8345 /* LinesView.swift in Sources */,
 				95E79DF627A13AEC00AC36E1 /* SimpleRule.swift in Sources */,
 				95E79DF727A13AEC00AC36E1 /* SportState.swift in Sources */,
 				950F555D27EEE71900480F17 /* ObservableState.swift in Sources */,
