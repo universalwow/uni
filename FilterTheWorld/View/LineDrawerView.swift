@@ -111,11 +111,10 @@ struct LineDrawerView: View {
                                             break
                                         }
                                     }
-                    //                    左倾 x 减小
-                                    
                                     
                                     self.leftTop = CGPoint(x: leftTop.x - CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: leftTop.y)
                                 }
+                                
                                 
                                 if index > 0 && width <= minWidth + 1 {
                                     print("return 0 \(index)/\(innerIndex)")
@@ -144,10 +143,8 @@ struct LineDrawerView: View {
                                             break
                                         }
                                     }
-                    //                    左倾 x 减小
                                     
-                                    self.rightTop = CGPoint(x: rightTop.x - CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: rightTop.y)
-                                    direction
+                                    self.rightTop = CGPoint(x: rightTop.x - CGFloat(log10(width))*CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: rightTop.y)
                                     
                                 }
                                 

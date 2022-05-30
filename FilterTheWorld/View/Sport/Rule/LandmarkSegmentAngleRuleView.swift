@@ -68,7 +68,7 @@ struct LandmarkSegmentAngleRuleView: View {
                         .onTapGesture {
                             self.minAngle = max(0, self.minAngle - 1)
                             updateRemoteData()
-
+                            
                         }
                 },
                 maximumValueLabel: {
@@ -113,7 +113,7 @@ struct LandmarkSegmentAngleRuleView: View {
                         .onTapGesture {
                             self.maxAngle = max(0, self.maxAngle - 1)
                             updateRemoteData()
-
+                            
                         }
                 },
                 maximumValueLabel: {
@@ -184,7 +184,7 @@ struct LandmarkSegmentAngleRuleView: View {
             }.disabled(!angleToggle)
             
         }
-
+        
         .onAppear(perform: {
             if let angle = sportManager.getRuleLandmarkSegmentAngle() {
                 self.minAngle = angle.lowerBound

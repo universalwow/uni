@@ -38,6 +38,7 @@ struct AppMain: App {
     @StateObject var imageAnalysor = ImageAnalysis()
     @StateObject var sportGround = SportsGround()
     
+    
     //  let test = TestPublishedStruct()
     var body: some Scene {
         WindowGroup {

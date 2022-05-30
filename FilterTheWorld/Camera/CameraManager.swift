@@ -162,7 +162,7 @@ class CameraManager: NSObject, ObservableObject {
     defer {
       session.commitConfiguration()
     }
-
+      
     let device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .back).devices.first
 //    AVCaptureDevice.default(
 //      .builtInWideAngleCamera,
@@ -175,6 +175,7 @@ class CameraManager: NSObject, ObservableObject {
     }
 
     do {
+        
       let cameraInput = try AVCaptureDeviceInput(device: camera)
       if session.canAddInput(cameraInput) {
         session.addInput(cameraInput)

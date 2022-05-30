@@ -50,7 +50,7 @@ extension FrameManager: AVCaptureVideoDataOutputSampleBufferDelegate {
     if writable, sessionAtSourceTime == nil {
         // start writing
         sessionAtSourceTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-      videoWriter!.startSession(atSourceTime: sessionAtSourceTime!)
+        videoWriter!.startSession(atSourceTime: sessionAtSourceTime!)
         //print("Writing")
     }
 

@@ -235,7 +235,8 @@ struct FramesView: View {
         .sheet(isPresented: $mediaFlag,
                onDismiss: {
             if let videoUrl = videoUrl {
-                videoManager.generatorFrames(videoUrl: videoUrl, framePerSecond: 1.0)
+                
+                videoManager.generatorAllFrames(videoUrl: videoUrl, framePerSecond: 1.0)
                 selectedPoseIndex = -1
             }
             
@@ -268,10 +269,6 @@ struct FramesView: View {
 //            }
 //        }
         
-        .onAppear{
-            videoManager.generatorFrames(videoUrl: nil, framePerSecond: 1.0)
-            //            videoManager.getFrame(time: 1)
-        }
         
     }
 }

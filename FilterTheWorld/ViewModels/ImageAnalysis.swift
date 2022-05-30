@@ -29,7 +29,9 @@ class ImageAnalysis : ObservableObject {
     @Published var objects : [Observation] = []
     
     @Published var cachedFrames:[(Double, UIImage)] = []
+    @Published var cachedFramesCImage:[(Double, CIImage)] = []
     var currentFrame:UIImage?
+    var currentFrameCIImage: CIImage?
     
     private var faceRecognizer :FaceRecognizer?
     
@@ -103,6 +105,21 @@ class ImageAnalysis : ObservableObject {
         }
     }
     
+    func detectorProcess(image: CIImage, request: AVAsynchronousCIImageFilteringRequest?, currentTime: TimeInterval) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            
+//            let visionImage = VisionImage(image: image)
+//            visionImage.orientation = image.imageOrientation
+//            print("detectorProcess \(image.imageOrientation)")
+//            
+//            let buffer = image.scalePreservingAspectRatio(targetSize: CGSize(width: 640, height: 640)).toCVPixelBuffer()
+//            
+//            self.objectDetectorYOLO?.detectObject(in: buffer!, imageSize: image.size, currentTime: currentTime)
+//            self.findPoses(image: visionImage, request: request, currentTime: currentTime)
+            
+        }
+    }
+    
     //  // 物体检测
     //  func findObjects(image: VisionImage) {
     //    self.objectRecognizer?.detectObject(image: image)
@@ -122,6 +139,14 @@ class ImageAnalysis : ObservableObject {
         DispatchQueue.main.async {
             self.currentFrame = image
             self.cachedFrames.append((currentTime, image))
+            self.detectorProcess(image: image, request: request, currentTime: currentTime)
+        }
+    }
+    
+    func imageAnalysis(image: CIImage, request: AVAsynchronousCIImageFilteringRequest?, currentTime: Double) {
+        DispatchQueue.main.async {
+            self.currentFrameCIImage = image
+            self.cachedFramesCImage.append((currentTime, image))
             self.detectorProcess(image: image, request: request, currentTime: currentTime)
         }
     }

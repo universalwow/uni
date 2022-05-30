@@ -21,11 +21,22 @@ struct ContentView: View {
             }
             
             VStack {
-                LineDrawerView().padding()
+//                VideoView()
+                VideoAnalysisView().padding()
+//                VideoPlayerCoreImageView().padding()
             }
             .tabItem{
-                Text("Draw Line")
+                Text("Video Player")
             }
+            
+//            VStack {
+//                LineDrawerView().padding()
+//            }
+//            .tabItem{
+//                Text("Draw Line")
+//            }
+            
+            
             
             VStack {
                 LoginView()
@@ -36,8 +47,4 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+
