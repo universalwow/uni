@@ -21,8 +21,8 @@ struct VideoAnalysisView: View {
     
     var body: some View {
         VStack {
-            if let ciImage = frame {
-                FrameView(uiImage: UIImage(ciImage: ciImage))
+            if let cgImage = videoManager.frame {
+                FrameView(uiImage: UIImage(cgImage: cgImage))
             }
             
             VStack {

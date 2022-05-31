@@ -22,12 +22,13 @@ struct ContentView: View {
             
             VStack {
 //                VideoView()
-                VideoAnalysisView().padding()
+                VideoAnalysorView().padding()
 //                VideoPlayerCoreImageView().padding()
             }
             .tabItem{
                 Text("Video Player")
             }
+            
             
 //            VStack {
 //                LineDrawerView().padding()

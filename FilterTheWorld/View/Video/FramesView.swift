@@ -236,7 +236,7 @@ struct FramesView: View {
                onDismiss: {
             if let videoUrl = videoUrl {
                 
-                videoManager.generatorAllFrames(videoUrl: videoUrl, framePerSecond: 1.0)
+                videoManager.generatorAllFrames(videoUrl: videoUrl, fps: 1.0)
                 selectedPoseIndex = -1
             }
             
