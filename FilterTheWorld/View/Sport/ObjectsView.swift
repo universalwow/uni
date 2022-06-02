@@ -99,3 +99,17 @@ struct ObjectsView: View {
     }
 }
 
+struct ObjectsViewForSportsGround: View {
+    @EnvironmentObject var sportManager: SportsManager
+    @EnvironmentObject var imageAnalysis:ImageAnalysis
+    var objects:[Observation]
+    var imageSize:CGSize
+    var viewSize:CGSize
+    var body: some View {
+        ForEach(objects) { object in
+            ObjectView(object: object, imageSize: imageSize, viewSize: viewSize)
+        }
+        
+    }
+}
+

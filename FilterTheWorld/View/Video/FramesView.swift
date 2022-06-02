@@ -7,9 +7,9 @@ import AVFAudio
 
 extension FramesView {
     var frameWidth: CGFloat {
-        if self.videoManager.frames.count > 0 {
+        if self.videoManager.allFrames.count > 0 {
             
-            return StaticValue.imageHeight/(CGFloat(self.videoManager.frames[0].height)/CGFloat(self.videoManager.frames[0].width))
+            return StaticValue.imageHeight/(CGFloat(self.videoManager.allFrames[0].height)/CGFloat(self.videoManager.allFrames[0].width))
         }
         return 0.0
         
@@ -135,8 +135,8 @@ struct FramesView: View {
             
             TrackableScrollView([.horizontal], showIndicators: false, contentOffset: $scrollViewContentOffset) {
                 HStack(spacing: 0) {
-                    ForEach(videoManager.frames.indices, id: \.self) {frameIndex in
-                        Image(uiImage: UIImage(cgImage: videoManager.frames[frameIndex]))
+                    ForEach(videoManager.allFrames.indices, id: \.self) {frameIndex in
+                        Image(uiImage: UIImage(cgImage: videoManager.allFrames[frameIndex]))
                             .resizable()
                             .scaledToFit()
                     }

@@ -26,7 +26,7 @@ struct SetupRuleView: View {
                 }
             }
             
-            ScrollView {
+            ScrollView(showsIndicators: false) {
                 VStack {
                     LandmarkSegmentAngleRuleView()
                     Divider()

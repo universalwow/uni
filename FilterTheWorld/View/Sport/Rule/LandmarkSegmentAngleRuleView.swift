@@ -2,8 +2,29 @@
 
 import SwiftUI
 
+
+
+
+
 struct LandmarkSegmentAngleRuleView: View {
     @EnvironmentObject var sportManager:SportsManager
+    
+    struct ImageButton: View {
+        var systemName:String
+        var body: some View {
+            ZStack {
+                Capsule().fill(Color.green)
+                
+                Image(systemName: systemName)
+                    .resizable()
+                    .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
+                    .foregroundColor(.white)
+                    
+                
+            }.frame(width: StaticValue.angleImageSize*2, height: StaticValue.angleImageSize)
+            
+        }
+    }
     
     struct StaticValue {
         static let angleTextOffsetY: CGFloat = -20
@@ -14,6 +35,7 @@ struct LandmarkSegmentAngleRuleView: View {
     @State var maxAngle = 0.0
     @State var warning = ""
     @State var angleToggle = false
+    
     
     
     
@@ -46,7 +68,7 @@ struct LandmarkSegmentAngleRuleView: View {
     
     func updateRemoteData() {
         if angleToggle {
-            sportManager.updateRuleLandmarkSegmentAngle(lowerBound: minAngle, upperBound: maxAngle)
+            sportManager.updateRuleLandmarkSegmentAngle(lowerBound: minAngle, upperBound: maxAngle, warning: warning)
         }
         
     }
@@ -62,9 +84,9 @@ struct LandmarkSegmentAngleRuleView: View {
                     Text("最小角度")
                 },
                 minimumValueLabel: {
-                    Image(systemName: "minus.circle.fill")
-                        .resizable()
-                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
+                    ImageButton(systemName: "minus.circle.fill")
+//                        .resizable()
+//                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
                             self.minAngle = max(0, self.minAngle - 1)
                             updateRemoteData()
@@ -72,10 +94,11 @@ struct LandmarkSegmentAngleRuleView: View {
                         }
                 },
                 maximumValueLabel: {
-                    Image(systemName: "plus.circle.fill")
-                        .resizable()
-                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
+                    ImageButton(systemName: "plus.circle.fill")
+//                        .resizable()
+//                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
+                            
                             self.minAngle = min(360, self.minAngle + 1)
                             updateRemoteData()
                         }
@@ -88,7 +111,7 @@ struct LandmarkSegmentAngleRuleView: View {
                     
                     
                 }).background(content: {
-                    Text("\(self.minAngle)")
+                    Text("\(self.minAngle.roundedString(number: 0))")
                         .offset(y: StaticValue.angleTextOffsetY)
                         .foregroundColor(self.maxAngle > self.minAngle ? .black : .red)
                     
@@ -104,12 +127,12 @@ struct LandmarkSegmentAngleRuleView: View {
                 in: 0...360,
                 step: 1,
                 label: {
-                    Text("最小角度")
+                    Text("最大角度")
                 },
                 minimumValueLabel: {
-                    Image(systemName: "minus.circle.fill")
-                        .resizable()
-                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
+                    ImageButton(systemName: "minus.circle.fill")
+//                        .resizable()
+//                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
                             self.maxAngle = max(0, self.maxAngle - 1)
                             updateRemoteData()
@@ -117,10 +140,9 @@ struct LandmarkSegmentAngleRuleView: View {
                         }
                 },
                 maximumValueLabel: {
-                    Image(systemName: "plus.circle.fill")
-                        .resizable()
-                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
-                    
+                    ImageButton(systemName: "plus.circle.fill")
+//                        .resizable()
+//                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
                             self.maxAngle = min(360, self.maxAngle + 1)
                             updateRemoteData()
@@ -132,7 +154,7 @@ struct LandmarkSegmentAngleRuleView: View {
                         updateRemoteData()
                     }
                 }).background(content: {
-                    Text("\(self.maxAngle)")
+                    Text("\(self.maxAngle.roundedString(number: 0))")
                         .offset(y: StaticValue.angleTextOffsetY)
                         .foregroundColor(self.maxAngle > self.minAngle ? .black : .red)
                     

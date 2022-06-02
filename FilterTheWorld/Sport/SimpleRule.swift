@@ -488,6 +488,7 @@ struct AngleRange: Codable {
     init(landmarkSegment: LandmarkSegment, warning: String) {
         self.landmarkSegment = landmarkSegment
         self.warning = warning
+        initBound()
     }
     
     

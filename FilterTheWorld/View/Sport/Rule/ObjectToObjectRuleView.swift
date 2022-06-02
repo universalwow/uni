@@ -9,6 +9,7 @@ struct ObjectToObjectRuleView: View {
     
     @State var warning = ""
     @State var currentAxis = CoordinateAxis.X
+//    此处id为label
     @State var fromObjectId = ""
     @State var fromObjectPosition = ObjectPosition.middle
     @State var toObjectId = ""
@@ -50,9 +51,9 @@ struct ObjectToObjectRuleView: View {
     
     func toggleOf() {
         warning = ""
-        fromObjectId = sportManager.findSelectedObjects().first!.id
+        fromObjectId = sportManager.findSelectedObjects().first!.label
         fromObjectPosition = ObjectPosition.middle
-        toObjectId = sportManager.findSelectedObjects().first!.id
+        toObjectId = sportManager.findSelectedObjects().first!.label
         toObjectPosition = ObjectPosition.middle
         currentAxis = CoordinateAxis.X
         toLandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
@@ -95,7 +96,7 @@ struct ObjectToObjectRuleView: View {
                             
                         }) {
                             ForEach(sportManager.findSelectedObjects()) { object in
-                                Text(object.id).tag(object.id)
+                                Text(object.label).tag(object.label)
                             }
                         }
                         Text("位置")
@@ -129,7 +130,7 @@ struct ObjectToObjectRuleView: View {
                             
                         }) {
                             ForEach(sportManager.findSelectedObjects()) { object in
-                                Text(object.id).tag(object.id)
+                                Text(object.label).tag(object.label)
                             }
                         }
                         Text("位置")

@@ -16,6 +16,28 @@ extension VideoAnalysorView {
     }
 }
 
+
+struct PlayerView: View {
+    @EnvironmentObject var sportGround: SportsGround
+    var body: some View {
+        VStack {
+            if let sporter = sportGround.sporters.first {
+                HStack{
+                    Text("\(sporter.sport.name)-\(sporter.name)").padding()
+                        .background(Capsule().fill(Color.green))
+                    Spacer()
+                    Text("成绩\(sporter.scoreTimes.count)").padding()
+                        .background(Capsule().fill(Color.green))
+                }.foregroundColor(.white)
+            }
+            
+            Spacer()
+        }.padding()
+        
+        
+    }
+}
+
 struct VideoAnalysorView: View {
     
     struct StaticValue {
@@ -30,6 +52,8 @@ struct VideoAnalysorView: View {
     
     @StateObject var videoManager = VideoManager()
     @EnvironmentObject var imageAnalysis:ImageAnalysis
+    @EnvironmentObject var sportGround: SportsGround
+    
     
     @State var mediaFlag = false
     
@@ -56,6 +80,9 @@ struct VideoAnalysorView: View {
     
     @State private var offset: CGSize = .zero
     @GestureState private var offsetState: CGSize = .zero
+    
+    @State var currentSportIndex: Int = 0
+    
 
     
     var secondToStandardedTime:String {
@@ -80,8 +107,9 @@ struct VideoAnalysorView: View {
                     .overlay{
                         GeometryReader { geometry in
                             ZStack {
-                                PosesView(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
-                                ObjectsView(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
+                                PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
+                                ObjectsViewForSportsGround(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
+                                PlayerView()
                             }
                         }
                     }
@@ -91,23 +119,7 @@ struct VideoAnalysorView: View {
                     .scaledToFit()
             }
             
-            
             Spacer()
-            
-//            TrackableScrollView([.horizontal], showIndicators: false, contentOffset: $scrollViewContentOffset) {
-//                HStack(spacing: 0) {
-//                    ForEach(videoManager.allFrames.indices, id: \.self) {frameIndex in
-//                        Image(uiImage: UIImage(cgImage: videoManager.allFrames[frameIndex]))
-//                            .resizable()
-//                            .scaledToFit()
-//                    }
-//
-//                }
-//
-//            }
-//            .frame(height: StaticValue.imageHeight)
-//                .background(.green)
-            
             
             HStack(spacing: 0) {
                 Color.green.overlay{
@@ -225,93 +237,118 @@ struct VideoAnalysorView: View {
                 
             }
             HStack {
-                Text("当前位置  \(secondToStandardedTime)")
-                Text("缓存帧数  \(imageAnalysis.cachedFrames.count)")
+                HStack {
+                    Text("当前位置  \(secondToStandardedTime)")
+                    Text("缓存帧数  \(imageAnalysis.cachedFrames.count)")
+                }
+                
                 Spacer()
-                Button(action: {
-                    self.mediaFlag = true
+                HStack {
+                    Picker("选择项目", selection: $currentSportIndex) {
+                        ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
+                            Text(sportGround.sports[sportIndex].name).tag(sportIndex)
+                        }
+                    }
                     
-                }) {
-                    Text("选择视频")
-                }
-                
-                
-                Button(action: {
-                    switch self.orientation {
-                    case .up:
-                        self.orientation = .right
-                    case .right:
-                        self.orientation = .down
-                    case .down:
-                        self.orientation = .left
-                    case .left:
-                        self.orientation = .up
+                    Button(action: {
+                        sportGround.updateSports()
+                    }) {
+                        Text("更新项目")
+                    }
                     
-                    default: break
+                    Button(action: {
+                        if !sportGround.sports.isEmpty {
+                            print("运动员准备")
+                            sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
+
+                        }
+                    }) {
+                        Text("设置运动员")
+                    }
+                    
+                    Button(action: {
+                        self.mediaFlag = true
                         
-                
+                    }) {
+                        Text("选择视频")
                     }
                     
-
-                }) {
-                    Text("旋转图片")
-                }
-                
-                
-                Button(action: {
-                    if let frame = self.videoManager.frame {
-                        imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: 0.0)
-                    }
                     
-                }) {
-                    Text("分析图片")
-                }
-                
-                Button(action: {
-                    self.stopAnalysis = false
-                    if let _ = videoUrl {
-                        DispatchQueue.global(qos: .userInitiated).async {
-
-                            while !self.stopAnalysis && self.scrollOffset < self.frameWidth*CGFloat(self.videoManager.allFrames.count) && self.scrollOffset >= 0 {
-                                Thread.sleep(forTimeInterval: 1/self.framesPerSeconds)
-                                DispatchQueue.main.async {
-                                    self.scrollViewContentOffset = self.scrollViewContentOffset + self.frameWidth / self.fps
-                                }
-                            }
-                            DispatchQueue.main.async {
-                                if !self.stopAnalysis {
-                                    self.scrollViewContentOffset = 0
-                                }
-                            }
+                    Button(action: {
+                        switch self.orientation {
+                        case .up:
+                            self.orientation = .right
+                        case .right:
+                            self.orientation = .down
+                        case .down:
+                            self.orientation = .left
+                        case .left:
+                            self.orientation = .up
+                        
+                        default: break
                             
-                            
-                            
+                    
                         }
                         
 
+                    }) {
+                        Text("旋转图片")
                     }
                     
-                
                     
-                }) {
-                    Text("分析视频")
+                    Button(action: {
+                        if let frame = self.videoManager.frame {
+                            imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: 0.0)
+                        }
+                        
+                    }) {
+                        Text("分析图片")
+                    }
+                    
+                    Button(action: {
+                        self.stopAnalysis = false
+                        if let _ = videoUrl {
+                            DispatchQueue.global(qos: .userInitiated).async {
+
+                                while !self.stopAnalysis && self.scrollOffset < self.frameWidth*CGFloat(self.videoManager.allFrames.count) && self.scrollOffset >= 0 {
+                                    Thread.sleep(forTimeInterval: 1/self.framesPerSeconds)
+                                    DispatchQueue.main.async {
+                                        self.scrollViewContentOffset = self.scrollViewContentOffset + self.frameWidth / self.fps
+                                    }
+                                }
+                                DispatchQueue.main.async {
+                                    if !self.stopAnalysis {
+                                        self.scrollViewContentOffset = 0
+                                    }
+                                }
+                                
+                                
+                                
+                            }
+                            
+
+                        }
+                        
+                    
+                        
+                    }) {
+                        Text("分析视频")
+                    }
+                    
+                    Button(action: {
+                        self.stopAnalysis = true
+                    }) {
+                        Text("停止分析")
+                    }
                 }
-                
-                Button(action: {
-                    self.stopAnalysis = true
-                }) {
-                    Text("停止分析")
-                }
-                
-                
-                
-                
-                
                 
                 
             }.padding()
         }
         .padding()
+//        .onAppear(perform: {
+//            currentSportIndex = sportGround.sports.
+//        })
         
         .sheet(isPresented: $mediaFlag,
                onDismiss: {
@@ -336,9 +373,27 @@ struct VideoAnalysorView: View {
                 )
             }
         }
+        .onChange(of: currentSportIndex) { _ in
+            print("currentsport \(currentSportIndex)")
+        }
         .onChange(of: self.scrollOffset) { newValue in
             if self.frameWidth > 0 &&  self.scrollOffset >= 0 {
                 videoManager.getFrame(time: self.scrollOffset/self.frameWidth)
+                let uiImage = UIImage(cgImage: videoManager.frame!, scale: 1,orientation: orientation).fixedOrientation()!
+                imageAnalysis.imageAnalysis(image: uiImage, request: nil, currentTime: self.scrollOffset/self.frameWidth)
+                
+                let poses = imageAnalysis.sportData.frameData.poses
+                let ropes = imageAnalysis.objects.filter{ object in
+                    object.label == ObjectLabel.ROPE.rawValue
+                }
+                print("sportGround \(sportGround.sporters.isEmpty)  \(poses.isEmpty)  \(ropes.isEmpty) \(sportGround.sporters.first?.scoreTimes.count)")
+
+                if !sportGround.sporters.isEmpty && !poses.isEmpty && !ropes.isEmpty {
+                    
+                    sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
+                    
+                    
+                }
             }
             
         }

@@ -475,7 +475,7 @@ extension SportsManager {
                 }!
             
             let selectedObject = state.objects.first{ object in
-                object.id == objectId
+                object.label == objectId
             }!
             
             var newRule = rule
@@ -515,7 +515,7 @@ extension SportsManager {
                 }!
             
             let selectedObject = state.objects.first{ object in
-                object.id == objectId
+                object.label == objectId
             }!
             
             var newRule = rule
@@ -628,19 +628,19 @@ extension SportsManager {
             var newRule = rule
             
             let fromObject = findFirstSportState()!.objects.first{ _object in
-                _object.id == fromObjectId
+                _object.label == fromObjectId
             }!
             
             let toObject = findFirstSportState()!.objects.first{ _object in
-                _object.id == toObjectId
+                _object.label == toObjectId
             }!
             
             newRule.objectPositionToObjectPosition!.fromPosition = ObjectPositionPoint(
-                id: fromObject.id,
+                id: fromObjectId,
                 position: fromObjectPosition,
                 point: fromObject.rect.pointOf(position: fromObjectPosition).point2d)
             newRule.objectPositionToObjectPosition!.toPosition = ObjectPositionPoint(
-                id: toObject.id,
+                id: toObjectId,
                 position: toObjectPosition,
                 point: toObject.rect.pointOf(position: toObjectPosition).point2d)
             newRule.objectPositionToObjectPosition!.fromAxis = fromAxis
@@ -657,19 +657,19 @@ extension SportsManager {
             var newRule = rule
             
             let fromObject = findFirstSportState()!.objects.first{ _object in
-                _object.id == fromObjectId
+                _object.label == fromObjectId
             }!
             
             let toObject = findFirstSportState()!.objects.first{ _object in
-                _object.id == toObjectId
+                _object.label == toObjectId
             }!
             
             newRule.objectPositionToObjectPosition = ObjectToObject(
                 fromPosition:  ObjectPositionPoint(
-                id: fromObject.id,
+                id: fromObjectId,
                 position: fromObjectPosition,
                 point: fromObject.rect.pointOf(position: fromObjectPosition).point2d), toPosition: ObjectPositionPoint(
-                    id: toObject.id,
+                    id: toObjectId,
                     position: toObjectPosition,
                     point: toObject.rect.pointOf(position: toObjectPosition).point2d),
                 fromAxis: fromAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis), warning: warning)
@@ -785,11 +785,12 @@ extension SportsManager {
         }
     }
     
-    func updateRuleLandmarkSegmentAngle(lowerBound: Double, upperBound: Double) {
+    func updateRuleLandmarkSegmentAngle(lowerBound: Double, upperBound: Double, warning: String) {
         if let rule = findCurrentSportStateRule() {
             var newRule = rule
             newRule.angle!.lowerBound = lowerBound
             newRule.angle!.upperBound = upperBound
+            newRule.angle!.warning = warning
             self.upsertCurrentRule(rule: newRule)
         }
     }

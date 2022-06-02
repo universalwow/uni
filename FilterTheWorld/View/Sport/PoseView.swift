@@ -175,3 +175,24 @@ struct PosesView: View {
     }
 }
 
+
+struct PosesViewForSportsGround: View {
+    @EnvironmentObject var sportManager: SportsManager
+    @EnvironmentObject var imageAnalysis:ImageAnalysis
+    
+    var poses: [HumanPose]?
+    var imageSize: CGSize
+    var viewSize: CGSize
+    var body: some View {
+        if let poses = poses {
+            ForEach(poses) { pose in
+                ZStack {
+                    PoseView(pose: pose, imageSize: imageSize, viewSize: viewSize)
+                    LandmarkView(pose: pose, imageSize: imageSize, viewSize: viewSize)
+                }
+            }
+        }
+        
+    }
+}
+

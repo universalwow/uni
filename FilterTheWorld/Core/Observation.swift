@@ -48,6 +48,11 @@ extension CGRect {
 
 
 
+enum ObjectLabel: String {
+    case ROPE = "rope"
+    case POSE = "person"
+}
+
 
 struct Observation: Selectable, Codable, Equatable {
   var id: String
@@ -66,9 +71,9 @@ struct Observation: Selectable, Codable, Equatable {
   }
   
   func setColor(label: String) -> Color {
-    if label == "rope" {
+      if label == ObjectLabel.ROPE.rawValue {
       return .blue
-    }else if label == "person" {
+      }else if label == ObjectLabel.POSE.rawValue {
       return .green
     }
     return .white

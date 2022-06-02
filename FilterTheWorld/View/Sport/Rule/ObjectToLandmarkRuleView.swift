@@ -11,6 +11,7 @@ struct ObjectToLandmarkRuleView: View {
     @State var lowerBound = 0.0
     @State var upperBound = 0.0
     @State var warning = ""
+    //    此处的id是label
     @State var objectId = ""
     @State var objectPosition = ObjectPosition.middle
     @State var toLandmarkType = LandmarkType.LeftShoulder
@@ -63,7 +64,7 @@ struct ObjectToLandmarkRuleView: View {
         lowerBound = 0.0
         upperBound = 0.0
         warning = ""
-        objectId = sportManager.findSelectedObjects().first!.id
+        objectId = sportManager.findSelectedObjects().first!.label
         objectPosition = ObjectPosition.middle
         toLandmarkType = sportManager.findSelectedSegment()!.landmarkTypes.first!
         toLandmarkSegmentAxis = CoordinateAxis.X
@@ -91,6 +92,7 @@ struct ObjectToLandmarkRuleView: View {
                         }
                     })
                 }
+//                MARK: 有多个物体时，迁移规则可能出错 重新选择关键帧也会导致识别到的物体顺序或者多余而出错
                 
                 HStack {
                     Text("物体")
@@ -100,7 +102,7 @@ struct ObjectToLandmarkRuleView: View {
                         
                     }) {
                         ForEach(sportManager.findSelectedObjects()) { object in
-                            Text(object.id).tag(object.id)
+                            Text(object.label).tag(object.label)
                         }
                     }
                     Spacer()
@@ -209,7 +211,7 @@ struct ObjectToLandmarkRuleView: View {
                 
             } else {
                 self.toLandmarkType = sportManager.findSelectedSegment()!.landmarkTypes.first!
-                objectId = sportManager.findSelectedObjects().first!.id
+                objectId = sportManager.findSelectedObjects().first!.label
             }
         }
     }
