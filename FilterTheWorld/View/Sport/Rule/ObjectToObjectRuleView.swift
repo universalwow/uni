@@ -217,8 +217,8 @@ struct ObjectToObjectRuleView: View {
                 toggle = true
                 
             }else{
-                fromObjectId = sportManager.findSelectedObjects().first!.id
-                toObjectId = sportManager.findSelectedObjects().first!.id
+                fromObjectId = sportManager.findSelectedObjects().first!.label
+                toObjectId = sportManager.findSelectedObjects().first!.label
             }
         }
         

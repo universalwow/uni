@@ -98,27 +98,6 @@ struct WarningsView:View {
                     
                 }
                 
-//                if sportGround.warningArray.count > 0 {
-//                    print("warningArray \(sportGround.warningArray.first!)")
-//
-//                    if self.warningFirst == "" {
-//                        self.warningFirst = sportGround.warningArray.first!
-//                    }
-//
-//                } else {
-//                    self.warningFirst = ""
-//                }
-//
-//                if sportGround.warningArray.count > 1 {
-//                    print("warningArray \(sportGround.warningArray[1])")
-//
-//                    if self.warningSecond == "" {
-//                        self.warningSecond = sportGround.warningArray[1]
-//                    }
-//                } else {
-//                    self.warningSecond = ""
-//                }
-                
             }
             
         }
@@ -129,36 +108,6 @@ struct WarningsView:View {
 
 
 
-//struct WarningsView:View {
-//    @EnvironmentObject var sportGround: SportsGround
-//
-//    //    当前正在展示的提示消息
-//    @State var warnings: [String] = [""]
-//
-//
-//    var body: some View {
-//        GeometryReader { geometry in
-//            VStack {
-//                Spacer()
-////                WarningView(warning: warnings[0], offset: geometry.size)
-//
-//            }.onChange(of: sportGround.warningArray) { _ in
-//                if sportGround.warningArray.count > 0 {
-//                    print("warningArray \(sportGround.warningArray.first!)")
-//                    if !self.warnings.contains(sportGround.warningArray.first!) {
-//                        self.warnings = [sportGround.warningArray.first!]
-//                    }
-//                }else {
-//                    self.warnings = [""]
-//                }
-//
-//            }
-//
-//        }
-//    }
-//
-//
-//}
 
 
 struct SporterView: View {
@@ -230,7 +179,7 @@ struct VideoAnalysorView: View {
     @State var framesPerSeconds = 10.0
     @State var fps = 10.0
     @State var framesPerGenerator = 0.0
-    @State var stopAnalysis = false
+    @State var stopAnalysis = true
     
     @State private var offset: CGSize = .zero
     @GestureState private var offsetState: CGSize = .zero
@@ -556,8 +505,6 @@ struct VideoAnalysorView: View {
                 if !sportGround.sporters.isEmpty && !poses.isEmpty {
                     
                     sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
-                    
-                    
                 }
             }
             

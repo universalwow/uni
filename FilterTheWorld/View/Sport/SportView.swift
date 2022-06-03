@@ -85,6 +85,9 @@ struct SportView: View {
     @State var editRuleFlag = false
     @State var selectedLandmarkSegment = LandmarkSegment.initValue()
     
+    
+    @State var scoreTimeLimit = 1.0
+    
 //    @State var ruleTranferToState = SportState.startState
 //    @State var ruleTransferToRulesIndex = 0
 //    @State var ruleTransferToRulesType = RuleType.SCORE
@@ -328,6 +331,23 @@ struct SportView: View {
                     }.padding([.top], StaticValue.padding)
                     
                 }
+                
+                HStack {
+                    Text("计分最大周期:")
+    
+                    
+                    TextField("计分最大周期:", value: $scoreTimeLimit, formatter: formatter, onEditingChanged: { flag in
+                        if !flag {
+                            print("更改计分周期")
+                            sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit)
+                            
+                        }
+                        
+                    }).textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                    
+                }
+                
             }
         }.padding()
         
@@ -357,6 +377,7 @@ struct SportView: View {
             if let sport = sportManager.findFirstSport(sport: self.sport) {
                 self.sportName = sport.name
                 self.sportDescription = sport.description
+                self.scoreTimeLimit = sport.scoreTimeLimit ?? 1.0
             }
         }
     }

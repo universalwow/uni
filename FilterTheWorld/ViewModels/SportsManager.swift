@@ -155,6 +155,14 @@ extension SportsManager {
         }
     }
     
+    func updateSport(editedSport:Sport, scoreTimeLimit: Double) {
+        if let sport = findFirstSport(sport: editedSport) {
+            var newSport = sport
+            newSport.scoreTimeLimit = scoreTimeLimit
+            updateSport(sport: newSport)
+        }
+    }
+    
     
     func deleteSport(editedSport: Sport) {
         if let sportIndex = firstIndex(editedSportId: editedSport.id) {
