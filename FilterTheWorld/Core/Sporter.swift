@@ -61,6 +61,7 @@ struct Sporter: Identifiable {
         
         // 3秒没切换状态 则重置状态为开始
         if currentTime - currentStateTime.time > 3 {
+            print("时间间隔3秒")
             currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: poseMap)
         }
         

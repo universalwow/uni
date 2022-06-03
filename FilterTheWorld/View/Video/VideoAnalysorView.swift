@@ -42,6 +42,11 @@ struct WarningView: View {
     }
 }
 
+struct WarningFreeTime {
+    var channelId: Int
+    var freeTime: Double
+}
+
 struct WarningsView:View {
     @EnvironmentObject var sportGround: SportsGround
 
@@ -50,11 +55,15 @@ struct WarningsView:View {
     @State var warningFirst: String = ""
     @State var warningSecond: String = ""
     @State var warningThird: String = ""
+
+    @State var inUsingTime : [Int: Double] = [:]
+    var allChannel = [1,2,3]
     
     @State var warningFirstBack: String = ""
     @State var warningSecondBack: String = ""
     @State var warningThirdBack: String = ""
     
+
     
     var body: some View {
         GeometryReader { geometry in
@@ -77,23 +86,72 @@ struct WarningsView:View {
                 if !sportGround.warningArray.contains(warningSecond) && warningSecond != "" {
                     warningSecondBack = warningSecond
                     warningSecond = ""
+
                 }
                 
                 if !sportGround.warningArray.contains(warningThird) && warningThird != "" {
                     warningThirdBack = warningThird
                     warningThird = ""
+
                 }
                 
                 sportGround.warningArray.forEach { warning in
-//                    如果提示消息不在展示 找到空余轨道
+//                    如果提示消息不在展示 找到空闲时间最长的轨道
+                    
                     if ![warningFirst, warningSecond, warningThird].contains(warning) {
-                        if warningFirst == "" {
-                            warningFirst = warning
-                        }else if warningSecond == "" {
-                            warningSecond = warning
-                        }else if warningThird == "" {
-                            warningThird = warning
+                        
+                        let allNotInUseChannels = allChannel.filter { channel in
+                            !inUsingTime.keys.contains(channel)
                         }
+                        
+                        if allNotInUseChannels.count > 0 {
+                            let channel = allNotInUseChannels.first!
+                            if channel == 1 {
+                                warningFirst = warning
+                                inUsingTime.updateValue(Date().milliStamp, forKey: 1)
+                            }else if channel == 2 {
+                                warningSecond = warning
+                                inUsingTime.updateValue(Date().milliStamp, forKey: 2)
+
+                            }else if channel == 3 {
+                                warningThird = warning
+                                inUsingTime.updateValue(Date().milliStamp, forKey: 3)
+                            }
+                        } else {
+
+                            let channelToUse = inUsingTime.sorted { (leftElement, rightElement) -> Bool  in
+                                leftElement.value < rightElement.value
+                            }.first!
+                            
+                            
+                            if Date().milliStamp - channelToUse.value > 2000 {
+                                let channel = channelToUse.key
+                                if channel == 1 {
+                                    warningFirst = warning
+                                    inUsingTime.updateValue(Date().milliStamp, forKey: 1)
+                                }else if channel == 2 {
+                                    warningSecond = warning
+                                    inUsingTime.updateValue(Date().milliStamp, forKey: 2)
+
+                                }else if channel == 3 {
+                                    warningThird = warning
+                                    inUsingTime.updateValue(Date().milliStamp, forKey: 3)
+                                }
+                            }
+                            
+                            
+                        }
+                        
+                        
+//
+//
+//                        if warningFirst == "" {
+//                            warningFirst = warning
+//                        }else if warningSecond == "" {
+//                            warningSecond = warning
+//                        }else if warningThird == "" {
+//                            warningThird = warning
+//                        }
                     }
                     
                 }
@@ -211,7 +269,7 @@ struct VideoAnalysorView: View {
                                 PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
                                 ObjectsViewForSportsGround(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
                                 SporterView()
-                                    .clipped()
+//                                    .clipped()
                             }
                         }
                     }
