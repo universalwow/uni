@@ -42,6 +42,8 @@ struct Sporter: Identifiable {
     }
   }
   var totalWarnings: Set<String> = []
+    
+
 //  // 当前帧提示，所有存留提示
 //  var cancelingWarnings: Set<String> = []
 //  var newWarnings: Set<String> = []

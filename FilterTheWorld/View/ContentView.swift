@@ -29,6 +29,18 @@ struct ContentView: View {
                 Text("Video Player")
             }
             
+            VStack {
+//                VideoView()
+                WarningsView()
+//                WarningView(warning: "aaaaa",  offset: CGSize(width: 400, height: 0)).padding()
+//                VideoPlayerCoreImageView().padding()
+            }
+            .tabItem{
+                Text("warning")
+            }
+            
+            
+            
             
 //            VStack {
 //                LineDrawerView().padding()

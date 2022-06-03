@@ -17,22 +17,176 @@ extension VideoAnalysorView {
 }
 
 
-struct PlayerView: View {
+struct WarningView: View {
+    @Binding var warning: String
+    @Binding var warningBack: String
+    
+    var offset: CGSize
+    
+    var show : Bool {
+        warning != ""
+    }
+    
+    var body: some View {
+        
+        Text(warning != "" ? warning : warningBack)
+            .padding(10)
+            .frame(minWidth: offset.width/6)
+            .background(Capsule().fill(Color.green))
+            .offset(x: show ? offset.width * 2 / 3 : offset.width + 30, y: 0)
+            .animation(
+                .linear(duration: 2), value: show)
+            
+        
+        
+    }
+}
+
+struct WarningsView:View {
+    @EnvironmentObject var sportGround: SportsGround
+
+    
+    //    当前正在展示的提示消息
+    @State var warningFirst: String = ""
+    @State var warningSecond: String = ""
+    @State var warningThird: String = ""
+    
+    @State var warningFirstBack: String = ""
+    @State var warningSecondBack: String = ""
+    @State var warningThirdBack: String = ""
+    
+    
+    var body: some View {
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+                WarningView(warning: self.$warningFirst, warningBack: $warningFirstBack, offset: geometry.size)
+                WarningView(warning: self.$warningSecond,warningBack: $warningSecondBack, offset: geometry.size)
+                WarningView(warning: self.$warningThird, warningBack: $warningThirdBack, offset: geometry.size)
+                
+//                TextField("first State", text: $warningFirst)
+                
+            }.onChange(of: sportGround.warningArray) { _ in
+                
+                // 找到在轨道但不在warningArray中的的提示 清空对应轨道
+                if !sportGround.warningArray.contains(warningFirst) && warningFirst != "" {
+                    
+                    warningFirstBack = warningFirst
+                    warningFirst = ""
+                }
+                if !sportGround.warningArray.contains(warningSecond) && warningSecond != "" {
+                    warningSecondBack = warningSecond
+                    warningSecond = ""
+                }
+                
+                if !sportGround.warningArray.contains(warningThird) && warningThird != "" {
+                    warningThirdBack = warningThird
+                    warningThird = ""
+                }
+                
+                sportGround.warningArray.forEach { warning in
+//                    如果提示消息不在展示 找到空余轨道
+                    if ![warningFirst, warningSecond, warningThird].contains(warning) {
+                        if warningFirst == "" {
+                            warningFirst = warning
+                        }else if warningSecond == "" {
+                            warningSecond = warning
+                        }else if warningThird == "" {
+                            warningThird = warning
+                        }
+                    }
+                    
+                }
+                
+//                if sportGround.warningArray.count > 0 {
+//                    print("warningArray \(sportGround.warningArray.first!)")
+//
+//                    if self.warningFirst == "" {
+//                        self.warningFirst = sportGround.warningArray.first!
+//                    }
+//
+//                } else {
+//                    self.warningFirst = ""
+//                }
+//
+//                if sportGround.warningArray.count > 1 {
+//                    print("warningArray \(sportGround.warningArray[1])")
+//
+//                    if self.warningSecond == "" {
+//                        self.warningSecond = sportGround.warningArray[1]
+//                    }
+//                } else {
+//                    self.warningSecond = ""
+//                }
+                
+            }
+            
+        }
+    }
+    
+    
+}
+
+
+
+//struct WarningsView:View {
+//    @EnvironmentObject var sportGround: SportsGround
+//
+//    //    当前正在展示的提示消息
+//    @State var warnings: [String] = [""]
+//
+//
+//    var body: some View {
+//        GeometryReader { geometry in
+//            VStack {
+//                Spacer()
+////                WarningView(warning: warnings[0], offset: geometry.size)
+//
+//            }.onChange(of: sportGround.warningArray) { _ in
+//                if sportGround.warningArray.count > 0 {
+//                    print("warningArray \(sportGround.warningArray.first!)")
+//                    if !self.warnings.contains(sportGround.warningArray.first!) {
+//                        self.warnings = [sportGround.warningArray.first!]
+//                    }
+//                }else {
+//                    self.warnings = [""]
+//                }
+//
+//            }
+//
+//        }
+//    }
+//
+//
+//}
+
+
+struct SporterView: View {
     @EnvironmentObject var sportGround: SportsGround
     var body: some View {
+        //        ZStack {
         VStack {
             if let sporter = sportGround.sporters.first {
                 HStack{
-                    Text("\(sporter.sport.name)-\(sporter.name)").padding()
+                    Text("\(sporter.sport.name):\(sporter.name)").padding()
                         .background(Capsule().fill(Color.green))
                     Spacer()
-                    Text("成绩\(sporter.scoreTimes.count)").padding()
+                    Text("状态:\(sporter.currentStateTime.sportState.name)")
+                        .padding()
+                        .background(Capsule().fill(Color.green))
+                    Text("成绩:\(sporter.scoreTimes.count)").padding()
                         .background(Capsule().fill(Color.green))
                 }.foregroundColor(.white)
+                
+                
             }
             
             Spacer()
+            WarningsView()
+            
         }.padding()
+        //        }
+        
         
         
     }
@@ -83,8 +237,6 @@ struct VideoAnalysorView: View {
     
     @State var currentSportIndex: Int = 0
     
-
-    
     var secondToStandardedTime:String {
         if self.frameWidth > 0 && self.scrollOffset >= 0.0 {
             let second = Double(self.scrollOffset/self.frameWidth)
@@ -109,7 +261,8 @@ struct VideoAnalysorView: View {
                             ZStack {
                                 PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
                                 ObjectsViewForSportsGround(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
-                                PlayerView()
+                                SporterView()
+                                    .clipped()
                             }
                         }
                     }
@@ -130,10 +283,10 @@ struct VideoAnalysorView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: frameWidth, height: StaticValue.imageHeight)
-                                    
+                                
                             }
                         }
-                            .offset(x: -self.scrollOffset, y: 0)
+                        .offset(x: -self.scrollOffset, y: 0)
                     }
                     
                     
@@ -146,14 +299,14 @@ struct VideoAnalysorView: View {
                         .updating($offsetState) { value, state, transaction in
                             state = value.translation
                         }
-
-//                                   .onChanged { value in
-//
-//                                       self.offset = value.translation
-//                                   }
+                    
+                    //                                   .onChanged { value in
+                    //
+                    //                                       self.offset = value.translation
+                    //                                   }
                         .onEnded { value in
                             self.scrollViewContentOffset = max(self.scrollViewContentOffset - value.translation.width, 0.0)
-                                   }
+                        }
                 )
             
             
@@ -184,10 +337,10 @@ struct VideoAnalysorView: View {
                     },
                     
                     onEditingChanged: { _ in
-//                        if !flag {
-//                            updateRemoteData()
-//                        }
-//
+                        //                        if !flag {
+                        //                            updateRemoteData()
+                        //                        }
+                        //
                         
                     }).background(content: {
                         Text("\(self.framesPerSeconds)")
@@ -223,10 +376,10 @@ struct VideoAnalysorView: View {
                     },
                     
                     onEditingChanged: { _ in
-//                        if !flag {
-//                            updateRemoteData()
-//                        }
-//
+                        //                        if !flag {
+                        //                            updateRemoteData()
+                        //                        }
+                        //
                         
                     }).background(content: {
                         Text("\(self.fps)")
@@ -260,7 +413,8 @@ struct VideoAnalysorView: View {
                         if !sportGround.sports.isEmpty {
                             print("运动员准备")
                             sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
-
+                            self.scrollViewContentOffset = 0.0
+                            
                         }
                     }) {
                         Text("设置运动员")
@@ -284,13 +438,13 @@ struct VideoAnalysorView: View {
                             self.orientation = .left
                         case .left:
                             self.orientation = .up
-                        
+                            
                         default: break
                             
-                    
+                            
                         }
                         
-
+                        
                     }) {
                         Text("旋转图片")
                     }
@@ -306,10 +460,14 @@ struct VideoAnalysorView: View {
                     }
                     
                     Button(action: {
+                        if !stopAnalysis {
+                            return
+                        }
+                        
                         self.stopAnalysis = false
                         if let _ = videoUrl {
                             DispatchQueue.global(qos: .userInitiated).async {
-
+                                
                                 while !self.stopAnalysis && self.scrollOffset < self.frameWidth*CGFloat(self.videoManager.allFrames.count) && self.scrollOffset >= 0 {
                                     Thread.sleep(forTimeInterval: 1/self.framesPerSeconds)
                                     DispatchQueue.main.async {
@@ -318,6 +476,7 @@ struct VideoAnalysorView: View {
                                 }
                                 DispatchQueue.main.async {
                                     if !self.stopAnalysis {
+                                        self.stopAnalysis = true
                                         self.scrollViewContentOffset = 0
                                     }
                                 }
@@ -326,10 +485,10 @@ struct VideoAnalysorView: View {
                                 
                             }
                             
-
+                            
                         }
                         
-                    
+                        
                         
                     }) {
                         Text("分析视频")
@@ -346,9 +505,9 @@ struct VideoAnalysorView: View {
             }.padding()
         }
         .padding()
-//        .onAppear(perform: {
-//            currentSportIndex = sportGround.sports.
-//        })
+        //        .onAppear(perform: {
+        //            currentSportIndex = sportGround.sports.
+        //        })
         
         .sheet(isPresented: $mediaFlag,
                onDismiss: {
@@ -361,6 +520,12 @@ struct VideoAnalysorView: View {
         }) {
             MediaPicker(mediaType: .videos, image: Binding.constant(nil), video: $videoUrl)
         }
+        .onChange(of: stopAnalysis, perform: { flag in
+            if flag {
+                sportGround.clearWarning()
+            }
+            
+        })
         .onChange(of:self.selectedPoseIndex){ _ in
             if self.imageAnalysis.sportData.frameData.poses.indices.contains(self.selectedPoseIndex) {
                 self.imageAnalysis.selectHumanPose(
@@ -387,8 +552,8 @@ struct VideoAnalysorView: View {
                     object.label == ObjectLabel.ROPE.rawValue
                 }
                 print("sportGround \(sportGround.sporters.isEmpty)  \(poses.isEmpty)  \(ropes.isEmpty) \(sportGround.sporters.first?.scoreTimes.count)")
-
-                if !sportGround.sporters.isEmpty && !poses.isEmpty && !ropes.isEmpty {
+                
+                if !sportGround.sporters.isEmpty && !poses.isEmpty {
                     
                     sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
                     

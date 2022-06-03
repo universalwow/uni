@@ -10,6 +10,11 @@ class SportsGround: ObservableObject {
     @Published var sporters : [Sporter] = []
     @Published var warnings: Set<String> = []
     
+    var warningArray: [String] {
+        warnings.map{ warning in
+            warning
+        }.sorted()
+    }
     
     func clearWarning() {
         totalWarnings = []
@@ -22,6 +27,7 @@ class SportsGround: ObservableObject {
     
     func addSporter(sport: Sport) {
         sporters = [Sporter(name: "Uni", sport: sport)]
+        clearWarning()
     }
     
     func play(poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
@@ -37,8 +43,8 @@ class SportsGround: ObservableObject {
             //      newWarnings = sporters[sporterIndex].cancelingWarnings
             
             totalWarnings = sporters[sporterIndex].totalWarnings
-            
-            print("warnings \(sporters[sporterIndex].currentStateTime.sportState.name)/\(warnings)")
+//
+//            print("warnings \(sporters[sporterIndex].currentStateTime.sportState.name)/\(warnings)")
         }
     }
     
