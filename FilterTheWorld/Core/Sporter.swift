@@ -32,6 +32,8 @@ struct Sporter: Identifiable {
                 }
             }
             
+            
+            
             // 状态切换 取消历史提示
             totalWarnings = []
             
@@ -92,6 +94,7 @@ struct Sporter: Identifiable {
         }
         
         // 3秒没切换状态 则重置状态为开始
+//        MARK: 添加重置为开始条件 当前太粗暴
         if currentTime - currentStateTime.time > 3 {
             print("时间间隔3秒")
             currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: poseMap)
@@ -169,7 +172,7 @@ struct Sporter: Identifiable {
         }
 
         
-//        let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+//        let transforms = ssport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
         transforms.forEach { transform in
             if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
                 let satisfy = toState.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
@@ -222,6 +225,7 @@ struct Sporter: Identifiable {
         if currentTime > lastTime {
             lastTime = currentTime
         }
+        
         updateWarnings(allCurrentFrameWarnings: allCurrentFrameWarnings)
 
         

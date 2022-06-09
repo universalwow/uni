@@ -171,10 +171,10 @@ struct LandmarkToAxisAndState: Codable {
 
 
 // 物体在Y方向相对自身位移
-struct ObjectToState: Codable {
+struct ObjectToSelf: Codable {
     var lowerBound:Double = 0
     //物体当前位置相对一个方向的距离最小值
-    var toStateId:Int
+//    var toStateId:Int
     //    // 物体的中心点x, y
     //    var fromAxis: CoordinateAxis
     
@@ -182,10 +182,8 @@ struct ObjectToState: Codable {
     var warning:String = ""
     
     func satisfy(stateTimeHistory: [StateTime], object: Observation) -> Bool {
-        
-        let toStateTime = stateTimeHistory.last{ stateTime in
-            stateTime.sportState.id == self.toStateId
-        }!
+        //相对于当前状态收集到的边界位移
+        let toStateTime = stateTimeHistory.last!
         
         let targetBound = lowerBound * object.rect.height
 //        希望fromBound是正值 如果为负则说明有错误
@@ -227,7 +225,7 @@ struct ObjectToState: Codable {
     
     
     init(toStateId: Int, toDirection: Direction, lowerBound: Double, warning: String) {
-        self.toStateId = toStateId
+//        self.toStateId = toStateId
         self.toDirection = toDirection
         self.lowerBound = lowerBound
         self.warning = warning
@@ -784,7 +782,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     var objectPositionToObjectPosition: ObjectToObject?
     
     // 物体相对于自身位移
-    var objectToState: ObjectToState?
+    var objectToSelf: ObjectToSelf?
     
     
     
@@ -813,7 +811,11 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         return objectToObject.satisfy(poseMap: poseMap, fromObject: object, toObject: targetObject)
     }
     
+    func objectToSelfSatisfy(objectToSelf: ObjectToSelf, stateTimeHistory: [StateTime], object: Observation) -> Bool {
+        return objectToSelf.satisfy(stateTimeHistory: stateTimeHistory, object: object)
+    }
     
+
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>) {
         // 单帧
         var lengthSatisfy: Bool? = true
@@ -831,6 +833,9 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         
         //物体相对物体
         var objectToObjectSatisfy: Bool? = true
+        
+        //物体相对自身位移
+        var objectToSelfSatisfy: Bool? = true
         
         var warnings : Set<String> = []
         
@@ -888,13 +893,26 @@ struct ComplexRule: Identifiable, Hashable, Codable {
             }
         }
         
+        if let objectToSelf = objectToSelf {
+            if let object = object {
+                objectToSelfSatisfy = self.objectToSelfSatisfy(objectToSelf: objectToSelf, stateTimeHistory: stateTimeHistory, object: object)
+            } else {
+                objectToSelfSatisfy = false
+            }
+            if objectToSelfSatisfy == false {
+                warnings.insert(objectToSelf.warning)
+            }
+        }
+        
         // 每个规则至少要包含一个条件 且所有条件都必须满足
         return (
             lengthSatisfy == true &&
-            angleSatisfy == true && landmarkInAreaSatisfy == true &&
+            angleSatisfy == true &&
+            landmarkInAreaSatisfy == true &&
             lengthToStateSatisfy == true &&
             objectToLandmarkSatisfy == true &&
-            objectToObjectSatisfy == true
+            objectToObjectSatisfy == true &&
+            objectToSelfSatisfy == true
             , warnings)
     }
     

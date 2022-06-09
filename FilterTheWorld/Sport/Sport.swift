@@ -33,6 +33,7 @@ struct Sport: Identifiable, Hashable, Codable {
   }
   
   var stateTransForm: [SportStateTransform] = []
+//MARK: 添加计分状态序列 使之可用于半周期
   var scoreStateSequence: [SportState] = []
   
   // 时间限制 秒
