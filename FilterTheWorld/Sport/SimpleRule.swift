@@ -9,6 +9,13 @@ enum CoordinateAxis: String, Identifiable, CaseIterable, Codable {
     case X,Y,XY
 }
 
+enum Direction: String, Identifiable, CaseIterable, Codable {
+    var id: String {
+        self.rawValue
+    }
+    case UP, DOWN
+}
+
 
 enum RuleType: String, Identifiable, CaseIterable {
     var id: String {
@@ -162,134 +169,50 @@ struct LandmarkToAxisAndState: Codable {
 }
 
 
+
+// 物体在Y方向相对自身位移
 struct ObjectToState: Codable {
     var lowerBound:Double = 0
-    var upperBound:Double = 0
-
+    //物体当前位置相对一个方向的距离最小值
     var toStateId:Int
-    
-    var fromAxis: CoordinateAxis {
-        didSet {
-            initBound()
-        }
-    }
-    //相对
-    var fromPosition:ObjectPositionPoint {
-        didSet {
-            initBound()
-        }
-    }
-    
-    var toPosition:ObjectPositionPoint {
-        didSet {
-            initBound()
-        }
-    }
-    
-    var toObjectSize:ObjectSizeToAxis {
-        didSet {
-            initBound()
-        }
-    }
-    
+//    // 物体的中心点x, y
+//    var fromAxis: CoordinateAxis
+
+    var toDirection: Direction
     var warning:String = ""
-    
-    var range: Range<Double> {
-        lowerBound..<upperBound
-    }
-    
-    
-    func satisfy(stateTimeHistory: [StateTime], object: Observation) -> Bool? {
+
+    func satisfy(stateTimeHistory: [StateTime], object: Observation) -> Bool {
         
-        if stateTimeHistory.isEmpty || stateTimeHistory.contains(where: { stateTime in
-            stateTime.sportState.id == SportState.startState.id
-        }) && stateTimeHistory.last { stateTime in
+        let toStateTime = stateTimeHistory.last{ stateTime in
             stateTime.sportState.id == self.toStateId
-        } == nil {
-            return true
-        }
+        }!
         
-        let fromPosition = self.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
+        let targetBound = lowerBound * object.rect.height
+        var fromBound = 0.0
         
-        // 依赖历史状态收集
-        let toLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(
-            poseMap: stateTimeHistory.last{ stateTime in
-                stateTime.sportState.id == self.toStateId
-            }!.poseMap
-        )
-        
-        
-        let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
-        let toSegment = self.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        
-        return ComplexRule.satisfy(fromAxis: self.fromLandmarkToAxis.axis,
-                                   toAxis: self.toLandmarkSegmentToAxis.axis,
-                                   range: self.range,
-                                   fromSegment: fromSegment,
-                                   toSegment: toSegment)
-        
-        
-        
-    }
-    
-    
-    init(toStateId: Int, fromAxis: CoordinateAxis, fromObjectPosition: ObjectPositionPoint, toObjectPosition: ObjectPositionPoint, toObjectWidthOrHeight: ObjectSizeToAxis, warning: String) {
-        self.toStateId = toStateId
-        self.fromPosition = fromObjectPosition
-        self.toPosition = toObjectPosition
-        self.toObjectSize = toObjectWidthOrHeight
-        self.warning = warning
-        initBound()
-    }
-    
-    
-    
-    private mutating func initBound() {
-        var length = 0.0
-        var bound = 0.0
-        print("initBound")
-        
-        switch (fromAxis, toObjectSize.axis) {
-        case (.X, .X):
-            length = fromPosition.point.x - toPosition.point.x
-            bound = length/toObjectSize.objectSize.width
-        case (.X, .Y):
-            length = fromPosition.point.x - toPosition.point.x
-            bound = length/toObjectSize.objectSize.height
-
-        case (.X, .XY):
-            length = fromPosition.point.x - toPosition.point.x
-            bound = length/toObjectSize.objectSize.diag
-
-        case (.Y, .X):
-            length = fromPosition.point.y - toPosition.point.y
-            bound = length/toObjectSize.objectSize.width
-
-        case (.Y, .Y):
-            length = fromPosition.point.y - toPosition.point.y
-            bound = length/toObjectSize.objectSize.height
-
-        case (.Y, .XY):
-            length = fromPosition.point.y - toPosition.point.y
-            bound = length/toObjectSize.objectSize.diag
-
-        case (.XY, .X):
-            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
-            bound = length/toObjectSize.objectSize.width
-    
-        case (.XY, .Y):
-            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
-            bound = length/toObjectSize.objectSize.height
-
-        case (.XY, .XY):
+        switch toDirection {
             
-            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
-            bound = length/toObjectSize.objectSize.diag
+            case .UP:
+                let targetObject = toStateTime.minObject!
+                fromBound = object.rect.midY - targetObject.rect.midY
+                
+            case .DOWN:
+                let targetObject = toStateTime.maxObject!
+                fromBound = targetObject.rect.midY - object.rect.midY
 
         }
-        lowerBound = bound
-        upperBound = bound
+        return fromBound > targetBound
     }
+    
+    
+    init(toStateId: Int, toDirection: Direction, lowerBound: Double, warning: String) {
+        self.toStateId = toStateId
+        self.toDirection = toDirection
+        self.lowerBound = lowerBound
+        self.warning = warning
+    }
+    
+    
     
 }
 
