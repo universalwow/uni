@@ -136,6 +136,18 @@ extension SportsManager {
         Storage.store(editedSport, to: .documents, as: editedSport.sportFileName)
     }
     
+    func saveSports() {
+        self.sports.forEach { sport in
+            Storage.store(sport, to: .documents, as: sport.sportFileName)
+        }
+    }
+    
+    func uploadSports() {
+        self.sports.forEach { sport in
+//            Storage.store(sport, to: .documents, as: sport.sportFileName)
+        }
+    }
+    
     private func updateSport(sport: Sport) {
         if let index = firstIndex(editedSportId: sport.id) {
             print("\(sport.description)")
@@ -443,7 +455,7 @@ extension SportsManager {
             var newRule = rule
 
             newRule.lengthToState!.fromLandmarkToAxis.landmark = fromStateLandmark
-            
+            newRule.lengthToState!.fromLandmarkToAxis.axis = fromAxis
             let toStateLandmark =
             findFirstSportState(editedSportId: currentSportId!, sportStateUUID: stateId)!
                 .findLandmarkSegment(id: rule.id)
@@ -451,6 +463,7 @@ extension SportsManager {
                     landmark.landmarkType == landmarkType
                 }!
             newRule.lengthToState!.toLandmarkToAxis.landmark = toStateLandmark
+            newRule.lengthToState!.toLandmarkToAxis.axis = fromAxis
             
             newRule.lengthToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
             newRule.lengthToState!.toLandmarkSegmentToAxis.axis = toAxis

@@ -1,4 +1,6 @@
 
+source 'https://mirrors.tuna.tsinghua.edu.cn/git/CocoaPods/Specs.git'
+
 platform :ios, '15.1'
 use_frameworks!
 
@@ -7,6 +9,7 @@ install! 'cocoapods',
 
 target 'FilterTheWorld' do
   # Comment the next line if you don't want to use dynamic frameworks
+      pod 'Alamofire'
       pod 'GoogleMLKit/PoseDetection', '2.3.0'
 
     pod 'GoogleMLKit/PoseDetectionAccurate', '2.3.0'
@@ -14,6 +17,7 @@ target 'FilterTheWorld' do
     pod 'AlertToast'
     pod 'NavigationStack'
         pod 'PerspectiveTransform'
+
   
 
 
@@ -23,7 +27,7 @@ end
 post_install do |pi|
     pi.pods_project.targets.each do |t|
         t.build_configurations.each do |config|
-            config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
+            config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '10.0'
         end
     end
 end

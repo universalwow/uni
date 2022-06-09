@@ -46,6 +46,7 @@
 		9554E8682841C971002D8345 /* LinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8672841C971002D8345 /* LinesView.swift */; };
 		9554E86A28431440002D8345 /* VideoPlayerCoreImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E86928431440002D8345 /* VideoPlayerCoreImageView.swift */; };
 		9554E870284316D4002D8345 /* IMG_1389.MOV in Resources */ = {isa = PBXBuildFile; fileRef = 9554E86F284316D4002D8345 /* IMG_1389.MOV */; };
+		9575734628519373000447D1 /* items.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9575734528519373000447D1 /* items.txt */; };
 		95878ECD27DEDD8300F31A9B /* SportsGround.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95878ECC27DEDD8300F31A9B /* SportsGround.swift */; };
 		95878ED327DF277600F31A9B /* UIView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95878ED227DF277500F31A9B /* UIView+Extension.swift */; };
 		958F8C312760560500F6DF48 /* Facenet6.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */; };
@@ -153,6 +154,7 @@
 		9554E8672841C971002D8345 /* LinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesView.swift; sourceTree = "<group>"; };
 		9554E86928431440002D8345 /* VideoPlayerCoreImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerCoreImageView.swift; sourceTree = "<group>"; };
 		9554E86F284316D4002D8345 /* IMG_1389.MOV */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = IMG_1389.MOV; sourceTree = "<group>"; };
+		9575734528519373000447D1 /* items.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = items.txt; sourceTree = "<group>"; };
 		95878ECC27DEDD8300F31A9B /* SportsGround.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsGround.swift; sourceTree = "<group>"; };
 		95878ED227DF277500F31A9B /* UIView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Extension.swift"; sourceTree = "<group>"; };
 		958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = Facenet6.mlmodel; sourceTree = "<group>"; };
@@ -241,6 +243,7 @@
 		18D775BF22AD944300AE281E /* FilterTheWorld */ = {
 			isa = PBXGroup;
 			children = (
+				957573442851933E000447D1 /* Doc */,
 				95A9921E283CE08900F79FB1 /* Tool */,
 				95B7BFE5283668950037EC55 /* View */,
 				95D6E438276F4D1200C0F1CD /* Sport */,
@@ -375,6 +378,14 @@
 				9554E8612840F468002D8345 /* SportsGroundView.swift */,
 			);
 			path = Sporter;
+			sourceTree = "<group>";
+		};
+		957573442851933E000447D1 /* Doc */ = {
+			isa = PBXGroup;
+			children = (
+				9575734528519373000447D1 /* items.txt */,
+			);
+			path = Doc;
 			sourceTree = "<group>";
 		};
 		958F8C282760529300F6DF48 /* Geometric */ = {
@@ -572,6 +583,7 @@
 				95F67542277DC8F80049B03A /* kangaroo.usdz in Resources */,
 				95AA02CA277959D300C6E340 /* robot.usdz in Resources */,
 				18D775D822AD963800AE281E /* LaunchScreen.storyboard in Resources */,
+				9575734628519373000447D1 /* items.txt in Resources */,
 				95F67546277EA9B90049B03A /* biped_robot.usdz in Resources */,
 				9518D31427799B0D0083C215 /* robot.scn in Resources */,
 				18D775CA22AD944400AE281E /* Preview Assets.xcassets in Resources */,
@@ -854,6 +866,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -908,6 +921,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

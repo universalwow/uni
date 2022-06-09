@@ -49,6 +49,8 @@ extension Sport {
   var allStates: [SportState]  {
     states
   }
+    
+  
   
   var allImageSettedState: [SportState] {
     states.filter { state in

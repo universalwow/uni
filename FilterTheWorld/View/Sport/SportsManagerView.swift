@@ -33,7 +33,7 @@ struct SportsManagerView: View {
                                                         Button(action: {
                                                             sportManager.saveSport(editedSport: sport)
                                                         }) {
-                                                            Text("保存")
+                                                            Text("本地保存")
                                                         }
                                                         Button(action: {
                                                             sportManager.deleteSport(editedSport: sport)
@@ -56,12 +56,31 @@ struct SportsManagerView: View {
                         
                     }
                 }
-            }    .navigationBarTitle("")
-                .navigationBarHidden(true)
+            }
+            .navigationBarTitle(Text("项目管理"))
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing:
+                HStack {
+                    Button(action: {
+                        sportManager.saveSports()
+                    }) {
+                        Text("本地保存")
+                    }
+                    Button(action: {
+                        
+                    }) {
+                        Text("上传文件")
+                    }
+                    
+                }
+            )
+            
+//                .navigationBarHidden(true)
         }
         
         
         .navigationViewStyle(.stack)
+//        .navigationBarTitle("项目管理")
         
         
     }

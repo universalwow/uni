@@ -47,6 +47,17 @@ extension Point2D {
     Point3D(x: x, y: y, z: 0)
   }
 
+    var width: Double {
+        self.x
+    }
+    
+    var height: Double {
+        self.y
+    }
+//    对角线
+    var diag:Double {
+        sqrt(self.x * self.x + self.y * self.y)
+    }
   
   var roundedString: String {
     "\(self.x.roundedString)/\(self.y.roundedString)"

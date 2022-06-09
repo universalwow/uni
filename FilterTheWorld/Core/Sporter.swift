@@ -7,7 +7,11 @@ import Foundation
 struct StateTime {
     let sportState: SportState
     let time: Double
+//    状态变换时的关节信息
     let poseMap: PoseMap
+    var minObject:Observation?
+    var maxObject: Observation?
+    
 }
 
 struct Sporter: Identifiable {
@@ -48,7 +52,31 @@ struct Sporter: Identifiable {
     //  var cancelingWarnings: Set<String> = []
     //  var newWarnings: Set<String> = []
     
-    var stateTimeHistory: [StateTime] = []
+    var stateTimeHistory: [StateTime] = [StateTime(sportState: SportState.startState, time: 0, poseMap: [:])]
+    
+    
+    mutating func updateCurrentStateObjectBounds(object: Observation) {
+        if stateTimeHistory.endIndex == 0 {
+            return
+        }
+        let index = stateTimeHistory.endIndex - 1
+        if stateTimeHistory[index].minObject == nil {
+            stateTimeHistory[index].minObject = object
+            stateTimeHistory[index].maxObject = object
+        }else {
+            
+            if object.rect.midY < stateTimeHistory[index].minObject!.rect.midY {
+                stateTimeHistory[index].minObject = object
+            }
+            
+            if object.rect.midY > stateTimeHistory[index].maxObject!.rect.midY {
+                stateTimeHistory[index].maxObject = object
+            }
+            
+            
+        }
+        
+    }
     
     var lastTime: Double = 0
     
@@ -58,6 +86,10 @@ struct Sporter: Identifiable {
     
     
     mutating func play(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
+//      收集最低点和最高点
+        if let object = object {
+            updateCurrentStateObjectBounds(object: object)
+        }
         
         // 3秒没切换状态 则重置状态为开始
         if currentTime - currentStateTime.time > 3 {
@@ -150,11 +182,7 @@ struct Sporter: Identifiable {
             if allStateSatisfy && timeSatisfy {
                 // 检查状态改变后是否满足多帧条件 决定是否计分
                 scoreTimes.append((currentTime, true))
-                //        if stateTimeHistory.last!.sportState.complexScoreRulesMultiFrameSatisfy(stateTimeHistory: stateTimeHistory) {
-                //
-                //        }else {
-                //          scoreTimes.append((currentTime,false))
-                //        }
+
                 
             }
             

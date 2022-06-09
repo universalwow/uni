@@ -54,7 +54,7 @@ class ServiceManager: NSObject, ObservableObject {
   
   func login(username: String, password: String) {
     print("login \(username)/\(password)")
-    let url = URL(string: "https://192.168.0.103:4001/users/log_in")
+    let url = URL(string: "https://192.168.0.107:4001/users/log_in")
     guard let requestUrl = url else {
 //            fatalError()
       print("url error")
