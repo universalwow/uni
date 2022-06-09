@@ -200,7 +200,7 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
     }
   }
   
-    func complexScoreRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>) {
+    func complexRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>) {
     
     var rules : [ComplexRules] = []
     switch ruleType {

@@ -13,7 +13,7 @@ enum Direction: String, Identifiable, CaseIterable, Codable {
     var id: String {
         self.rawValue
     }
-    case UP, DOWN
+    case UP, DOWN, LEFT_UP, RIGHT_UP, LEFT_DOWN, RIGHT_DOWN
 }
 
 
@@ -47,7 +47,7 @@ struct LandmarkToAxis: Codable{
 struct LandmarkToAxisAndState: Codable {
     var lowerBound:Double = 0
     var upperBound:Double = 0
-
+    
     var toStateId:Int
     //相对
     var fromLandmarkToAxis: LandmarkToAxis {
@@ -129,34 +129,34 @@ struct LandmarkToAxisAndState: Codable {
         case (.X, .X):
             length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-
+            
         case (.X, .Y):
             length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.X, .XY):
             length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         case (.Y, .X):
             length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-
+            
         case (.Y, .Y):
             length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
         case (.Y, .XY):
             length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         case (.XY, .X):
             length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-
+            
         case (.XY, .Y):
             length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.XY, .XY):
             length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
@@ -175,12 +175,12 @@ struct ObjectToState: Codable {
     var lowerBound:Double = 0
     //物体当前位置相对一个方向的距离最小值
     var toStateId:Int
-//    // 物体的中心点x, y
-//    var fromAxis: CoordinateAxis
-
+    //    // 物体的中心点x, y
+    //    var fromAxis: CoordinateAxis
+    
     var toDirection: Direction
     var warning:String = ""
-
+    
     func satisfy(stateTimeHistory: [StateTime], object: Observation) -> Bool {
         
         let toStateTime = stateTimeHistory.last{ stateTime in
@@ -188,18 +188,39 @@ struct ObjectToState: Codable {
         }!
         
         let targetBound = lowerBound * object.rect.height
+//        希望fromBound是正值 如果为负则说明有错误
         var fromBound = 0.0
         
         switch toDirection {
             
-            case .UP:
-                let targetObject = toStateTime.minObject!
-                fromBound = object.rect.midY - targetObject.rect.midY
-                
-            case .DOWN:
-                let targetObject = toStateTime.maxObject!
-                fromBound = targetObject.rect.midY - object.rect.midY
+        case .UP:
+            let targetObject = toStateTime.minObject!
+            fromBound = object.rect.midY - targetObject.rect.midY
+            
+        case .DOWN:
+            let targetObject = toStateTime.maxObject!
+            fromBound = targetObject.rect.midY - object.rect.midY
+            
+        case .LEFT_UP:
+            let targetObject = toStateTime.minObject!
+            fromBound = object.rect.midX - targetObject.rect.midX
 
+            
+        case .LEFT_DOWN:
+            let targetObject = toStateTime.maxObject!
+            fromBound = object.rect.midX - targetObject.rect.midX
+
+        case .RIGHT_UP:
+            let targetObject = toStateTime.minObject!
+            fromBound = targetObject.rect.midX - object.rect.midX
+
+        case .RIGHT_DOWN:
+            let targetObject = toStateTime.maxObject!
+            fromBound = targetObject.rect.midX - object.rect.midX
+
+            
+            
+            
         }
         return fromBound > targetBound
     }
@@ -268,7 +289,7 @@ struct ObjectToObject: Codable {
         
         let fromObjectPosition = fromObject.rect.pointOf(position: self.fromPosition.position)
         let toObjectPosition = toObject.rect.pointOf(position: self.toPosition.position)
-
+        
         
         let fromSegment = LandmarkSegment(startLandmark: Landmark(position: fromObjectPosition.point2d.point3D, landmarkType: LandmarkType.None), endLandmark: Landmark(position: toObjectPosition.point2d.point3D, landmarkType: LandmarkType.None))
         
@@ -291,36 +312,36 @@ struct ObjectToObject: Codable {
         case (.X, .Y):
             length = fromPosition.point.x - toPosition.point.x
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.X, .XY):
             length = fromPosition.point.x - toPosition.point.x
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         case (.Y, .X):
             length = fromPosition.point.y - toPosition.point.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-
+            
         case (.Y, .Y):
             length = fromPosition.point.y - toPosition.point.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.Y, .XY):
             length = fromPosition.point.y - toPosition.point.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         case (.XY, .X):
             length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-    
+            
         case (.XY, .Y):
             length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.XY, .XY):
             
             length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         }
         lowerBound = bound
         upperBound = bound
@@ -403,36 +424,36 @@ struct ObjectToLandmark: Codable {
         case (.X, .Y):
             length = fromPosition.point.x - toLandmark.position.x
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.X, .XY):
             length = fromPosition.point.x - toLandmark.position.x
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         case (.Y, .X):
             length = fromPosition.point.y - toLandmark.position.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-
+            
         case (.Y, .Y):
             length = fromPosition.point.y - toLandmark.position.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.Y, .XY):
             length = fromPosition.point.y - toLandmark.position.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         case (.XY, .X):
             length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-    
+            
         case (.XY, .Y):
             length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-
+            
         case (.XY, .XY):
             
             length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-
+            
         }
         lowerBound = bound
         upperBound = bound
@@ -487,11 +508,11 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
         switch (from.axis, to.axis) {
         case (.X, .X):
             bound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceX
-
+            
             
         case (.X, .Y):
             bound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceY
-
+            
             
         case (.X, .XY):
             bound = from.landmarkSegment.distanceX/to.landmarkSegment.distance
@@ -515,11 +536,11 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
             
         case (.XY, .Y):
             bound = from.landmarkSegment.distance/to.landmarkSegment.distanceY
-
+            
             
         case (.XY, .XY):
             bound = from.landmarkSegment.distance/to.landmarkSegment.distance
-
+            
         }
         lowerBound = bound
         upperBound = bound
@@ -666,13 +687,13 @@ struct ComplexRules: Identifiable, Hashable, Codable {
         // MARK: 新规则
         rules.removeAll { editedRule in
             if editedRule.angle == nil && editedRule.landmarkInArea == nil &&
-//                editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil &&
+                //                editedRule.lengthX == nil && editedRule.lengthY == nil && editedRule.lengthXY == nil &&
                 editedRule.length == nil &&
                 editedRule.lengthToState == nil &&
-//                editedRule.lengthXToState == nil && editedRule.lengthYToState == nil && editedRule.lengthXYToState == nil &&
-//                editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionXYToLandmark == nil
+                //                editedRule.lengthXToState == nil && editedRule.lengthYToState == nil && editedRule.lengthXYToState == nil &&
+                //                editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionYToLandmark == nil && editedRule.objectPositionXYToLandmark == nil
                 editedRule.objectPositionToLandmark == nil
-            
+                
                 
             {
                 return true
@@ -753,11 +774,11 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     //MARK:  1. 物体在区域内 2. 物体与关节点的关系 3.物体相对自身位移 关节相对自身位移
     
     // 基于多帧的规则
-//    关节相对自身位移
+    //    关节相对自身位移
     var lengthToState:LandmarkToAxisAndState?
     
     // 物体位置相对于关节点
-     var objectPositionToLandmark: ObjectToLandmark?
+    var objectPositionToLandmark: ObjectToLandmark?
     
     // 物体位置相对于物体位置
     var objectPositionToObjectPosition: ObjectToObject?
@@ -796,30 +817,30 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>) {
         // 单帧
         var lengthSatisfy: Bool? = true
-
+        
         var angleSatisfy: Bool? = true
         var landmarkInAreaSatisfy: Bool? = true
         
         // 多帧
-
+        
         var lengthToStateSatisfy: Bool? = true
         // 物体相对于关节点
-
+        
         
         var objectToLandmarkSatisfy: Bool? = true
         
         //物体相对物体
         var objectToObjectSatisfy: Bool? = true
-
+        
         var warnings : Set<String> = []
         
         
         if let length = length {
             lengthSatisfy = self.lengthSatisfy(relativeDistance: length, poseMap: poseMap)
-                    if lengthSatisfy == false {
-                        warnings.insert(length.warning)
-                    }
-                }
+            if lengthSatisfy == false {
+                warnings.insert(length.warning)
+            }
+        }
         
         if let angleRange = angle {
             angleSatisfy = self.angleSatisfy(angleRange: angleRange, poseMap: poseMap)
@@ -870,11 +891,11 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         // 每个规则至少要包含一个条件 且所有条件都必须满足
         return (
             lengthSatisfy == true &&
-                angleSatisfy == true && landmarkInAreaSatisfy == true &&
-                lengthToStateSatisfy == true &&
+            angleSatisfy == true && landmarkInAreaSatisfy == true &&
+            lengthToStateSatisfy == true &&
             objectToLandmarkSatisfy == true &&
             objectToObjectSatisfy == true
-                , warnings)
+            , warnings)
     }
     
     
