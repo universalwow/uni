@@ -104,33 +104,61 @@ struct Sporter: Identifiable {
         
         var allCurrentFrameWarnings : Set<String> = []
         // 违规逻辑
-        if currentStateTime.sportState.id == SportState.startState.id {
-//            起始状态可以转变为单个状态
-//            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
-//            if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
-//            {
-//                let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object,targetObject: targetObject, frameSize: frameSize)
-//                if !satisfy.0 {
-//                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-//                    //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
+//        if currentStateTime.sportState.id == SportState.startState.id {
+////            起始状态可以转变为单个状态
+////            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+////            if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
+////            {
+////                let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object,targetObject: targetObject, frameSize: frameSize)
+////                if !satisfy.0 {
+////                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+////                    //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
+////                }
+////            }
+//            // 起始状态可以转变为多个状态
+//            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+//            transforms.forEach{ transform in
+//                if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
+//                {
+//                    let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object,targetObject: targetObject, frameSize: frameSize)
+//                    if !satisfy.0 {
+//                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//                        //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
+//                    }
 //                }
 //            }
-            // 起始状态可以转变为多个状态
-            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
-            transforms.forEach{ transform in
-                if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
-                {
-                    let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object,targetObject: targetObject, frameSize: frameSize)
-                    if !satisfy.0 {
-                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-                        //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
-                    }
-                }
-            }
-            
-        } else {
-            // 之后的状态转换
-//            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+//
+//        } else {
+//            // 之后的状态转换
+////            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+////            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+////                let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+////                if !satisfy.0 {
+////                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+////                    //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
+////                }
+////            }
+//
+//            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+//            transforms.forEach { transform in
+//
+//                if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+//                    let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+//                    if !satisfy.0 {
+//                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//                        //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
+//                    }
+//                }
+//            }
+//
+//
+//
+//        }
+        
+        
+//        let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+//        transforms.forEach { transform in
+//
 //            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
 //                let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
 //                if !satisfy.0 {
@@ -138,82 +166,81 @@ struct Sporter: Identifiable {
 //                    //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
 //                }
 //            }
-            
-            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
-            transforms.forEach { transform in
-                
-                if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-                    let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-                    if !satisfy.0 {
-                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-                        //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
-                    }
-                }
-            }
-            
-            
-            
-        }
+//        }
+//
+//        // 计分逻辑 当前状态为开始状态 使用开始状态检查
+//        if currentStateTime.sportState.id == SportState.startState.id {
+////             起始状态可以转变为单个状态
+////            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+////            if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from),
+////               let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to)
+////            {
+////                let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+////                if satisfy.0 {
+////                    currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+////                } else {
+////                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+////                    //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
+////                }
+////            }
+//
+//            //             起始状态可以转变为多个状态
+//
+//            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+//            transforms.forEach { transform in
+//                if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from),
+//                   let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to)
+//                {
+//                    let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+//                    if satisfy.0 {
+//                        currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+//                    } else {
+//                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//                        //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
+//                    }
+//                }
+//            }
+//
+//
+//
+//        } else {
+//            // 之后的状态转换
+////            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
+////            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+////                let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+////                if satisfy.0  {
+////                    currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+////                } else {
+////                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+////                    //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
+////                }
+////            }
+//            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+//            transforms.forEach { transform in
+//                if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+//                    let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+//                    if satisfy.0  {
+//                        currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+//                    } else {
+//                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+//                        //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
+//                    }
+//                }
+//
+//            }
+//
+//        }
         
-        // 计分逻辑 当前状态为开始状态 使用开始状态检查
-        if currentStateTime.sportState.id == SportState.startState.id {
-//             起始状态可以转变为单个状态
-//            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
-//            if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from),
-//               let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to)
-//            {
-//                let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-//                if satisfy.0 {
-//                    currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
-//                } else {
-//                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-//                    //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
-//                }
-//            }
-            
-            //             起始状态可以转变为多个状态
-            
-            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
-            transforms.forEach { transform in
-                if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from),
-                   let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to)
-                {
-                    let satisfy = startState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-                    if satisfy.0 {
-                        currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
-                    } else {
-                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-                        //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
-                    }
+        let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+        transforms.forEach { transform in
+            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+                let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+                if satisfy.0  {
+                    currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+                } else {
+                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+                    //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
                 }
-            }
-            
-            
-            
-        } else {
-            // 之后的状态转换
-//            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
-//            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-//                let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-//                if satisfy.0  {
-//                    currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
-//                } else {
-//                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-//                    //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
-//                }
-//            }
-            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
-            transforms.forEach { transform in
-                if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-                    let satisfy = toState.complexScoreRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-                    if satisfy.0  {
-                        currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
-                    } else {
-                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-                        //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
-                    }
-                }
-                
             }
             
         }
