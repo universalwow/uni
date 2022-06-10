@@ -75,3 +75,189 @@ GongErWanJu(rawValue = "AI_FM_0056", sportName = "肱二弯举"),
 FuZhongShenDunShangJu(rawValue = "AI_FM_0057", sportName = "负重深蹲上举"),
 FuZhongHuaChuan(rawValue = "AI_FM_0058", sportName = "负重划船"),
 GuoQiShouCangJia(rawValue = "AI_FM_0059", sportName = "国旗收藏家");
+
+
+
+
+/** 立定跳远 **/
+    const val STAND_AND_JUMP = "S010"
+
+    /** 立定跳远单人 **/
+    const val STAND_AND_JUMP_SINGLE = "S010-1"
+
+    /** 仰卧起坐 **/
+    const val SIT_UP = "S020"
+
+    /** 俯卧撑 **/
+    const val PRESS_UP = "S030"
+
+    /** 斜身引体 **/
+    const val OBLIQUE_PULL  = "S031"
+
+    /** 引体向上 **/
+    const val CHIN = "S040"
+
+    /** 排球垫高 **/
+    const val VOLLEYBALL_DIGGING = "S082"
+
+    /** 排球垫墙 **/
+    const val VOLLEYBALL_CUSHION_WALL = "S083"
+
+    /** 50米跑 **/
+    const val SPRINT_50 = "S050"
+
+    /** 50米跑终点 **/
+    const val SPRINT_50_END = "S051"
+
+    /** 蛇形跑 **/
+    const val SNAKE_RUN = "S052"
+
+    /** 蛇形跑 **/
+    const val SNAKE_RUN_FRONT = "S052_1"
+
+    /** 蛇形跑 **/
+    const val SNAKE_RUN_BACK = "S052_2"
+
+    /** 50米往返跑 **/
+    const val SPRINT_GO_BACK_FRONT = "S110"
+
+    /** 50*8往返跑起点 **/
+    const val SPRINT_50_BY_8_AROUND_START = "S111"
+
+    /** 50*8往返跑终点 **/
+    const val SPRINT_50_BY_8_AROUND_END = "S112"
+
+    /** 15*4往返跑起点 **/
+    const val SPRINT_15_BY_4_AROUND_START = "S113"
+
+    /** 15*4往返跑终点 **/
+    const val SPRINT_15_BY_4_AROUND_END = "S114"
+
+    /** 往返跑-终点 **/
+    const val SPRINT_GO_FORWARD = "S115"
+
+    /** 篮球投篮 **/
+    const val BASKETBALL_SHOOT = "S073"
+
+    /**篮球技能等级1-3**/
+    const val BASKETBALL_SKILL_1TO3 = "S074"
+
+    const val BASKETBALL_SKILL_1TO3_2 = "S075"
+
+    const val BASKETBALL_SKILL_1TO3_3 = "S076"
+
+    /** 双杠屈臂撑 **/
+    const val DIP_ON_PARALLEL_BARS = "S130"
+
+    /** 单杠屈臂悬垂 **/
+    const val HORIZONTAL_BAR_BEND_ARM_HANG = "S140"
+
+    /** 足球射门 **/
+    const val FOOTBALL_SHOOT = "S092"
+
+    /** 足球技能等级1-3级 **/
+    const val FOOTBALL_SKILL_1_TO_3 = "S090"
+
+    /** 足球绕桩 **/
+    const val FOOTBALL_AROUND = "S091"
+
+    /** 足球颠球 **/
+    const val FOOTBALL_JUGGLE = "S093"
+
+    /** 足球高远 **/
+    const val FOOTBALL_HIGH_FAR = "S094"
+
+    /** 足球绕桩 **/
+    const val FOOTBALL_AROUND_SIX = "S095"
+
+    /** 实心球起点 **/
+    const val SOLID_BALL_START = "S061"
+
+    /** 实心球 **/
+    const val SOLID_BALL = "S062"
+
+    /** 羽毛球 **/
+    const val BADMINTON = "S170"
+
+    /** 羽毛球-高远球 **/
+    const val BADMINTON_HIGH_CLEAR = "S171"
+
+    /** 羽毛球-网前球、杀球 **/
+    const val BADMINTON_DOUBLE_AREA = "S172"
+
+
+    /** 跳绳 **/
+    const val ROPE_SKIP = "S101"
+
+    /** 开合跳 **/
+    const val OPEN_CLOSE_JUMP = "S102"
+
+    /** 前后跳 **/
+    const val BEFORE_AFTER_JUMP = "S103"
+
+    /** 深蹲 **/
+    const val DEEP_SQUAT = "S104"
+
+    /** 蹲跳 **/
+    const val SQUAT_JUMP = "S105"
+
+    /** 跪姿俯卧撑 **/
+    const val KNEELING_PUSH_UP = "S106"
+
+    /** 波比跳 **/
+    const val BURPEE = "S107"
+
+
+    /** 乒乓球对空颠球（等级一 科目一） **/
+    const val PINGPANG_BUMP_AIR = "S180"
+
+    /** 乒乓球对墙颠球（等级一 科目二） **/
+    const val PINGPANG_BUMP_WALL = "S181"
+
+    /** 乒乓球托球绕桌跑（等级一 科目三） **/
+    const val PINGPANG_TOSS_AROUND = "S182"
+
+    /** 乒乓球双手接球（等级一 科目四） **/
+    const val PINGPANG_HANDS_CATCH = "S183"
+
+    /** 乒乓球平击发球（等级二 科目一） **/
+    const val PINGPANG2_FLAT_STRIDE = "S184"
+
+    /** 乒乓球反手推拨（等级二 科目二） **/
+    const val PINGPANG2_BACK_PUSH = "S185"
+
+    /** 乒乓球正手攻球（等级二 科目三） **/
+    const val PINGPANG2_FORE_PUSH = "S186"
+
+    /** 乒乓球1/2台面正手两点攻（等级二 科目四） **/
+    const val PINGPANG2_HALF_ATTACK = "S187"
+
+    /** 乒乓球平击发球（等级三 科目一） **/
+    const val PINGPANG3_FLAT_STRIDE = "S188"
+
+    /** 乒乓球反手推拨（等级三 科目二） **/
+    const val PINGPANG3_BACK_PUSH = "S189"
+
+    /** 乒乓球正手攻球（等级三 科目三） **/
+    const val PINGPANG3_FORE_PUSH = "S190"
+
+    /** 乒乓球1/2台面正手两点攻（等级三 科目四） **/
+    const val PINGPANG3_HALF_ATTACK = "S191"
+
+    /**  乒乓球落点 等级二等级三 **/
+    const val PINGPANG_FALL = "S192"
+
+    /** 乒乓球平击发球（等级三 科目一）正手 **/
+    const val PINGPANG3_FLAT_STRIDE_POSITIVE = "S193"
+
+    /** 乒乓球平击发球（等级三 科目一）反手 **/
+    const val PINGPANG3_FLAT_STRIDE_NEGATIVE = "S194"
+
+    /** 视力检查 **/
+    const val EYESIGHT = "S200"
+
+    /** 短距游泳起点 **/
+    const val SWIM_SHORT_START = "S210"
+
+    /** 短距游泳终点 **/
+    const val SWIM_SHORT_END = "S211"
