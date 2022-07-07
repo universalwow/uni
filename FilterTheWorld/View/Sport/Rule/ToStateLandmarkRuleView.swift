@@ -58,7 +58,7 @@ struct ToStateLandmarkRuleView: View {
         relativeAxis = CoordinateAxis.X
         minRelativeLength = 0.0
         maxRelativeLength = 0.0
-        relativeToState = SportState.startState.id
+        relativeToState = sportManager.findFirstSport()!.allHasKeyFrameStates.first!.id
     }
     
     var body: some View {
@@ -118,7 +118,7 @@ struct ToStateLandmarkRuleView: View {
                             resetInitData()
                             updateLocalData()
                         }) {
-                            ForEach(sportManager.findFirstSport()!.allStates) { state in
+                            ForEach(sportManager.findFirstSport()!.allHasKeyFrameStates) { state in
                                 Text(state.name).tag(state.id)
                             }
                         }
@@ -191,6 +191,7 @@ struct ToStateLandmarkRuleView: View {
 
             }else {
                 self.landmarkTypeToState = self.sportManager.findSelectedSegment()!.landmarkTypes.first!
+                relativeToState = sportManager.findFirstSport()!.allHasKeyFrameStates.first!.id
             }
             
         }

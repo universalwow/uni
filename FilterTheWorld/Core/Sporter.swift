@@ -9,8 +9,12 @@ struct StateTime {
     let time: Double
 //    状态变换时的关节信息
     let poseMap: PoseMap
-    var minObject:Observation?
-    var maxObject: Observation?
+ 
+    
+    var minYObject:Observation?
+    var maxYObject: Observation?
+    var minXObject:Observation?
+    var maxXObject: Observation?
     
 }
 
@@ -62,17 +66,28 @@ struct Sporter: Identifiable {
             return
         }
         let index = stateTimeHistory.endIndex - 1
-        if stateTimeHistory[index].minObject == nil {
-            stateTimeHistory[index].minObject = object
-            stateTimeHistory[index].maxObject = object
+        if stateTimeHistory[index].minXObject == nil {
+            stateTimeHistory[index].minXObject = object
+            stateTimeHistory[index].maxXObject = object
+            
+            stateTimeHistory[index].minYObject = object
+            stateTimeHistory[index].maxYObject = object
         }else {
             
-            if object.rect.midY < stateTimeHistory[index].minObject!.rect.midY {
-                stateTimeHistory[index].minObject = object
+            if object.rect.midX < stateTimeHistory[index].minXObject!.rect.midX {
+                stateTimeHistory[index].minXObject = object
             }
             
-            if object.rect.midY > stateTimeHistory[index].maxObject!.rect.midY {
-                stateTimeHistory[index].maxObject = object
+            if object.rect.midX > stateTimeHistory[index].maxXObject!.rect.midX {
+                stateTimeHistory[index].maxXObject = object
+            }
+            
+            if object.rect.midY < stateTimeHistory[index].minYObject!.rect.midY {
+                stateTimeHistory[index].minYObject = object
+            }
+            
+            if object.rect.midY > stateTimeHistory[index].maxYObject!.rect.midY {
+                stateTimeHistory[index].maxYObject = object
             }
             
             
@@ -95,8 +110,9 @@ struct Sporter: Identifiable {
         
         // 3秒没切换状态 则重置状态为开始
 //        MARK: 添加重置为开始条件 当前太粗暴
-        if currentTime - currentStateTime.time > 3 {
-            print("时间间隔3秒")
+        
+        if let timeLimit = sport.scoreTimeLimit, currentTime - currentStateTime.time > timeLimit {
+//            print("时间间隔3秒")
             currentStateTime  = StateTime(sportState: .startState, time: currentTime, poseMap: poseMap)
         }
         
@@ -106,59 +122,8 @@ struct Sporter: Identifiable {
         }
         
         var allCurrentFrameWarnings : Set<String> = []
-        // 违规逻辑
-//        if currentStateTime.sportState.id == SportState.startState.id {
-////            起始状态可以转变为单个状态
-////            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
-////            if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
-////            {
-////                let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object,targetObject: targetObject, frameSize: frameSize)
-////                if !satisfy.0 {
-////                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-////                    //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
-////                }
-////            }
-//            // 起始状态可以转变为多个状态
-//            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
-//            transforms.forEach{ transform in
-//                if let startState = sport.findFirstSportStateByUUID(editedStateUUID: transform.from)
-//                {
-//                    let satisfy = startState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object,targetObject: targetObject, frameSize: frameSize)
-//                    if !satisfy.0 {
-//                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-//                        //          updateWarnings(allCurrentFrameWarnings: satisfy.1)
-//                    }
-//                }
-//            }
-//
-//        } else {
-//            // 之后的状态转换
-////            let transform = sport.stateTransForm.first { currentStateTime.sportState.id == $0.from }!
-////            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-////                let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-////                if !satisfy.0 {
-////                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-////                    //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
-////                }
-////            }
-//
-//            let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
-//            transforms.forEach { transform in
-//
-//                if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-//                    let satisfy = toState.complexScoreRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-//                    if !satisfy.0 {
-//                        allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
-//                        //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
-//                    }
-//                }
-//            }
-//
-//
-//
-//        }
-        
-        
+
+//        违规逻辑
         let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
         transforms.forEach { transform in
 
@@ -171,13 +136,13 @@ struct Sporter: Identifiable {
             }
         }
 
-        
-//        let transforms = ssport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
+//        计分逻辑
         transforms.forEach { transform in
             if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
                 let satisfy = toState.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
                 if satisfy.0  {
                     currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
+                    print("转换状态 - \(currentStateTime.sportState.name) - \(satisfy)")
                 } else {
                     allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
                     //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
@@ -213,10 +178,7 @@ struct Sporter: Identifiable {
             if allStateSatisfy && timeSatisfy {
                 // 检查状态改变后是否满足多帧条件 决定是否计分
                 scoreTimes.append((currentTime, true))
-
-                
             }
-            
             
         }
         

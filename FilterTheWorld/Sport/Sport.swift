@@ -50,6 +50,13 @@ extension Sport {
   var allStates: [SportState]  {
     states
   }
+  
+    var allHasKeyFrameStates: [SportState]  {
+        states.filter({ state in
+            state.image != nil
+        })
+    }
+    
     
   
   
@@ -252,14 +259,14 @@ extension Sport {
   // 每个状态都设置了相应的规则 则已经被设置
   var ruleHasSetuped: Bool {
     states.count ==  states.reduce(0, {(result, state) in
-      (!state.rules.isEmpty ? 1 : 0) + result
+        (!state.complexScoreRules.isEmpty ? 1 : 0) + result
     })
   }
   
   // 规则完整度
   var ruleIntegrity:Double {
     Double(states.reduce(0, {(result, state) in
-      (!state.rules.isEmpty ? 1 : 0) + result
+      (!state.complexScoreRules.isEmpty ? 1 : 0) + result
     }))/Double(states.count)
   }
 

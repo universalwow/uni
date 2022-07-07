@@ -327,8 +327,8 @@ extension SportsManager {
     }
     
     
-    func setCurrentSportStateRule(landmarkSegment: LandmarkSegment) {
-        currentSportStateRuleId = landmarkSegment.id
+    func setCurrentSportStateRule(landmarkSegmentType: LandmarkTypeSegment) {
+        currentSportStateRuleId = landmarkSegmentType.id
         setSegmentToSelected()
 
     }
@@ -762,6 +762,55 @@ extension SportsManager {
             self.upsertCurrentRule(rule: newRule)
         }
         
+    }
+    
+    
+    func getRuleObjectToSelf() -> ObjectToSelf? {
+        let rule = findCurrentSportStateRule()
+        return rule?.objectToSelf
+    }
+    
+    func setRuleObjectToSelf(objectToSelf: ObjectToSelf?) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+
+            newRule.objectToSelf = objectToSelf
+            self.upsertCurrentRule(rule: newRule)
+        }
+    }
+    
+    func setRuleObjectToSelf(objectId:String, direction: Direction, xLowerBound: Double, yLowerBound: Double, warning:String) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+
+            newRule.objectToSelf = ObjectToSelf(objectId: objectId, toDirection: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning)
+            self.upsertCurrentRule(rule: newRule)
+        }
+    }
+    
+    func updateRuleObjectToSelf(objectId:String, direction: Direction, xLowerBound: Double, yLowerBound: Double, warning:String) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+
+            newRule.objectToSelf!.objectId = objectId
+            newRule.objectToSelf!.toDirection = direction
+            newRule.objectToSelf!.xLowerBound = xLowerBound
+            newRule.objectToSelf!.yLowerBound = yLowerBound
+
+            newRule.objectToSelf!.warning = warning
+            
+            self.upsertCurrentRule(rule: newRule)
+        }
+    }
+    
+    func updateRuleObjectToSelf(xLowerBound: Double, yLowerBound: Double) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+            newRule.objectToSelf!.xLowerBound = xLowerBound
+            newRule.objectToSelf!.yLowerBound = yLowerBound
+            
+            self.upsertCurrentRule(rule: newRule)
+        }
     }
     
 

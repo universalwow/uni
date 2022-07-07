@@ -187,6 +187,14 @@ extension LandmarkType {
         [MouthLeft, MouthRight],
         [LeftShoulder,RightShoulder],
         [LeftHip, RightHip]
+        
+    ]
+    
+    static let secondaryRuleLines = [
+        [LeftElbow, RightElbow],
+        [LeftWrist, RightWrist],
+        [LeftKnee, RightKnee],
+        [LeftAnkle, RightAnkle]
     ]
     
     static let needAnglePairs = [
@@ -205,6 +213,24 @@ extension LandmarkType {
     
     static let landmarkSegmentTypes: [LandmarkTypeSegment] = {
         return needAnglePairs.map { lines in
+            zip(lines[0..<lines.count - 1], lines[1..<lines.count])
+        }.reduce([LandmarkTypeSegment]()) { result, next in
+            
+            var appendResult = next.map { startLandmarkType, endLandmarkType in
+                    LandmarkTypeSegment(
+                        startLandmarkType: startLandmarkType,
+                        endLandmarkType: endLandmarkType)
+
+            }
+            appendResult.append(contentsOf: result)
+            return appendResult
+        }
+ 
+    }()
+    
+    
+    static let landmarkSegmentTypesForSetRule: [LandmarkTypeSegment] = {
+        return (needAnglePairs + secondaryRuleLines).map { lines in
             zip(lines[0..<lines.count - 1], lines[1..<lines.count])
         }.reduce([LandmarkTypeSegment]()) { result, next in
             

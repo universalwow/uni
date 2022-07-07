@@ -5,7 +5,7 @@ import SwiftUI
 struct RuleView: View {
     @EnvironmentObject var sportManager:SportsManager
     
-    @State var selectedLandmarkSegment = LandmarkSegment.initValue()
+    @State var selectedLandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
     @State var showSetupRule = false
     
     var body: some View {
@@ -32,8 +32,8 @@ struct RuleView: View {
             
             HStack {
                 Image(systemName: "figure.wave")
-                Picker("选择关节对", selection: $selectedLandmarkSegment) {
-                    ForEach(state.landmarkSegments) { landmarkSegment in
+                Picker("选择关节对", selection: $selectedLandmarkSegmentType) {
+                    ForEach(LandmarkType.landmarkSegmentTypesForSetRule) { landmarkSegment in
                         Text(landmarkSegment.id).tag(landmarkSegment)
                     }
                 }
@@ -47,13 +47,13 @@ struct RuleView: View {
             }
             
         }.padding()
-        .onChange(of: self.selectedLandmarkSegment) { _ in
-            sportManager.setCurrentSportStateRule(landmarkSegment: selectedLandmarkSegment)
+        .onChange(of: self.selectedLandmarkSegmentType) { _ in
+            sportManager.setCurrentSportStateRule(landmarkSegmentType: selectedLandmarkSegmentType)
         }
         .sheet(isPresented: self.$showSetupRule) {
             SetupRuleView()
         }.onAppear{
-            sportManager.setCurrentSportStateRule(landmarkSegment: selectedLandmarkSegment)
+            sportManager.setCurrentSportStateRule(landmarkSegmentType: selectedLandmarkSegmentType)
         }
     }
 }

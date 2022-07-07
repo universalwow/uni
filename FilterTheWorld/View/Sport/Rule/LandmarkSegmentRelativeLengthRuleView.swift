@@ -14,11 +14,11 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     @State var minRelativeLength = 0.0
     @State var maxRelativeLength = 0.0
     
-    @State var relativeLengthToggle = false
+    @State var toggle = false
     @State var relativeLengthWarning = ""
     
     func setInitData() {
-        if relativeLengthToggle {
+        if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
             sportManager.setRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning)
         }
@@ -26,7 +26,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     }
     
     func resetInitData() {
-        if relativeLengthToggle {
+        if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
             sportManager.updateRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning)
         }
@@ -44,7 +44,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     }
     
     func updateLocalData() {
-        if relativeLengthToggle {
+        if toggle {
             let length = sportManager.getRuleLandmarkSegmentLength()!
             minRelativeLength = length.lowerBound
             maxRelativeLength = length.upperBound
@@ -54,7 +54,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     }
     
     func updateRemoteData() {
-        if relativeLengthToggle {
+        if toggle {
             self.sportManager.updateRuleLandmarkSegmentLength(lowerBound: minRelativeLength , upperBound: maxRelativeLength)
 
         }
@@ -62,7 +62,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     
     var body : some View {
         VStack {
-            Toggle("关节对相对值", isOn: $relativeLengthToggle.didSet{ isOn in
+            Toggle("关节对相对值", isOn: $toggle.didSet{ isOn in
                     if isOn {
                         
                         setInitData()
@@ -103,7 +103,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                         updateLocalData()
                         
                     }) {
-                        ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
+                        ForEach(LandmarkType.landmarkSegmentTypesForSetRule) { landmarkSegmentType in
                             Text(landmarkSegmentType.id).tag(landmarkSegmentType)
                         }
                     }
@@ -148,7 +148,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     
                 }
             }
-            .disabled(!relativeLengthToggle)
+            .disabled(!toggle)
         }
         .onAppear{
 //            存在时加载
@@ -159,7 +159,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                 self.minRelativeLength = length.lowerBound
                 self.maxRelativeLength = length.upperBound
                 self.relativeLengthWarning = length.warning
-                self.relativeLengthToggle = true
+                self.toggle = true
             }
         }
     }

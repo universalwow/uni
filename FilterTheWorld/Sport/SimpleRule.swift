@@ -13,7 +13,7 @@ enum Direction: String, Identifiable, CaseIterable, Codable {
     var id: String {
         self.rawValue
     }
-    case UP, DOWN, LEFT_UP, RIGHT_UP, LEFT_DOWN, RIGHT_DOWN
+    case UP, DOWN, LEFT, RIGTH, LEFT_UP, RIGHT_UP, LEFT_DOWN, RIGHT_DOWN
 }
 
 
@@ -80,9 +80,9 @@ struct LandmarkToAxisAndState: Codable {
         
         if stateTimeHistory.isEmpty || stateTimeHistory.contains(where: { stateTime in
             stateTime.sportState.id == SportState.startState.id
-        }) && stateTimeHistory.last { stateTime in
+        }) && stateTimeHistory.last(where: { stateTime in
             stateTime.sportState.id == self.toStateId
-        } == nil {
+        }) == nil {
             return true
         }
         
@@ -99,14 +99,11 @@ struct LandmarkToAxisAndState: Codable {
         let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
         let toSegment = self.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         
-        return ComplexRule.satisfy(fromAxis: self.fromLandmarkToAxis.axis,
+        return ComplexRule.satisfyWithDirection(fromAxis: self.fromLandmarkToAxis.axis,
                                    toAxis: self.toLandmarkSegmentToAxis.axis,
                                    range: self.range,
                                    fromSegment: fromSegment,
                                    toSegment: toSegment)
-        
-        
-        
     }
     
     
@@ -127,26 +124,26 @@ struct LandmarkToAxisAndState: Codable {
         var bound = 0.0
         switch (fromLandmarkToAxis.axis, toLandmarkSegmentToAxis.axis) {
         case (.X, .X):
-            length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+            length = fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
             
         case (.X, .Y):
-            length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+            length = fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
             
         case (.X, .XY):
-            length = abs(fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x)
+            length = fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
             
         case (.Y, .X):
-            length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+            length = fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
             
         case (.Y, .Y):
-            length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+            length = fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
         case (.Y, .XY):
-            length = abs(fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y)
+            length = fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
             
         case (.XY, .X):
@@ -172,12 +169,11 @@ struct LandmarkToAxisAndState: Codable {
 
 // 物体在Y方向相对自身位移
 struct ObjectToSelf: Codable {
-    var lowerBound:Double = 0
-    //物体当前位置相对一个方向的距离最小值
-//    var toStateId:Int
-    //    // 物体的中心点x, y
-    //    var fromAxis: CoordinateAxis
     
+    var objectId: String = ""
+    var xLowerBound:Double = 0
+    var yLowerBound:Double = 0
+
     var toDirection: Direction
     var warning:String = ""
     
@@ -185,49 +181,75 @@ struct ObjectToSelf: Codable {
         //相对于当前状态收集到的边界位移
         let toStateTime = stateTimeHistory.last!
         
-        let targetBound = lowerBound * object.rect.height
+        let targetXBound = xLowerBound * object.rect.height
+        let targetYBound = yLowerBound * object.rect.height
+        
 //        希望fromBound是正值 如果为负则说明有错误
-        var fromBound = 0.0
+        var fromXBound = targetXBound
+        var fromYBound = targetYBound
         
         switch toDirection {
+//            相对上一状态的位移
+            case .UP:
+                let targetYObject = toStateTime.minYObject!
+                fromYBound = object.rect.midY - targetYObject.rect.midY
             
-        case .UP:
-            let targetObject = toStateTime.minObject!
-            fromBound = object.rect.midY - targetObject.rect.midY
+            case .DOWN:
+                let targetYObject = toStateTime.maxYObject!
+                fromYBound = targetYObject.rect.midY - object.rect.midY
             
-        case .DOWN:
-            let targetObject = toStateTime.maxObject!
-            fromBound = targetObject.rect.midY - object.rect.midY
+            case .LEFT:
+                let targetXObject = toStateTime.minXObject!
+                fromXBound = object.rect.midX - targetXObject.rect.midX
             
-        case .LEFT_UP:
-            let targetObject = toStateTime.minObject!
-            fromBound = object.rect.midX - targetObject.rect.midX
+            case .RIGTH:
+                let targetXObject = toStateTime.minXObject!
+                fromXBound = targetXObject.rect.midX - object.rect.midX
+                
+            case .LEFT_UP:
+                let targetXObject = toStateTime.minXObject!
+                fromXBound = object.rect.midX - targetXObject.rect.midX
 
+                let targetYObject = toStateTime.minYObject!
+                fromYBound = object.rect.midY - targetYObject.rect.midY
             
-        case .LEFT_DOWN:
-            let targetObject = toStateTime.maxObject!
-            fromBound = object.rect.midX - targetObject.rect.midX
+            case .LEFT_DOWN:
+                let targetXObject = toStateTime.minXObject!
+                fromXBound = object.rect.midX - targetXObject.rect.midX
+            
+                let targetYObject = toStateTime.maxYObject!
+                fromYBound = targetYObject.rect.midY - object.rect.midY
 
-        case .RIGHT_UP:
-            let targetObject = toStateTime.minObject!
-            fromBound = targetObject.rect.midX - object.rect.midX
+            case .RIGHT_UP:
+            
+                let targetXObject = toStateTime.maxXObject!
+                fromXBound = targetXObject.rect.midX - object.rect.midX
 
-        case .RIGHT_DOWN:
-            let targetObject = toStateTime.maxObject!
-            fromBound = targetObject.rect.midX - object.rect.midX
+                let targetYObject = toStateTime.minYObject!
+                fromYBound = object.rect.midY - targetYObject.rect.midY
+        
 
+
+            case .RIGHT_DOWN:
             
+                let targetXObject = toStateTime.maxXObject!
+                fromXBound = targetXObject.rect.midX - object.rect.midX
+
+                let targetYObject = toStateTime.maxYObject!
+                fromYBound = targetYObject.rect.midY - object.rect.midY
             
-            
+       
         }
-        return fromBound > targetBound
+        
+        return fromXBound >= targetXBound && fromYBound >= targetYBound
     }
     
     
-    init(toStateId: Int, toDirection: Direction, lowerBound: Double, warning: String) {
-//        self.toStateId = toStateId
+    init(objectId: String, toDirection: Direction, xLowerBound: Double, yLowerBound: Double, warning: String) {
+        self.objectId = objectId
         self.toDirection = toDirection
-        self.lowerBound = lowerBound
+        self.xLowerBound = xLowerBound
+        self.yLowerBound = yLowerBound
         self.warning = warning
     }
     
@@ -344,12 +366,6 @@ struct ObjectToObject: Codable {
         lowerBound = bound
         upperBound = bound
     }
-    
-    
-    
-    
-    
-    
 }
 
 struct ObjectToLandmark: Codable {
@@ -573,6 +589,7 @@ struct AngleRange: Codable {
     
     func satisfy(poseMap: PoseMap) -> Bool {
         let landmarkSegment = landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        print("angle range - \(range) - \(Int(landmarkSegment.angle2d))")
         return range.contains(Int(landmarkSegment.angle2d)) || range.contains(Int(landmarkSegment.angle2d + 360))
     }
     
@@ -756,7 +773,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         self.landmarkSegmentType = ruleIdToLandmarkTypes(ruleId: ruleId)
     }
     
-    //  var landmarkSegment:LandmarkSegment
+    // ---------------基于单帧的规则--------------
     // 10 - 30 340-380
     // 角度
     // 当前状态下该规则需要的提示
@@ -766,27 +783,27 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     // 相对长度
     var length: RelativeLandmarkSegmentsToAxis?
     
-    // 关节点在区域内
-    var landmarkInArea:LandmarkInArea?
-    // TODO:
-    //MARK:  1. 物体在区域内 2. 物体与关节点的关系 3.物体相对自身位移 关节相对自身位移
-    
-    // 基于多帧的规则
-    //    关节相对自身位移
-    var lengthToState:LandmarkToAxisAndState?
-    
     // 物体位置相对于关节点
     var objectPositionToLandmark: ObjectToLandmark?
     
     // 物体位置相对于物体位置
     var objectPositionToObjectPosition: ObjectToObject?
     
+    // 关节点在区域内
+    var landmarkInArea:LandmarkInArea?
+
+    // -------------基于多帧的规则-------------
+    
+    // 关节相对自身位移
+//    相关状态转换时收集的关节点 不更新
+    var lengthToState:LandmarkToAxisAndState?
+    
     // 物体相对于自身位移
     var objectToSelf: ObjectToSelf?
     
     
-    
     func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
+        
         return angleRange.satisfy(poseMap: poseMap)
     }
     
@@ -849,7 +866,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         
         if let angleRange = angle {
             angleSatisfy = self.angleSatisfy(angleRange: angleRange, poseMap: poseMap)
-            
+            print("angle range - \(angleRange) - \(angleSatisfy)")
             if angleSatisfy == false {
                 warnings.insert(angleRange.warning)
             }
@@ -920,17 +937,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     
 }
 
-struct SimpleRule: Codable {
-    var landmarkSegmentType:LandmarkTypeSegment
-    // 10 - 30 340-380
-    var angleRange:Range<Int>
-    
-    func angleSatisfy(poseMap: PoseMap) -> Bool {
-        let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        return angleRange.contains(landmarkSegment.angle2d.toInt) ||
-        angleRange.contains(landmarkSegment.angle2d.toInt + 360)
-    }
-}
+
 
 
 struct StateTransition {

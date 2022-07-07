@@ -261,7 +261,7 @@ struct VideoAnalysorView: View {
         VStack {
             if let frame = self.videoManager.frame {
                 let uiImage = UIImage(cgImage: frame, scale: 1, orientation: orientation).fixedOrientation()!
-                FrameView(uiImage: uiImage)
+                FrameView(uiImage: imageAnalysis.sportData.frame) //uiImage
                     .scaledToFit()
                     .overlay{
                         GeometryReader { geometry in

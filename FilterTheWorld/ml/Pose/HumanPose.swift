@@ -105,8 +105,14 @@ extension HumanPose {
                                 landmarkMaps: landmarkMaps,
                                 landmarkTypePairs: LandmarkType.otherLines,
                                 color: .white)
-                            
     )
+      
+    landmarkSegments.append(contentsOf:
+                                landmarkTypePairsToSegments(
+                                  landmarkMaps: landmarkMaps,
+                                  landmarkTypePairs: LandmarkType.secondaryRuleLines,
+                                  color: .white)
+                            )
   }
 }
 

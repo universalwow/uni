@@ -84,6 +84,17 @@ struct ObjectToObjectDescriptionView: View {
     }
 }
 
+struct ObjectToSelfDescriptionView: View {
+    var objectToSelf: ObjectToSelf
+    var body: some View {
+        HStack {
+            Text("物体\(objectToSelf.objectId )相对自身\(objectToSelf.toDirection.rawValue )方向移动\(objectToSelf.xLowerBound.roundedString(number: 4))/\(objectToSelf.yLowerBound.roundedString(number: 4)):\(objectToSelf.warning)")
+            Spacer()
+        }
+    }
+}
+
+
 struct RuleDescriptionView: View {
     @Binding var rule:ComplexRule
     var body : some View {
@@ -105,6 +116,18 @@ struct RuleDescriptionView: View {
                 }
             }
             
+            if let objectToLandmark = rule.objectPositionToLandmark {
+                VStack{
+                    ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
+                    Divider()
+                }
+            }
+            
+            if let objectToOBject = rule.objectPositionToObjectPosition {
+                ObjectToObjectDescriptionView(objectToObject: objectToOBject)
+
+            }
+            
             //                                    关节点在区域
             if let area = rule.landmarkInArea {
                 VStack{
@@ -121,17 +144,14 @@ struct RuleDescriptionView: View {
                 }
             }
             
-            if let objectToLandmark = rule.objectPositionToLandmark {
+            if let objectToSelf = rule.objectToSelf {
                 VStack{
-                    ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
+                    ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
                     Divider()
                 }
             }
             
-            if let objectToOBject = rule.objectPositionToObjectPosition {
-                ObjectToObjectDescriptionView(objectToObject: objectToOBject)
-
-            }
+            
             
         }
     }

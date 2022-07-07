@@ -14,7 +14,6 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   // MARK: TO DELETE
   // TODO: 状态对应的规则 时间限制 一定时间内没有切换状态
   var transFormTimeLimit: Double? 
-  var rules : [[SimpleRule]] = []
   // 计分规则 关节点对应的规则
   var complexScoreRules:[ComplexRules] = []
   // 违规规则 用于提示
@@ -215,10 +214,10 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
   //      (!complexRules.rules.isEmpty) &&
       let rulesSatisfy = complexRules.rules.reduce((true, Set<String>()), { satisfy, complexRule in
         let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-//        print("rule satisfy ... \(ruleSatisfy)")
+        print("rule satisfy ... \(ruleSatisfy) - \(satisfy.0 && ruleSatisfy.0)")
         return (satisfy.0 && ruleSatisfy.0, satisfy.1.union(ruleSatisfy.1))
       })
-      
+    print("rules satisfy ... \(rulesSatisfy.0) - \(result.0 || rulesSatisfy.0)")
       return (result.0 || rulesSatisfy.0, result.1.union(rulesSatisfy.1))
       
     })

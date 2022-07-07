@@ -365,7 +365,7 @@ struct SportView: View {
         .sheet(isPresented: $editRuleFlag, onDismiss: {
             
         }) {
-            RuleView(selectedLandmarkSegment: selectedLandmarkSegment)
+            RuleView(selectedLandmarkSegmentType: selectedLandmarkSegment.landmarkSegmentType)
         }
         .sheet(isPresented: $keyFrameFlag, onDismiss: {
             

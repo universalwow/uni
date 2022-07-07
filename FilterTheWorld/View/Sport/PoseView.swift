@@ -14,8 +14,6 @@ struct LandmarkView: View {
                 .frame(width: 5)
                 .position(landmark.pointToFit(imageSize: imageSize, viewSize: viewSize))
         }
-        
-        
     }
 }
 
@@ -40,8 +38,13 @@ struct PoseView: View {
     
     var body: some View {
         ForEach(pose.landmarkSegments) { landmarkSegment in
-            LandmarkSegmentView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
-                .stroke(landmarkSegment.color, lineWidth: 2)
+            Group {
+                LandmarkSegmentView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
+                    .stroke(landmarkSegment.color, lineWidth: 2)
+                LandmarkSegmentAngleView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
+                    .foregroundColor(.yellow)
+            }
+  
             
         }
     }
@@ -116,7 +119,7 @@ struct PoseViewForSetupRule: View {
                         colorOf(selected: sportManager.segmentSelected(segment: landmarkSegment), segment: landmarkSegment))
             }.onTapGesture {
                 // 选择关节或关节点
-                sportManager.setCurrentSportStateRule(landmarkSegment: landmarkSegment)
+                sportManager.setCurrentSportStateRule(landmarkSegmentType: landmarkSegment.landmarkSegmentType)
                 
             }
             
