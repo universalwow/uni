@@ -95,6 +95,16 @@ struct ObjectToSelfDescriptionView: View {
 }
 
 
+struct LandmarkToSelfDescriptionView: View {
+    var landmarkToSelf: LandmarkToSelf
+    var body: some View {
+        HStack {
+            Text("关节点\(landmarkToSelf.landmarkType.rawValue)相对自身\(landmarkToSelf.toLandmarkSegmentToAxis.landmarkSegment.id)/\(landmarkToSelf.toLandmarkSegmentToAxis.axis.rawValue)/\(landmarkToSelf.toDirection.rawValue )方向移动\(landmarkToSelf.xLowerBound.roundedString(number: 4))/\(landmarkToSelf.yLowerBound.roundedString(number: 4)):\(landmarkToSelf.warning)")
+            Spacer()
+        }
+    }
+}
+
 struct RuleDescriptionView: View {
     @Binding var rule:ComplexRule
     var body : some View {
@@ -147,6 +157,13 @@ struct RuleDescriptionView: View {
             if let objectToSelf = rule.objectToSelf {
                 VStack{
                     ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
+                    Divider()
+                }
+            }
+            
+            if let landmarkToSelf = rule.landmarkToSelf {
+                VStack{
+                    LandmarkToSelfDescriptionView(landmarkToSelf: landmarkToSelf)
                     Divider()
                 }
             }

@@ -21,7 +21,7 @@ struct Sport: Identifiable, Hashable, Codable {
   var id = UUID()
   var name:String = ""
   var description:String = ""
-  var states: [SportState] = [SportState.startState, SportState.endState] {
+    var states: [SportState] = [SportState.startState, SportState.endState, SportState.readyState] {
     didSet {
       // 删除操作 更新状态转换 和 计分状态列表
       if states.count < oldValue.count {
@@ -31,11 +31,20 @@ struct Sport: Identifiable, Hashable, Codable {
     }
     
   }
+    
+    
+    
   
   var stateTransForm: [SportStateTransform] = []
 //MARK: 添加计分状态序列 使之可用于半周期
   var scoreStateSequence: [SportState] = []
-  
+    
+    
+    //需要收集的关节点或者物体
+    var selectedLandmarkTypes : [LandmarkType] = []
+    var collectedObjects : [String] = []
+    
+
   // 时间限制 秒
   var scoreTimeLimit:Double?
 }
@@ -66,6 +75,16 @@ extension Sport {
       
     }
   }
+    
+    
+    var objects: [Observation] {
+        if let state = states.first(where: { state in
+            state.image != nil
+        }) {
+            return state.objects
+        }
+        return []
+    }
   
   
   var maxStateId: Int {
@@ -195,14 +214,34 @@ extension Sport {
   }
   
   
-  // MARK: rule
-//  mutating func setupLandmarkArea(editedSportStateId: SportStateUUID, editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
-//    if let index = firstStateIndexByStateID(editedStateUUID: editedSportStateId) {
-//      states[index].setupLandmarkArea(editedSportStateRulesId: editedSportStateRulesId, editedSportStateRule: editedSportStateRule, ruleType: ruleType, landmarkinArea: landmarkinArea)
-//    }
-//  }
-  
-  
+    
+    mutating func updateSport(landmarkType: LandmarkType) {
+        if !self.selectedLandmarkTypes.contains(landmarkType) {
+            selectedLandmarkTypes.append(landmarkType)
+        }
+    }
+    
+      
+    mutating func deleteSport(landmarkType: LandmarkType) {
+          selectedLandmarkTypes.removeAll(where: { _landmarkType in
+              _landmarkType.id == landmarkType.id
+          })
+      }
+    
+    mutating func updateSport(objectId: String) {
+        if !self.collectedObjects.contains(objectId) {
+            self.collectedObjects.append(objectId)
+
+        }
+    }
+    
+      
+    mutating func deleteSport(objectId: String) {
+        self.collectedObjects.removeAll(where: { _objectId in
+            _objectId == objectId
+          })
+      }
+    
   mutating func addNewSportStateRules(editedSportState: SportState, ruleType: RuleType) {
     if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
       switch ruleType {

@@ -3,6 +3,40 @@
 import Foundation
 
 
+//enum ExtremePoint {
+//    case minX
+//    case maxX
+//    case minY
+//    case maxY
+//}
+
+struct ExtremePoint3D {
+    var minX: Point3D
+    var maxX: Point3D
+    var minY: Point3D
+    var maxY: Point3D
+    
+    init(point: Point3D) {
+        self.minX = point
+        self.maxX = point
+        self.minY = point
+        self.maxY = point
+    }
+}
+
+struct ExtremeObject {
+    var minX: Observation
+    var maxX: Observation
+    var minY: Observation
+    var maxY: Observation
+    
+    init(object: Observation) {
+        self.minX = object
+        self.maxX = object
+        self.minY = object
+        self.maxY = object
+    }
+}
 
 struct StateTime {
     let sportState: SportState
@@ -10,11 +44,17 @@ struct StateTime {
 //    状态变换时的关节信息
     let poseMap: PoseMap
  
+////    动态收集物体位置
+//    var minYObject:Observation?
+//    var maxYObject: Observation?
+//    var minXObject:Observation?
+//    var maxXObject: Observation?
+// 动态收集的物体位置
+
+    var dynamicObjectsMaps:[String: ExtremeObject] = [:]
     
-    var minYObject:Observation?
-    var maxYObject: Observation?
-    var minXObject:Observation?
-    var maxXObject: Observation?
+// 动态收集关节点位置
+    var dynamicPoseMaps: [LandmarkType: ExtremePoint3D] = [:]
     
 }
 
@@ -61,37 +101,85 @@ struct Sporter: Identifiable {
     var stateTimeHistory: [StateTime] = [StateTime(sportState: SportState.startState, time: 0, poseMap: [:])]
     
     
-    mutating func updateCurrentStateObjectBounds(object: Observation) {
+    mutating func updateCurrentStateObjectBounds(object: Observation?, targetObservation: Observation?, objectLabels: [String]) {
         if stateTimeHistory.endIndex == 0 {
             return
         }
         let index = stateTimeHistory.endIndex - 1
-        if stateTimeHistory[index].minXObject == nil {
-            stateTimeHistory[index].minXObject = object
-            stateTimeHistory[index].maxXObject = object
-            
-            stateTimeHistory[index].minYObject = object
-            stateTimeHistory[index].maxYObject = object
-        }else {
-            
-            if object.rect.midX < stateTimeHistory[index].minXObject!.rect.midX {
-                stateTimeHistory[index].minXObject = object
+        
+        
+        objectLabels.forEach { objectLabel in
+            var collectedObject : Observation? = nil
+            if let _object = object, objectLabel == _object.label {
+                collectedObject = _object
+            } else if let _object = targetObservation, objectLabel == _object.label {
+                collectedObject = _object
             }
             
-            if object.rect.midX > stateTimeHistory[index].maxXObject!.rect.midX {
-                stateTimeHistory[index].maxXObject = object
+            if let _collectedObject = collectedObject {
+                if stateTimeHistory[index].dynamicObjectsMaps[objectLabel] == nil {
+                    stateTimeHistory[index].dynamicObjectsMaps[objectLabel] = ExtremeObject(object: _collectedObject)
+                } else {
+                    
+                    if _collectedObject.rect.midX < stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.minX.rect.midX {
+                        stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.minX = _collectedObject
+                    }
+                    
+                    if _collectedObject.rect.midX > stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.maxX.rect.midX {
+                        stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.maxX = _collectedObject
+                    }
+                    
+                    if _collectedObject.rect.midY < stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.minY.rect.midY {
+                        stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.minY = _collectedObject
+                    }
+                    
+                    if _collectedObject.rect.midY > stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.maxY.rect.midY {
+                        stateTimeHistory[index].dynamicObjectsMaps[objectLabel]!.maxY = _collectedObject
+                    }
+                    
+                    
+                }
             }
             
-            if object.rect.midY < stateTimeHistory[index].minYObject!.rect.midY {
-                stateTimeHistory[index].minYObject = object
-            }
-            
-            if object.rect.midY > stateTimeHistory[index].maxYObject!.rect.midY {
-                stateTimeHistory[index].maxYObject = object
-            }
             
             
         }
+        
+    }
+    
+    mutating func updateCurrentStateLandmarkBounds(poseMap: PoseMap, landmarkTypes: [LandmarkType]) {
+        if stateTimeHistory.endIndex == 0 {
+            return
+        }
+        
+        let index = stateTimeHistory.endIndex - 1
+        landmarkTypes.forEach { landmarkType in
+            let point = poseMap[landmarkType]!
+            if stateTimeHistory[index].dynamicPoseMaps[landmarkType] == nil {
+                stateTimeHistory[index].dynamicPoseMaps[landmarkType] = ExtremePoint3D(point: point)
+            } else {
+                
+                if point.x < stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.minX.x {
+                    stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.minX = point
+                }
+                
+                if point.x > stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.maxX.x {
+                    stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.maxX = point
+                }
+                
+                if point.y < stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.minY.y {
+                    stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.minY = point
+                }
+                
+                if point.y > stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.maxY.y {
+                    stateTimeHistory[index].dynamicPoseMaps[landmarkType]!.maxY = point
+                }
+                
+                
+            }
+            
+        }
+        
         
     }
     
@@ -103,9 +191,17 @@ struct Sporter: Identifiable {
     
     
     mutating func play(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
+        
 //      收集最低点和最高点
-        if let object = object {
-            updateCurrentStateObjectBounds(object: object)
+        if !sport.selectedLandmarkTypes.isEmpty {
+            updateCurrentStateLandmarkBounds(poseMap: poseMap, landmarkTypes: sport.selectedLandmarkTypes)
+        }
+        
+        if !sport.collectedObjects.isEmpty {
+            updateCurrentStateObjectBounds(object: object, targetObservation: targetObject, objectLabels: sport.collectedObjects)
+        }
+        if !stateTimeHistory.isEmpty {
+            print("state time \(stateTimeHistory.last)")
         }
         
         // 3秒没切换状态 则重置状态为开始

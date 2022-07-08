@@ -40,6 +40,9 @@ extension SportState {
     SportState(id: 2, name: "End", description: "end")
   }
   
+    static var readyState: SportState {
+      SportState(id: 3, name: "Ready", description: "Ready")
+    }
   
   
   func firstIndexOfComplexRules(editedRulesId: UUID, ruleType: RuleType) -> Int? {

@@ -32,18 +32,22 @@ struct SetupRuleView: View {
                     Divider()
                     LandmarkSegmentRelativeLengthRuleView()
                     Divider()
+                    LandmarkInAreaRuleView()
+                    Divider()
                     ObjectToLandmarkRuleView()
                     Divider()
                     ObjectToObjectRuleView()
-                    Divider()
-                    LandmarkInAreaRuleView()
+                    
                 }
-                Divider()
-
+                VStack {
+                    Divider()
+                    ToStateLandmarkRuleView()
+                    Divider()
+                    LandmarkToSelfRuleView()
+                    Divider()
+                    ObjectToSelfRuleView()
+                }
                 
-                ToStateLandmarkRuleView()
-                Divider()
-                ObjectToSelfRuleView()
                 
                 Spacer()
             }

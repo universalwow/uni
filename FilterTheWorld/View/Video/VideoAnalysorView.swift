@@ -306,11 +306,6 @@ struct VideoAnalysorView: View {
                         .updating($offsetState) { value, state, transaction in
                             state = value.translation
                         }
-                    
-                    //                                   .onChanged { value in
-                    //
-                    //                                       self.offset = value.translation
-                    //                                   }
                         .onEnded { value in
                             self.scrollViewContentOffset = max(self.scrollViewContentOffset - value.translation.width, 0.0)
                         }
