@@ -35,6 +35,13 @@ struct SportsManagerView: View {
                                                         }) {
                                                             Text("本地保存")
                                                         }
+                                                        
+                                                        Button(action: {
+                                                            sportManager.uploadSport(editedSport: sport)
+                                                        }) {
+                                                            Text("上传文件")
+                                                        }
+                                                        
                                                         Button(action: {
                                                             sportManager.deleteSport(editedSport: sport)
                                                         }) {

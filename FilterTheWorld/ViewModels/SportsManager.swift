@@ -43,6 +43,7 @@ class SportsManager: ObservableObject {
 
 extension SportsManager {
     
+    
     // MARK: 计算变量
     
     static var allSports: [Sport] {
@@ -134,6 +135,18 @@ extension SportsManager {
     
     func saveSport(editedSport: Sport) {
         Storage.store(editedSport, to: .documents, as: editedSport.sportFileName)
+    }
+    
+    func uploadSport(editedSport: Sport) {
+//        ServiceManager.uploadDocument(editedSport, filename: "upload_file", handler: { response in
+//            print(response)
+//        })
+        
+        let serviceManager = ServiceManager()
+        serviceManager.uploadData(sport: editedSport)
+
+        
+        
     }
     
     func saveSports() {

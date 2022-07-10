@@ -1,38 +1,5 @@
-/// Copyright (c) 2022 Razeware LLC
-/// 
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-/// 
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-/// 
-/// Notwithstanding the foregoing, you may not use, copy, modify, merge, publish,
-/// distribute, sublicense, create a derivative work, and/or sell copies of the
-/// Software in any work that is designed, intended, or marketed for pedagogical or
-/// instructional purposes related to programming, coding, application development,
-/// or information technology.  Permission for such use, copying, modification,
-/// merger, publication, distribution, sublicensing, creation of derivative works,
-/// or sale is expressly withheld.
-/// 
-/// This project and source code may use libraries or frameworks that are
-/// released under various Open-Source licenses. Use of those libraries and
-/// frameworks are governed by their own individual licenses.
-///
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-
 import Foundation
-
-
+import Alamofire
 
 struct Login: Codable {
   var email:String
@@ -51,10 +18,12 @@ class ServiceManager: NSObject, ObservableObject {
   func logout() {
     self.loginState = nil
   }
+    
+  
   
   func login(username: String, password: String) {
     print("login \(username)/\(password)")
-    let url = URL(string: "https://192.168.0.107:4001/users/log_in")
+    let url = URL(string: "https://192.168.0.103:4001/users/log_in")
     guard let requestUrl = url else {
 //            fatalError()
       print("url error")
@@ -71,7 +40,7 @@ class ServiceManager: NSObject, ObservableObject {
     let login = Login(email: username, password: password)
     let jsonData = try! JSONEncoder().encode(login)
     request.httpBody = jsonData
-    var config = URLSessionConfiguration.ephemeral
+      let config = URLSessionConfiguration.ephemeral
     config.allowsConstrainedNetworkAccess = true
     let task = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: request) { (data, response, error) in
         
@@ -105,3 +74,130 @@ extension ServiceManager:URLSessionDelegate {
           completionHandler(.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))
       }
 }
+
+
+extension ServiceManager {
+    
+    
+    func uploadData(sport: Sport) {
+      let url = URL(string: "https://192.168.0.103:4001/rules")
+      guard let requestUrl = url else {
+  //            fatalError()
+        print("url error")
+        return
+        
+      }
+      var request = URLRequest(url: requestUrl)
+      request.httpMethod = "POST"
+      // Set HTTP Request Header
+      request.setValue("application/json", forHTTPHeaderField: "Accept")
+      request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+      request.setValue("strict-origin-when-cross-origin", forHTTPHeaderField: "Referrer Policy")
+      let jsonData = try! JSONEncoder().encode(sport)
+      request.httpBody = jsonData
+        let config = URLSessionConfiguration.ephemeral
+      config.allowsConstrainedNetworkAccess = true
+      let task = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: request) { (data, response, error) in
+          
+          if let error = error {
+              print("Error took place \(error)")
+              return
+          }
+        
+          guard let data = data else {return}
+//        let response = try! JSONDecoder().decode(LoginResponse.self, from: data)
+        print("result \(data)")
+      }
+      task.resume()
+    }
+  
+    
+static func uploadDocument<T: Encodable>(_ object: T, filename : String, handler : @escaping (String) -> Void) {
+           let headers: HTTPHeaders = [
+//               "Content-type": "multipart/form-data",
+               "Accept": "application/json",
+               "Content-Type":"application/json",
+               "Referrer Policy":"strict-origin-when-cross-origin"
+               
+           ]
+        
+
+        let encoder = JSONEncoder()
+        do {
+            let data = try encoder.encode(object)
+            
+            let serverTrustManager = ServerTrustManager(allHostsMustBeEvaluated: true,
+
+                                                        evaluators: [:])
+            let manage  = Session(serverTrustManager: serverTrustManager)
+
+
+            
+            manage
+                .upload(
+                multipartFormData: { multipartFormData in
+                    multipartFormData.append(data, withName: "upload_data" , fileName: filename, mimeType: "application/json")
+            },
+                to: "https://192.168.0.103:4001/rules", method: .post , headers: headers)
+                .response { response in
+                    if let responseData = response.data {
+                        //handle the response however you like
+                        print("aaaaaa")
+                    }
+                    
+                    print("error \(response.result)")
+
+
+                }
+          
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+           
+       }
+}
+
+
+//public final class CertificatePinnerTrustEvaluator: ServerTrustEvaluating {
+//
+//    public init() {}
+//
+//    func setupCertificatePinner(host: String) -> CertificatePinnerTrustEvaluator {
+//
+//        //get the CertificatePinner
+//    }
+//
+//    public func evaluate(_ trust: SecTrust, forHost host: String) throws {
+//
+//        let pinner = setupCertificatePinner(host: host)
+//
+//        if (!pinner.validateCertificateTrustChain(trust)) {
+//            print("failed: invalid certificate chain!")
+//            throw AFError.serverTrustEvaluationFailed(reason: .noCertificatesFound)
+//        }
+//
+//        if (!pinner.validateTrustPublicKeys(trust)) {
+//            print ("couldn't validate trust for \(host)")
+//
+//            throw AFError.serverTrustEvaluationFailed(reason: .noCertificatesFound)
+//        }
+//    }
+//}
+//
+//class CertificatePinnerServerTrustManager: ServerTrustManager {
+//
+//    let evaluator = CertificatePinnerTrustEvaluator()
+//
+//    init() {
+//        super.init(allHostsMustBeEvaluated: true, evaluators: [:])
+//    }
+//
+//    open override func serverTrustEvaluator(forHost host: String) throws -> ServerTrustEvaluating? {
+//
+//        return evaluator
+//    }
+//}
+//
+//
+//
