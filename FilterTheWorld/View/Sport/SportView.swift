@@ -284,7 +284,7 @@ struct SportView: View {
                             }
                         }.padding([.vertical])
                         
-                        // 规则集
+                        // 计分规则集
                         ForEach(state.complexScoreRules.indices, id: \.self) { scoreRulesIndex in
                             let scoreRules = state.complexScoreRules[scoreRulesIndex]
                             Divider()
@@ -341,7 +341,69 @@ struct SportView: View {
                                 }.background(Color.yellow)
                             }
                         }
+                        
+                        
+                        // 违规规则集
+                        ForEach(state.complexViolateRules.indices, id: \.self) { scoreRulesIndex in
+                            let scoreRules = state.complexViolateRules[scoreRulesIndex]
+                            Divider()
+                            HStack {
+                                Text("\(state.name)/\(scoreRules.description)/\(scoreRulesIndex)")
+                                Spacer()
+                                
+                                Button(action: {
+                                    
+                                    sportManager.setCurrentSportStateRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .VIOLATE)
+                                    self.editRuleFlag = true
+                                }) {
+                                    Text("添加规则")
+                                }
+                                
+                                Button(action: {
+                                    sportManager.deleteRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .VIOLATE)
+                                }) {
+                                    Text("删除")
+                                }
+                            }.padding([.top], StaticValue.padding)
+                            ForEach(scoreRules.rules) { rule in
+                                Divider()
+                                VStack {
+                                    
+                                    HStack {
+                                        Text("规则:")
+                                        Text(rule.id)
+                                        
+                                        Spacer()
+                                        
+                                        
+                                        Button(action: {
+                                            sportManager.setCurrentSportStateRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE)
+                                            
+                                            selectedLandmarkSegment = LandmarkSegment.init(startLandmark: Landmark.init(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.startLandmarkType), endLandmark: Landmark(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.endLandmarkType))
+                                            self.editRuleFlag = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .VIOLATE, ruleId: rule.id)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    RuleDescriptionView(rule: Binding.constant(rule))
+
+                                    
+                                }.background(Color.gray)
+                            }
+                        }
                     }
+                    
+                    
+                    
                 }
                 
                 

@@ -17,33 +17,16 @@ class SportsManager: ObservableObject {
     var updateTimer: Timer?
     
     @Published var currentSportStateRuleId: String?
-//    {
-//        didSet {
-//            if currentSportStateRuleId != nil {
-//                if let _ = self.findCurrentSportStateRule() {
-//                    print("修改规则。。。。。。。。")
-//                }else{
-//
-//                    self.addStateRule()
-//                    print("添加新规则。。。。。。。。")
-//                }
-//                print("setSegmentToSelected \(currentSportStateRuleId)")
-//            }
-//
-//            setSegmentToSelected()
-//
-//        }
-//    }
     
     
     var currentSportStateRuleType:RuleType?
     var dispather = Dispatcher()
     
+
+    
 }
 
 extension SportsManager {
-    
-    
     // MARK: 计算变量
     
     static var allSports: [Sport] {
@@ -130,7 +113,9 @@ extension SportsManager {
     
     
     func addSport(sport:Sport) {
-        sports.append(sport)
+        if findFirstSport(sportId: sport.id) == nil {
+            sports.append(sport)
+        }
     }
     
     func saveSport(editedSport: Sport) {
@@ -141,15 +126,17 @@ extension SportsManager {
 //        ServiceManager.uploadDocument(editedSport, filename: "upload_file", handler: { response in
 //            print(response)
 //        })
-        
-        let serviceManager = ServiceManager()
-        serviceManager.uploadData(sport: editedSport)
+//                serviceManager.uploadData(sport: editedSport)
+    }
+    
+    func downloadSport() {
 
-        
-        
+//        serviceManager.downloadDocument(path: "https://\(ServiceManager.StaticValue.IP ):4001/sports/2EB67040-965E-403E-ABAE-001B1E665038.json")
+    
     }
     
     func saveSports() {
+        print("saveSports \(self.sports.count)")
         self.sports.forEach { sport in
             Storage.store(sport, to: .documents, as: sport.sportFileName)
         }
@@ -164,7 +151,6 @@ extension SportsManager {
     private func updateSport(sport: Sport) {
         if let index = firstIndex(editedSportId: sport.id) {
             print("\(sport.description)")
-            
             sports[index] = sport
         }
     }

@@ -245,6 +245,7 @@ class ContentViewModel: ObservableObject {
 //        }
         
 //        return self.context.createCGImage(ciImage, from: ciImage.extent)
+          
         return image
       }
       .assign(to: &$frame)

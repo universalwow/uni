@@ -4,6 +4,8 @@ import SwiftUI
 
 struct SportsManagerView: View {
     @EnvironmentObject var sportManager: SportsManager
+    @ObservedObject var serviceManager = ServiceManager()
+
 
     var newSport: some View {
         ZStack {
@@ -37,7 +39,8 @@ struct SportsManagerView: View {
                                                         }
                                                         
                                                         Button(action: {
-                                                            sportManager.uploadSport(editedSport: sport)
+                                                            serviceManager.uploadData(sport: sport)
+
                                                         }) {
                                                             Text("上传文件")
                                                         }
@@ -75,8 +78,10 @@ struct SportsManagerView: View {
                     }
                     Button(action: {
                         
+                        serviceManager.downloadDocuments(path: "https://\(ServiceManager.StaticValue.IP ):4001/rules/-1")
+                        
                     }) {
-                        Text("上传文件")
+                        Text("更新本地")
                     }
                     
                 }
@@ -85,8 +90,19 @@ struct SportsManagerView: View {
 //                .navigationBarHidden(true)
         }
         
-        
+        .onReceive(serviceManager.$sportPaths, perform: { fileNames in
+            fileNames.forEach( { fileName in
+                serviceManager.downloadDocument(path: "https://\(ServiceManager.StaticValue.IP ):4001/sports/\(fileName)")
+            })
+            
+        })
+        .onReceive(serviceManager.$sport, perform: { _sport in
+            if let sport = _sport {
+                sportManager.addSport(sport: sport)
+            }
+        })
         .navigationViewStyle(.stack)
+        
 //        .navigationBarTitle("项目管理")
         
         

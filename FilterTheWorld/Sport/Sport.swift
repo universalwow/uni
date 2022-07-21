@@ -54,8 +54,10 @@ extension Sport {
   static var newSport: Sport = Sport(name: "New")
   
   var sportFileName : String {
-    "\(self.id).json"
+      let v:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+    return "\(self.id)_\(v).json"
   }
+  
   var allStates: [SportState]  {
     states
   }

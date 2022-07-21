@@ -11,9 +11,21 @@ struct LoginResponse: Codable {
   var status: String
 }
 
+
+struct SportFile: Codable {
+    var success: Bool
+    var data: [String]
+}
+
 class ServiceManager: NSObject, ObservableObject {
+    
+    struct StaticValue {
+        static let IP = "192.168.0.106"
+    }
   @Published var loginState: LoginResponse?
   
+  @Published var sport: Sport?
+  @Published var sportPaths : [String] = []
   
   func logout() {
     self.loginState = nil
@@ -23,7 +35,7 @@ class ServiceManager: NSObject, ObservableObject {
   
   func login(username: String, password: String) {
     print("login \(username)/\(password)")
-    let url = URL(string: "https://192.168.0.103:4001/users/log_in")
+    let url = URL(string: "https://\(StaticValue.IP):4001/users/log_in")
     guard let requestUrl = url else {
 //            fatalError()
       print("url error")
@@ -80,21 +92,25 @@ extension ServiceManager {
     
     
     func uploadData(sport: Sport) {
-      let url = URL(string: "https://192.168.0.103:4001/rules")
+      let url = URL(string: "https://\(StaticValue.IP):4001/rules")
       guard let requestUrl = url else {
   //            fatalError()
         print("url error")
         return
         
       }
+    let appVersion:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
       var request = URLRequest(url: requestUrl)
       request.httpMethod = "POST"
       // Set HTTP Request Header
       request.setValue("application/json", forHTTPHeaderField: "Accept")
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+      request.setValue(appVersion, forHTTPHeaderField: "app-version")
 
       request.setValue("strict-origin-when-cross-origin", forHTTPHeaderField: "Referrer Policy")
-      let jsonData = try! JSONEncoder().encode(sport)
+      let jsonData = try! JSONEncoder().encode(
+        sport
+      )
       request.httpBody = jsonData
         let config = URLSessionConfiguration.ephemeral
       config.allowsConstrainedNetworkAccess = true
@@ -113,7 +129,7 @@ extension ServiceManager {
     }
   
     
-static func uploadDocument<T: Encodable>(_ object: T, filename : String, handler : @escaping (String) -> Void) {
+    static func uploadDocument<T: Encodable>(_ object: T, filename : String, handler : @escaping (String) -> Void) {
            let headers: HTTPHeaders = [
 //               "Content-type": "multipart/form-data",
                "Accept": "application/json",
@@ -155,7 +171,63 @@ static func uploadDocument<T: Encodable>(_ object: T, filename : String, handler
             fatalError(error.localizedDescription)
         }
            
-       }
+    }
+    
+    func downloadDocuments(path: String) {
+        let url1 = URL(string: path)!
+        
+        URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: url1) { [self] data, response, error in
+              if let data = data {
+                  
+                  do {
+                      let res = try JSONDecoder().decode(SportFile.self, from: data)
+                      let appVersion:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+                      sportPaths = res.data.filter( { sportName in
+                          sportName.contains(appVersion)
+                      })
+                  } catch let error {
+                     print(error)
+                  }
+               }
+           }.resume()
+    }
+    
+    func downloadDocument(path: String) {
+        let url1 = URL(string: path)!
+        
+        URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: url1) { [self] data, response, error in
+              if let data = data {
+                  do {
+                      let res = try JSONDecoder().decode(Sport.self, from: data)
+                      sport = res
+                      
+                     print(res.name)
+                  } catch let error {
+                     print(error)
+                  }
+               }
+           }.resume()
+    }
+}
+
+extension URLSession {
+    func decode<T: Decodable>(
+        _ type: T.Type = T.self,
+        from url: URL,
+        keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy = .useDefaultKeys,
+        dataDecodingStrategy: JSONDecoder.DataDecodingStrategy = .deferredToData,
+        dateDecodingStrategy: JSONDecoder.DateDecodingStrategy = .deferredToDate
+    ) async throws  -> T {
+        let (data, _) = try await data(from: url)
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = keyDecodingStrategy
+        decoder.dataDecodingStrategy = dataDecodingStrategy
+        decoder.dateDecodingStrategy = dateDecodingStrategy
+
+        let decoded = try decoder.decode(T.self, from: data)
+        return decoded
+    }
 }
 
 
