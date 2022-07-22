@@ -280,9 +280,17 @@ extension SportsManager {
         findFirstSport(sport: editedSport)!.stateTransForm
     }
     
-    func addSportStateScoreSequence(sport:Sport, scoreState: SportState) {
+
+    
+    func addSportStateScoreSequence(sport:Sport, index: Int, scoreState: SportState) {
         if let sportIndex = firstIndex(editedSportId: sport.id) {
-            sports[sportIndex].addSportStateScoreSequence(scoreState: scoreState)
+            sports[sportIndex].addSportStateScoreSequence(index: index, scoreState: scoreState)
+        }
+    }
+    
+    func addSportStateScoreSequence(sport:Sport) {
+        if let sportIndex = firstIndex(editedSportId: sport.id) {
+            sports[sportIndex].addSportStateScoreSequence()
         }
     }
     
@@ -292,13 +300,15 @@ extension SportsManager {
         }
     }
     
-    func deleteSportStateFromScoreSequence(sport:Sport, stateIndex:Int) {
+
+    
+    func deleteSportStateFromScoreSequence(sport:Sport, sequenceIndex: Int, stateIndex:Int) {
         if let sportIndex = firstIndex(editedSportId: sport.id){
-            sports[sportIndex].deleteSportStateFromScoreSequence(stateIndex: stateIndex)
+            sports[sportIndex].deleteSportStateFromScoreSequence(sequenceIndex: sequenceIndex, stateIndex: stateIndex)
         }
     }
     
-    func findSportStateScoreSequence(editedSport: Sport) -> [SportState] {
+    func findSportStateScoreSequence(editedSport: Sport) -> [[Int]] {
         findFirstSport(sport: editedSport)!.scoreStateSequence
     }
     
@@ -603,6 +613,12 @@ extension SportsManager {
         return rule.length
     }
     
+    func getRuleAngleToLandmarkSegment() -> AngleToLandmarkSegment? {
+        let rule = findCurrentSportStateRule()!
+
+        return rule.angleToLandmarkSegment
+    }
+    
     func getRuleToStateLandmark() -> LandmarkToAxisAndState? {
         let rule = findCurrentSportStateRule()!
         return rule.lengthToState
@@ -624,6 +640,16 @@ extension SportsManager {
             var newRule = rule
             newRule.length!.lowerBound = lowerBound
             newRule.length!.upperBound = upperBound
+            self.upsertCurrentRule(rule: newRule)
+        }
+        
+    }
+    
+    func updateRuleAngleToLandmarkSegment(lowerBound: Double, upperBound: Double) {
+        if let rule = self.findCurrentSportStateRule() {
+            var newRule = rule
+            newRule.angleToLandmarkSegment!.lowerBound = lowerBound
+            newRule.angleToLandmarkSegment!.upperBound = upperBound
             self.upsertCurrentRule(rule: newRule)
         }
         
@@ -760,6 +786,17 @@ extension SportsManager {
 
             self.upsertCurrentRule(rule: newRule)
         }
+    }
+    
+    func setRuleAngleToLandmarkSegment(relativeSegment: LandmarkSegment, warning: String) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+            let angleToLandmarkSegment = AngleToLandmarkSegment(from: self.findSelectedSegment()!, to: relativeSegment, warning: warning)
+        
+                newRule.angleToLandmarkSegment = angleToLandmarkSegment
+
+            self.upsertCurrentRule(rule: newRule)
+        }
         
         
     }
@@ -778,10 +815,33 @@ extension SportsManager {
         
     }
     
+    func updateRuleAngleToLandmarkSegment(relativeSegment: LandmarkSegment, warning: String) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+            
+            newRule.angleToLandmarkSegment!.from = self.findSelectedSegment()!
+            newRule.angleToLandmarkSegment!.to = relativeSegment
+            newRule.angleToLandmarkSegment!.warning = warning
+
+            self.upsertCurrentRule(rule: newRule)
+        }
+        
+        
+    }
+    
     func setRuleLandmarkSegmentLength(length: RelativeLandmarkSegmentsToAxis?) {
         if let rule = findCurrentSportStateRule() {
             var newRule = rule
             newRule.length = length
+            self.upsertCurrentRule(rule: newRule)
+        }
+        
+    }
+    
+    func setRuleAngleToLandmarkSegment(angleToLandmarkSegment: AngleToLandmarkSegment?) {
+        if let rule = findCurrentSportStateRule() {
+            var newRule = rule
+            newRule.angleToLandmarkSegment = angleToLandmarkSegment
             self.upsertCurrentRule(rule: newRule)
         }
         

@@ -83,6 +83,8 @@ struct SportView: View {
     @State var toState = SportState.endState
     
     @State var scoreState = SportState.startState
+    @State var scoreSequenceIndex = 0
+    
     @State var selectedLandmarkType = LandmarkType.LeftAnkle
     @State var collectedObjectId = ObjectLabel.POSE.rawValue
     
@@ -465,30 +467,52 @@ struct SportView: View {
                     HStack {
                         Text("成绩状态序列")
                         Spacer()
-                        Picker("成绩序列", selection: $scoreState) {
-                            ForEach(sport.allStates) { state in
-                                Text(state.name).tag(state)
+                        HStack {
+                            Text("状态")
+                            Picker("成绩序列", selection: $scoreState) {
+                                ForEach(sport.allStates) { state in
+                                    Text(state.name).tag(state)
+                                }
                             }
                         }
                         Spacer()
                         Button(action: {
-                            sportManager.addSportStateScoreSequence(sport: sport, scoreState: scoreState)
+                            sportManager.addSportStateScoreSequence(sport: sport)
                             
                         }) {
                             Text("添加成绩序列")
                         }
-                        
                     }
-                    ForEach(sport.scoreStateSequence.indices, id: \.self) { stateIndex in
+                    
+                    ForEach(sport.scoreStateSequence.indices, id: \.self) { sequenceIndex in
+                        Divider()
                         HStack {
-                            Text(sport.scoreStateSequence[stateIndex].name)
+                            Text("序列\(sequenceIndex)")
                             Spacer()
+                            
+                            
                             Button(action: {
-                                sportManager.deleteSportStateFromScoreSequence(sport: sport, stateIndex: stateIndex)
-                            }) {
-                                Text("删除")
-                            }
+                               sportManager.addSportStateScoreSequence(sport: sport, index: sequenceIndex, scoreState: scoreState)
+   
+                           }) {
+                               Text("添加状态")
+                           }
+                            
                         }.padding([.top], StaticValue.padding)
+                        
+                        ForEach(sport.scoreStateSequence[sequenceIndex].indices, id: \.self) { stateIndex in
+                            HStack {
+                                Text(sport.findFirstSportStateByUUID(editedStateUUID:
+                                                                        sport.scoreStateSequence[sequenceIndex][stateIndex])!.name)
+                                Spacer()
+                                Button(action: {
+                                    sportManager.deleteSportStateFromScoreSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
+                                }) {
+                                    Text("删除")
+                                }
+                            }.padding([.top], StaticValue.padding)
+                            
+                        }
                         
                     }
                 }

@@ -53,7 +53,6 @@ class SportsGround: ObservableObject {
         // 所有不存在 totalWarnings 而在 map中的 取消
         // 存在双方的 不管
         didSet {
-            
             let cancelWarnings = cancelableWarningMap.map { warning, _ in
                 warning
             }.filter { warning in

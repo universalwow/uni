@@ -9,6 +9,13 @@ struct SportStateTransform: Identifiable, Hashable, Codable {
   
 }
 
+enum SportClass {
+    case Counter
+    case Timer
+    case TimeCounter
+}
+
+
 struct Sport: Identifiable, Hashable, Codable {
   static func == (lhs: Sport, rhs: Sport) -> Bool {
     lhs.id == rhs.id
@@ -37,7 +44,7 @@ struct Sport: Identifiable, Hashable, Codable {
   
   var stateTransForm: [SportStateTransform] = []
 //MARK: 添加计分状态序列 使之可用于半周期
-  var scoreStateSequence: [SportState] = []
+  var scoreStateSequence: [[Int]] = []
     
     
     //需要收集的关节点或者物体
@@ -185,34 +192,50 @@ extension Sport {
       transform.to == toSportState.id
     }
   }
-  
-  
-  mutating func addSportStateScoreSequence(scoreState: SportState) {
-    scoreStateSequence.append(scoreState)
-  }
+    
+    mutating func addSportStateScoreSequence(index: Int, scoreState: SportState) {
+        scoreStateSequence[index].append(scoreState.id)
+    }
+    
+    mutating func addSportStateScoreSequence() {
+      scoreStateSequence.append([])
+    }
   
   mutating func deleteSportStateScoreSequence() {
     scoreStateSequence.removeAll()
   }
     
-    mutating func deleteSportStateFromScoreSequence(stateIndex: Int) {
-        scoreStateSequence.remove(at: stateIndex)
+    
+    mutating func deleteSportStateFromScoreSequence(sequenceIndex: Int, stateIndex: Int) {
+        scoreStateSequence[sequenceIndex].remove(at: stateIndex)
+        if scoreStateSequence[sequenceIndex].count == 0 {
+            scoreStateSequence.remove(at: sequenceIndex)
+        }
     }
   
   
   mutating private func updateScoreStateSequence() {
-    var newScoreStates:[SportState] = []
+    var newScoreStateSequence:[[Int]] = []
     
-    scoreStateSequence.forEach{ scoreState in
-      let newScoreState = allStates.first{ state in
-        state.id == scoreState.id
-      }
+    scoreStateSequence.forEach{ stateIds in
+        var newScoreStates:[Int] = []
+
+        stateIds.forEach { scoreStateId in
+            let newScoreState = allStates.first{ state in
+              state.id == scoreStateId
+            }
+            
+            if let newScoreState = newScoreState {
+                newScoreStates.append(newScoreState.id)
+            }
+        }
+        
+        if !newScoreStates.isEmpty {
+            newScoreStateSequence.append(newScoreStates)
+        }
       
-      if let newScoreState = newScoreState {
-        newScoreStates.append(newScoreState)
-      }
     }
-    scoreStateSequence = newScoreStates
+    scoreStateSequence = newScoreStateSequence
   }
   
   

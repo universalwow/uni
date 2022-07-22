@@ -211,7 +211,10 @@ struct ObjectToLandmarkRuleView: View {
                 
             } else {
                 self.toLandmarkType = sportManager.findSelectedSegment()!.landmarkTypes.first!
-                objectId = sportManager.findSelectedObjects().first!.label
+                if let object = sportManager.findSelectedObjects().first {
+                    objectId = object.label
+
+                }
             }
         }
     }

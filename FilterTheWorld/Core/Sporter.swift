@@ -71,7 +71,9 @@ struct Sporter: Identifiable {
             }else {
                 stateTimeHistory.append(currentStateTime)
                 // 移除无用的前置序列
-                if stateTimeHistory.count > sport.scoreStateSequence.count {
+                if stateTimeHistory.count > sport.scoreStateSequence.map{ stateIds in
+                    stateIds.count
+                }.max()! {
                     stateTimeHistory.remove(at: 0)
                 }
             }
@@ -221,7 +223,11 @@ struct Sporter: Identifiable {
 
 //        违规逻辑
         let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
-        transforms.forEach { transform in
+        
+        // 只有一个违规逻辑成立 则清空提示
+//        全部违规，则违规
+        
+        let violateRulesTransformSatisfy = transforms.map { transform -> Bool in
 
             if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
                 let satisfy = toState.complexRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
@@ -229,54 +235,79 @@ struct Sporter: Identifiable {
                     allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
                     //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
                 }
+                return satisfy.0
             }
+            return true
+            
+        }
+//        如果有满足条件的转换 则清空提示消息
+        if violateRulesTransformSatisfy.contains(true) {
+            allCurrentFrameWarnings = []
         }
 
-//        计分逻辑
-        transforms.forEach { transform in
-            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
+//        计分逻辑 状态未切换时判断
+        
+        var allCurrentFrameScoreWarnings : Set<String> = []
+
+        let scoreRulesTransformSatisfy = transforms.map { transform -> Bool in
+            
+            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to), transform.from == currentStateTime.sportState.id {
                 let satisfy = toState.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
                 if satisfy.0  {
                     currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
-                    print("转换状态 - \(currentStateTime.sportState.name) - \(satisfy)")
+//                    print("转换状态 - \(currentStateTime.sportState.name) - \(satisfy)")
                 } else {
-                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+                    allCurrentFrameScoreWarnings = allCurrentFrameScoreWarnings.union(satisfy.1)
                     //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
                 }
+                return satisfy.0
             }
+            return true
             
         }
+        
+//        没有状态转换成功 则添加提示
+        if !scoreRulesTransformSatisfy.contains(true) && !allCurrentFrameScoreWarnings.isEmpty {
+            allCurrentFrameWarnings = allCurrentFrameWarnings.union(allCurrentFrameScoreWarnings)
+        }
+        
+        
         
         
         allCurrentFrameWarnings.remove("")
         // 长度等于计数序列开始判断是否满足计分条件
-        if stateTimeHistory.count == sport.scoreStateSequence.count {
-            let allStateSatisfy = sport.scoreStateSequence.indices.allSatisfy{ index in
-                sport.scoreStateSequence[index].name == stateTimeHistory[index].sportState.name
-            }
-            
-            var timeSatisfy = true
-            
-            if let timeLimit = sport.scoreTimeLimit, sport.scoreStateSequence.count > 1, let startTime = stateTimeHistory.first?.time, let endTime = stateTimeHistory.last?.time {
-                if endTime - startTime > timeLimit {
-                    timeSatisfy = false
+        
+        sport.scoreStateSequence.forEach({ _scoreStateSequence in
+            if stateTimeHistory.count >= _scoreStateSequence.count {
+                let allStateSatisfy = _scoreStateSequence.indices.allSatisfy{ index in
+                    _scoreStateSequence[index] == stateTimeHistory[index + stateTimeHistory.count - _scoreStateSequence.count].sportState.id
                 }
+                
+                var timeSatisfy = true
+                
+                if let timeLimit = sport.scoreTimeLimit, _scoreStateSequence.count > 1, let startTime = stateTimeHistory.first?.time, let endTime = stateTimeHistory.last?.time {
+                    if endTime - startTime > timeLimit {
+                        timeSatisfy = false
+                    }
+                }
+                
+                
+                // 时间间隔不满足 抛出warning
+                if !timeSatisfy {
+                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(["时间间隔过长"])
+                    print("时间间隔过长 \(currentTime) - \(allStateSatisfy)")
+                }
+                
+                
+                if allStateSatisfy && timeSatisfy {
+                    // 检查状态改变后是否满足多帧条件 决定是否计分
+                    scoreTimes.append((currentTime, true))
+                }
+                
             }
             
-            
-            // 时间间隔不满足 抛出warning
-            if !timeSatisfy {
-                allCurrentFrameWarnings = allCurrentFrameWarnings.union(["时间间隔过长"])
-                print("时间间隔过长 \(currentTime) - \(allStateSatisfy)")
-            }
-            
-            
-            if allStateSatisfy && timeSatisfy {
-                // 检查状态改变后是否满足多帧条件 决定是否计分
-                scoreTimes.append((currentTime, true))
-            }
-            
-        }
+        })
+        
         
         
         

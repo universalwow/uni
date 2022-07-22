@@ -616,7 +616,7 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
         let fromSegment = self.from.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         let toSegment = self.to.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         
-        return ComplexRule.satisfy(fromAxis: self.from.axis,
+        return ComplexRule.satisfyWithDirection(fromAxis: self.from.axis,
                                    toAxis: self.to.axis,
                                    range: self.range,
                                    fromSegment: fromSegment,
@@ -634,26 +634,26 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
         var bound = 0.0
         switch (from.axis, to.axis) {
         case (.X, .X):
-            bound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceX
+            bound = from.landmarkSegment.distanceXWithDirection/to.landmarkSegment.distanceX
             
             
         case (.X, .Y):
-            bound = from.landmarkSegment.distanceX/to.landmarkSegment.distanceY
+            bound = from.landmarkSegment.distanceXWithDirection/to.landmarkSegment.distanceY
             
             
         case (.X, .XY):
-            bound = from.landmarkSegment.distanceX/to.landmarkSegment.distance
+            bound = from.landmarkSegment.distanceXWithDirection/to.landmarkSegment.distance
             
             // from Y
             
         case (.Y, .X):
-            bound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceX
+            bound = from.landmarkSegment.distanceYWithDirection/to.landmarkSegment.distanceX
             
         case (.Y, .Y):
-            bound = from.landmarkSegment.distanceY/to.landmarkSegment.distanceY
+            bound = from.landmarkSegment.distanceYWithDirection/to.landmarkSegment.distanceY
             
         case (.Y, .XY):
-            bound = from.landmarkSegment.distanceY/to.landmarkSegment.distance
+            bound = from.landmarkSegment.distanceYWithDirection/to.landmarkSegment.distance
             
             
             // from XY
@@ -674,6 +674,52 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
     }
     
 }
+
+struct AngleToLandmarkSegment: Codable {
+    
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+    var warning:String = ""
+    
+    var from:LandmarkSegment {
+        didSet {
+            initBound()
+        }
+    }
+    var to: LandmarkSegment {
+        didSet {
+            initBound()
+        }
+    }
+    
+    var range: Range<Double> {
+        lowerBound..<upperBound
+    }
+    
+    
+    func satisfy(poseMap: PoseMap) -> Bool {
+        
+        let fromSegment = self.from.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        let toSegment = self.to.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        
+        return range.contains(fromSegment.angle2d - toSegment.angle2d)
+    }
+    
+    init(from: LandmarkSegment, to: LandmarkSegment, warning: String) {
+        self.from = from
+        self.to = to
+        self.warning = warning
+        initBound()
+    }
+    
+    private mutating func initBound() {
+        let bound = from.angle2d - to.angle2d
+        lowerBound = bound
+        upperBound = bound
+    }
+    
+}
+
 
 struct AngleRange: Codable {
     var lowerBound = 0.0
@@ -896,6 +942,8 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     // 相对长度
     var length: RelativeLandmarkSegmentsToAxis?
     
+    var angleToLandmarkSegment: AngleToLandmarkSegment?
+    
     // 物体位置相对于关节点
     var objectPositionToLandmark: ObjectToLandmark?
     
@@ -921,6 +969,11 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
         
         return angleRange.satisfy(poseMap: poseMap)
+    }
+    
+    func angleToLandmarkSatisfy(angleToLandmarkSegment: AngleToLandmarkSegment, poseMap: PoseMap) -> Bool {
+        
+        return angleToLandmarkSegment.satisfy(poseMap: poseMap)
     }
     
     func lengthSatisfy(relativeDistance: RelativeLandmarkSegmentsToAxis, poseMap: PoseMap) -> Bool? {
@@ -957,6 +1010,9 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         var lengthSatisfy: Bool? = true
         
         var angleSatisfy: Bool? = true
+        
+        var angleToLandmarkSegmentSatisfy: Bool? = true
+        
         var landmarkInAreaSatisfy: Bool? = true
         
         // 多帧
@@ -991,6 +1047,13 @@ struct ComplexRule: Identifiable, Hashable, Codable {
             print("angle range - \(angleRange) - \(angleSatisfy)")
             if angleSatisfy == false {
                 warnings.insert(angleRange.warning)
+            }
+        }
+        
+        if let angleToLandmarkSegment = angleToLandmarkSegment {
+            angleToLandmarkSegmentSatisfy = self.angleToLandmarkSatisfy(angleToLandmarkSegment: angleToLandmarkSegment, poseMap: poseMap)
+            if angleToLandmarkSegmentSatisfy == false {
+                warnings.insert(angleToLandmarkSegment.warning)
             }
         }
         
@@ -1055,6 +1118,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         return (
             lengthSatisfy == true &&
             angleSatisfy == true &&
+            angleToLandmarkSegmentSatisfy == true &&
             landmarkInAreaSatisfy == true &&
             lengthToStateSatisfy == true &&
             objectToLandmarkSatisfy == true &&
@@ -1153,6 +1217,7 @@ extension ComplexRule {
             // from Y
             
         case (.Y, .X):
+            print("---------------\(range) -- \(fromSegment.distanceYWithDirection/toSegment.distanceX)")
             return range.contains(
                 fromSegment.distanceYWithDirection/toSegment.distanceX
             )

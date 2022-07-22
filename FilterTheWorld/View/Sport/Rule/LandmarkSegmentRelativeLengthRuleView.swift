@@ -22,7 +22,6 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
             sportManager.setRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning)
         }
-        
     }
     
     func resetInitData() {

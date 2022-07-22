@@ -158,7 +158,9 @@ struct ObjectToSelfRuleView: View {
                         object.label != ObjectLabel.POSE.rawValue
                     })!.label
                 }else {
-                    fromObjectId = self.sportManager.findSelectedObjects().first!.label
+                    if let object = self.sportManager.findSelectedObjects().first {
+                        fromObjectId = object.label
+                    }
                 }
             }
             

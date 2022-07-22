@@ -217,8 +217,11 @@ struct ObjectToObjectRuleView: View {
                 toggle = true
                 
             }else{
-                fromObjectId = sportManager.findSelectedObjects().first!.label
-                toObjectId = sportManager.findSelectedObjects().first!.label
+                if let object = sportManager.findSelectedObjects().first {
+                    fromObjectId = object.label
+                    toObjectId = object.label
+                }
+                
             }
         }
         

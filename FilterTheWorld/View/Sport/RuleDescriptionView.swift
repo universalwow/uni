@@ -34,6 +34,19 @@ struct LengthDescriptionView: View {
     }
 }
 
+struct AngleToLandmarkDescriptionView: View {
+    var angleToLandmarkSegment: AngleToLandmarkSegment
+    var body:some View {
+        HStack {
+            Text("关节对\(angleToLandmarkSegment.from.id)相对 \(angleToLandmarkSegment.to.id)角度:\(angleToLandmarkSegment.warning)")
+            Spacer()
+            Text("\(angleToLandmarkSegment.lowerBound.roundedString(number: 4))/\(angleToLandmarkSegment.upperBound.roundedString(number: 4))")
+            Spacer()
+        }
+        
+    }
+}
+
 struct LengthToStateDescriptionView: View {
     var length:LandmarkToAxisAndState
     var body:some View {
@@ -109,16 +122,24 @@ struct RuleDescriptionView: View {
     @Binding var rule:ComplexRule
     var body : some View {
         VStack {
-            if let angle = rule.angle {
-                
-                VStack {
-                    AngleDescriptionView(angle: angle)
-                    Divider()
-
+            
+            VStack {
+                if let angle = rule.angle {
+                    VStack {
+                        AngleDescriptionView(angle: angle)
+                        Divider()
+                    }
                 }
                 
-                
+                if let angleToLandmarkSegment = rule.angleToLandmarkSegment {
+                    VStack {
+                        AngleToLandmarkDescriptionView(angleToLandmarkSegment: angleToLandmarkSegment)
+                        Divider()
+                    }
+                }
             }
+            
+            
             if let length = rule.length {
                 VStack{
                     LengthDescriptionView(length: length)

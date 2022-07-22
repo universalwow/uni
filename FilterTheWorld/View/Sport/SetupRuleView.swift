@@ -28,8 +28,13 @@ struct SetupRuleView: View {
             
             ScrollView(showsIndicators: false) {
                 VStack {
-                    LandmarkSegmentAngleRuleView()
-                    Divider()
+                    Group {
+                        LandmarkSegmentAngleRuleView()
+                        Divider()
+                        AngleToLandmarkSegmentRuleView()
+                        Divider()
+                    }
+                    
                     LandmarkSegmentRelativeLengthRuleView()
                     Divider()
                     LandmarkInAreaRuleView()

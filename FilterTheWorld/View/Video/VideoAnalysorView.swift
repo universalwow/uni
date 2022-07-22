@@ -234,8 +234,8 @@ struct VideoAnalysorView: View {
     @State private var orientation = UIImage.Orientation.up
     
     
-    @State var framesPerSeconds = 10.0
-    @State var fps = 10.0
+    @State var framesPerSeconds = 20.0
+    @State var fps = 25.0
     @State var framesPerGenerator = 0.0
     @State var stopAnalysis = true
     
