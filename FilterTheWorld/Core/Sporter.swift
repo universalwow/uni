@@ -58,10 +58,14 @@ struct StateTime {
     
 }
 
-struct Sporter: Identifiable {
+class Sporter: Identifiable {
     var id = UUID()
     var name:String
     var sport: Sport
+    init(name: String, sport: Sport) {
+        self.name = name
+        self.sport = sport
+    }
     
     var currentStateTime: StateTime = StateTime(sportState: SportState.startState, time: 0, poseMap: [:]) {
         
@@ -71,7 +75,7 @@ struct Sporter: Identifiable {
             }else {
                 stateTimeHistory.append(currentStateTime)
                 // 移除无用的前置序列
-                if stateTimeHistory.count > sport.scoreStateSequence.map{ stateIds in
+                if stateTimeHistory.count > sport.scoreStateSequence.map { stateIds in
                     stateIds.count
                 }.max()! {
                     stateTimeHistory.remove(at: 0)
@@ -102,8 +106,38 @@ struct Sporter: Identifiable {
     
     var stateTimeHistory: [StateTime] = [StateTime(sportState: SportState.startState, time: 0, poseMap: [:])]
     
+    // 检测到状态维护的计时器
+    var inCheckingStatesTimer: [String: Timer] = [:]
+    var inCheckingStateHistory: [String: [Bool]] = [:]
     
-    mutating func updateCurrentStateObjectBounds(object: Observation?, targetObservation: Observation?, objectLabels: [String]) {
+    func timer(state: SportState, withTimeInterval: TimeInterval) -> Timer {
+        Timer.scheduledTimer(
+            withTimeInterval: withTimeInterval, repeats: false) {[self] _ in
+                if self.inCheckingStateHistory.keys.contains(state.name) {
+                    let result = self.inCheckingStateHistory[state.name]!
+                        .reduce((0.0, 0.0), { result, newValue in
+                            let total = result.0 + 1
+                            let pass = result.1 + (newValue ? 1 : 0)
+                        
+                            return (total, pass)
+                            }
+                        )
+                    
+                    if result.0 > 0 && result.1/result.0 > state.passingRate! {
+                        self.scoreTimes.append((0.0, true))
+                    }
+                    
+                    inCheckingStateHistory.removeValue(forKey: state.name)
+                    inCheckingStatesTimer.removeValue(forKey: state.name)
+                }
+                
+      
+            }
+    }
+    //
+    
+    
+    func updateCurrentStateObjectBounds(object: Observation?, targetObservation: Observation?, objectLabels: [String]) {
         if stateTimeHistory.endIndex == 0 {
             return
         }
@@ -149,7 +183,7 @@ struct Sporter: Identifiable {
         
     }
     
-    mutating func updateCurrentStateLandmarkBounds(poseMap: PoseMap, landmarkTypes: [LandmarkType]) {
+    func updateCurrentStateLandmarkBounds(poseMap: PoseMap, landmarkTypes: [LandmarkType]) {
         if stateTimeHistory.endIndex == 0 {
             return
         }
@@ -187,12 +221,80 @@ struct Sporter: Identifiable {
     
     var lastTime: Double = 0
     
-    mutating func updateWarnings(allCurrentFrameWarnings: Set<String>) {
+    func updateWarnings(allCurrentFrameWarnings: Set<String>) {
         totalWarnings = allCurrentFrameWarnings
     }
     
+    // 计时类项目流程
+    func playTimer(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
+        
+        if lastTime > currentTime {
+            return
+        }
+        
+        var allCurrentFrameWarnings : Set<String> = []
+
+        let allHasRuleStates = sport.states.filter({ state in
+            !state.complexScoreRules.isEmpty
+        })
+        
+        //计分检测
+//        如果有一个状态满足
+        allHasRuleStates.forEach({ state in
+            let satisfy = state.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            if satisfy.0 {
+//                如果不包含该状态 则建立计时器
+                if !inCheckingStatesTimer.keys.contains(state.name) {
+                    inCheckingStatesTimer[state.name] = timer(state: state, withTimeInterval: state.checkCycle!)
+                }
+//                    print("转换状态 - \(currentStateTime.sportState.name) - \(satisfy)")
+            } else {
+//                如果已经在计时器里 则提示消息
+                if self.inCheckingStatesTimer.keys.contains(state.name) {
+                    allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
+                    print("warnings--------------------\(allCurrentFrameWarnings)")
+
+                }
+                //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
+            }
+            
+            if self.inCheckingStatesTimer.keys.contains(state.name) {
+                if self.inCheckingStateHistory.keys.contains(state.name) {
+                    self.inCheckingStateHistory[state.name]!.append(satisfy.0)
+                }else {
+                    self.inCheckingStateHistory[state.name] = [satisfy.0]
+                }
+            }
+        })
+        
+        allCurrentFrameWarnings.remove("")
+        
+        if currentTime > lastTime {
+            lastTime = currentTime
+        }
+        
+        updateWarnings(allCurrentFrameWarnings: allCurrentFrameWarnings)
+        
+    }
     
-    mutating func play(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
+    func play(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
+        if let sportClass = sport.sportClass {
+            switch sportClass {
+            case .Counter:
+                playCounter(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
+            case .Timer:
+                playTimer(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
+            case .TimeCounter: break
+                
+            case .None: break
+                
+            }
+        }
+        
+    }
+    
+    
+    func playCounter(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
         
 //      收集最低点和最高点
         if !sport.selectedLandmarkTypes.isEmpty {
@@ -202,6 +304,7 @@ struct Sporter: Identifiable {
         if !sport.collectedObjects.isEmpty {
             updateCurrentStateObjectBounds(object: object, targetObservation: targetObject, objectLabels: sport.collectedObjects)
         }
+        
         if !stateTimeHistory.isEmpty {
             print("state time \(stateTimeHistory.last)")
         }

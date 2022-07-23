@@ -70,6 +70,68 @@ struct TransferToOtherRulesView: View {
 
 
 
+struct StateTimerView: View {
+    @EnvironmentObject var sportManager: SportsManager
+
+    var sport:Sport
+    var state:SportState
+    
+    @State var checkCycle = 1.0
+    @State var passingRate = 0.8
+    @State var keepTime = 5.0
+    
+
+    
+    var body: some View {
+        HStack {
+            HStack {
+                Text("检查周期")
+                TextField("检查周期", value: $checkCycle, formatter: formatter, onEditingChanged: { flag in
+                    if !flag {
+                        
+                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+                        
+                    }
+                    
+                }).textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+            }
+            
+            HStack {
+                Text("通过率")
+                TextField("通过率", value: $passingRate, formatter: formatter, onEditingChanged: { flag in
+                    if !flag {
+                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+                        
+                    }
+                    
+                }).textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+            }
+            
+            HStack {
+                Text("保持时长(s)")
+                TextField("保持时长", value: $keepTime, formatter: formatter, onEditingChanged: { flag in
+                    if !flag {
+                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+                        
+                    }
+                    
+                }).textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                
+            }
+            Spacer()
+            
+        }.onAppear(perform: {
+            checkCycle = state.checkCycle ?? 1.0
+            passingRate = state.passingRate ?? 0.8
+            keepTime = state.keepTime ?? 5.0
+        })
+    }
+    
+}
+
 
 struct SportView: View {
     
@@ -94,6 +156,11 @@ struct SportView: View {
     
     
     @State var scoreTimeLimit = 1.0
+    @State var warningDelay = 1.0
+    @State var sportClass = SportClass.None
+    
+    
+
     
     
     @EnvironmentObject var sportManager: SportsManager
@@ -110,7 +177,7 @@ struct SportView: View {
                 Text("基础信息")
                 Spacer()
                 Button(action: {
-                    sportManager.updateSport(editedSport: sport, sportName: sportName, sportDescription: sportDescription)
+                    sportManager.updateSport(editedSport: sport, sportName: sportName, sportDescription: sportDescription, sportClass: sportClass)
                     
                 }) {
                     Text("保存名称/简介")
@@ -120,6 +187,14 @@ struct SportView: View {
             HStack{
                 Text("名称")
                 TextField("名称", text: $sportName)
+                Spacer()
+                Text("类型")
+                Picker("运动类型", selection: $sportClass) {
+                    ForEach(SportClass.allCases) { _sportClass in
+                        Text(_sportClass.rawValue).tag(_sportClass)
+                    }
+                }
+                
             }
             HStack{
                 Text("简介")
@@ -203,15 +278,28 @@ struct SportView: View {
             VStack {
                 Divider()
                 HStack {
-                    Text("计分最大周期:")
-                    TextField("计分最大周期:", value: $scoreTimeLimit, formatter: formatter, onEditingChanged: { flag in
-                        if !flag {
-                            sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit)
+                    HStack {
+                        Text("计分周期:")
+                        TextField("计分周期:", value: $scoreTimeLimit, formatter: formatter, onEditingChanged: { flag in
+                            if !flag {
+                                sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, warningDelay: warningDelay)
+                                
+                            }
                             
-                        }
+                        }).textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                        Text("提示延迟:")
+                        TextField("提示延迟:", value: $warningDelay, formatter: formatter, onEditingChanged: { flag in
+                            if !flag {
+                                sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, warningDelay: warningDelay)
+                            }
+                            
+                        }).textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+
                         
-                    }).textFieldStyle(RoundedBorderTextFieldStyle())
-                        .keyboardType(.decimalPad)
+                    }
+                    
                     
                 }
             }
@@ -247,44 +335,52 @@ struct SportView: View {
                     
                     ForEach(sport.allStates) { state in
                         Divider()
-                        HStack {
-                            Text("\(state.name)/\(state.id)")
-                            Spacer()
-                            
-                            Button(action: {
+                        
+                        VStack {
+                            HStack {
+                                Text("\(state.name)/\(state.id)")
+                                Spacer()
                                 
-                                sportManager.setCurrentSportState(editedSport: sport, editedSportState: state)
-                                self.keyFrameFlag = true
+                                Button(action: {
+                                    
+                                    sportManager.setCurrentSportState(editedSport: sport, editedSportState: state)
+                                    self.keyFrameFlag = true
+                                    
+                                }) {
+                                    Text("添加关键帧")
+                                        .foregroundColor(sportManager.keyFrameSetted(sport: sport, state: state) ? Color.green : Color.blue)
+                                }
                                 
-                            }) {
-                                Text("添加关键帧")
-                                    .foregroundColor(sportManager.keyFrameSetted(sport: sport, state: state) ? Color.green : Color.blue)
+                                Button(action: {
+                                    sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
+                                    
+                                    //                            self.editRuleFlag = true
+                                    
+                                }) {
+                                    Text("添加计分规则集")
+                                }
+                                
+                                Button(action: {
+                                    sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
+                                    //                            self.editRuleFlag = true
+                                    
+                                }) {
+                                    Text("添加违规规则集")
+                                }
+                                
+                                Button(action: {
+                                    sportManager.deleteSportState(editedSport: sport, editedSportState: state)
+                                    
+                                }) {
+                                    Text("删除")
+                                }
+                            }
+                            if [SportClass.Timer, SportClass.TimeCounter].contains(sportClass) {
+                                StateTimerView(sport: sport, state: state)
                             }
                             
-                            Button(action: {
-                                sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
-                                
-                                //                            self.editRuleFlag = true
-                                
-                            }) {
-                                Text("添加计分规则集")
-                            }
-                            
-                            Button(action: {
-                                sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
-                                //                            self.editRuleFlag = true
-                                
-                            }) {
-                                Text("添加违规规则集")
-                            }
-                            
-                            Button(action: {
-                                sportManager.deleteSportState(editedSport: sport, editedSportState: state)
-                                
-                            }) {
-                                Text("删除")
-                            }
-                        }.padding([.vertical])
+                        }
+                        .padding([.vertical])
                         
                         // 计分规则集
                         ForEach(state.complexScoreRules.indices, id: \.self) { scoreRulesIndex in
@@ -549,7 +645,9 @@ struct SportView: View {
             if let sport = sportManager.findFirstSport(sport: self.sport) {
                 self.sportName = sport.name
                 self.sportDescription = sport.description
+                self.sportClass = sport.sportClass ?? SportClass.None
                 self.scoreTimeLimit = sport.scoreTimeLimit ?? 1.0
+                self.warningDelay = sport.warningDelay ?? 1.0
             }
         }
     }

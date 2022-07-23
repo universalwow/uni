@@ -155,24 +155,37 @@ extension SportsManager {
         }
     }
     
-    func updateSport(editedSport:Sport, sportName: String, sportDescription: String) {
+    func updateSport(editedSport:Sport, sportName: String, sportDescription: String, sportClass: SportClass) {
         if let sport = findFirstSport(sport: editedSport) {
             var newSport = sport
             newSport.name = sportName
             newSport.description = sportDescription
+            newSport.sportClass = sportClass
+            
             print("\(newSport.name) - \(newSport.description)")
             
             updateSport(sport: newSport)
         }
     }
     
-    func updateSport(editedSport:Sport, scoreTimeLimit: Double) {
+    func updateSport(editedSport:Sport, scoreTimeLimit: Double, warningDelay: Double) {
         if let sport = findFirstSport(sport: editedSport) {
             var newSport = sport
             newSport.scoreTimeLimit = scoreTimeLimit
+            newSport.warningDelay = warningDelay
             updateSport(sport: newSport)
         }
     }
+    
+    func updateSport(editedSport:Sport, state: SportState, checkCycle: Double, passingRate:Double, keepTime: Double) {
+        
+        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+            sports[sportIndex].updateSportState(editedSportState: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+            
+        }
+    }
+    
+    
     
     
     func deleteSport(editedSport: Sport) {

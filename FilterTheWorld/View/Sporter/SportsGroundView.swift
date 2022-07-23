@@ -22,7 +22,7 @@ struct SportsGroundView: View {
                                 
                                 
                             ) {
-                                CardView(card: Card(content: "\(sport.name)", backColor: .green))
+                                CardView(card: Card(content: sport.name, sportClass: sport.sportClass ?? .None, backColor: .green))
                             }
                             
                         }

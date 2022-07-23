@@ -6,7 +6,11 @@ struct CardView: View {
     var body: some View {
       ZStack {
         Rectangle().fill(card.backColor)
-        Text(card.content)
+          
+          VStack(alignment: .trailing, spacing: 10) {
+              Text(card.content).font(.largeTitle)
+              Text(card.sportClass.rawValue)
+          }
       }.aspectRatio(2/3, contentMode: .fit)
     }
 }

@@ -18,6 +18,11 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   var complexScoreRules:[ComplexRules] = []
   // 违规规则 用于提示
   var complexViolateRules:[ComplexRules] = []
+    
+//    基于时间的检查周期及通过率
+    var checkCycle:Double?
+    var passingRate:Double?
+    var keepTime:Double?
   
 
   static func == (lhs: SportState, rhs: SportState) -> Bool {

@@ -401,7 +401,7 @@ struct VideoAnalysorView: View {
                 HStack {
                     Picker("选择项目", selection: $currentSportIndex) {
                         ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
-                            Text(sportGround.sports[sportIndex].name).tag(sportIndex)
+                            Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass?.rawValue ?? SportClass.None.rawValue)").tag(sportIndex)
                         }
                     }
                     

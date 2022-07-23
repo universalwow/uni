@@ -73,7 +73,7 @@ class SportsGround: ObservableObject {
                     warning == newWarning
                 })
             }.forEach { newWarning in
-                cancelableWarningMap[newWarning] = timer(warning: newWarning)
+                cancelableWarningMap[newWarning] = timer(warning: newWarning, warningDelay: sporters.first?.sport.warningDelay ?? 1.0)
             }
             
         }
@@ -83,9 +83,9 @@ class SportsGround: ObservableObject {
     
     var cancelableWarningMap: [String: Timer] = [:]
     
-    func timer(warning: String) -> Timer {
+    func timer(warning: String, warningDelay: TimeInterval) -> Timer {
         Timer.scheduledTimer(
-            withTimeInterval: 1, repeats: false) { [weak self] _ in
+            withTimeInterval: warningDelay, repeats: false) { [weak self] _ in
                 self?.warnings.insert(warning)
                 // 加入后取消
                 //        self?.cancelableWarningMap[warning]?.invalidate()

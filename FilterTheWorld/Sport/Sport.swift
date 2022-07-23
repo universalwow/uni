@@ -9,10 +9,14 @@ struct SportStateTransform: Identifiable, Hashable, Codable {
   
 }
 
-enum SportClass {
+enum SportClass: String, Codable, CaseIterable, Identifiable {
+    var id: String {
+        self.rawValue
+    }
     case Counter
     case Timer
     case TimeCounter
+    case None
 }
 
 
@@ -43,7 +47,7 @@ struct Sport: Identifiable, Hashable, Codable {
     
   
   var stateTransForm: [SportStateTransform] = []
-//MARK: 添加计分状态序列 使之可用于半周期
+  //MARK: 添加计分状态序列 使之可用于半周期
   var scoreStateSequence: [[Int]] = []
     
     
@@ -54,6 +58,8 @@ struct Sport: Identifiable, Hashable, Codable {
 
   // 时间限制 秒
   var scoreTimeLimit:Double?
+    var warningDelay: Double?
+  var sportClass:SportClass?
 }
 
 extension Sport {
@@ -277,6 +283,14 @@ extension Sport {
       }
     }
   }
+    
+    mutating func updateSportState(editedSportState: SportState, checkCycle: Double, passingRate: Double, keepTime: Double) {
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          states[index].checkCycle = checkCycle
+          states[index].passingRate = passingRate
+          states[index].keepTime = keepTime
+      }
+    }
   
   mutating func addSportStateRule(editedSportStateUUID: Int, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
