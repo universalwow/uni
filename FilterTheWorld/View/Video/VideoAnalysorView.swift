@@ -178,9 +178,16 @@ struct SporterView: View {
                     Text("\(sporter.sport.name):\(sporter.name)").padding()
                         .background(Capsule().fill(Color.green))
                     Spacer()
-                    Text("状态:\(sporter.currentStateTime.sportState.name)")
+                    Text("当前状态:\(sporter.currentStateTime.sportState.name)")
                         .padding()
                         .background(Capsule().fill(Color.green))
+                    if SportClass.TimeCounter == sporter.sport.sportClass ||  SportClass.Counter == sporter.sport.sportClass {
+                        Text("下一状态:\(sporter.nextState.name)")
+                            .padding()
+                            .background(Capsule().fill(Color.red))
+                    }
+                    
+                        
                     Text("成绩:\(sporter.scoreTimes.count)").padding()
                         .background(Capsule().fill(Color.green))
                 }.foregroundColor(.white)
@@ -401,7 +408,7 @@ struct VideoAnalysorView: View {
                 HStack {
                     Picker("选择项目", selection: $currentSportIndex) {
                         ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
-                            Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass?.rawValue ?? SportClass.None.rawValue)").tag(sportIndex)
+                            Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass?.rawValue ?? SportClass.None.rawValue)/\(sportGround.sports[sportIndex].sportPeriod?.rawValue ?? SportPeriod.None.rawValue)").tag(sportIndex)
                         }
                     }
                     

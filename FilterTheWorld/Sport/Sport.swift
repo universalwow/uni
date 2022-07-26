@@ -9,6 +9,30 @@ struct SportStateTransform: Identifiable, Hashable, Codable {
   
 }
 
+enum SportPeriod: String, Codable, CaseIterable, Identifiable {
+    var id: String {
+        self.rawValue
+    }
+    case CompletePeriod
+    case HarfPeriod
+    case Continuous
+    case Discrete
+    case None
+    
+    static func filteredCases(sportClass: SportClass) -> [SportPeriod] {
+        switch sportClass {
+        case .Counter:
+            return [.CompletePeriod, HarfPeriod]
+        case .Timer:
+            return [.Discrete]
+        case .TimeCounter:
+            return [.Continuous, Discrete]
+        case .None:
+            return Self.allCases
+        }
+    }
+}
+
 enum SportClass: String, Codable, CaseIterable, Identifiable {
     var id: String {
         self.rawValue
@@ -60,6 +84,8 @@ struct Sport: Identifiable, Hashable, Codable {
   var scoreTimeLimit:Double?
     var warningDelay: Double?
   var sportClass:SportClass?
+    var sportPeriod:SportPeriod?
+    var noStateWarning: String?
 }
 
 extension Sport {

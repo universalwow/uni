@@ -155,12 +155,14 @@ extension SportsManager {
         }
     }
     
-    func updateSport(editedSport:Sport, sportName: String, sportDescription: String, sportClass: SportClass) {
+    func updateSport(editedSport:Sport, sportName: String, sportDescription: String, sportClass: SportClass, sportPeriod: SportPeriod, noStateWarning: String) {
         if let sport = findFirstSport(sport: editedSport) {
             var newSport = sport
             newSport.name = sportName
             newSport.description = sportDescription
             newSport.sportClass = sportClass
+            newSport.sportPeriod = sportPeriod
+            newSport.noStateWarning = noStateWarning
             
             print("\(newSport.name) - \(newSport.description)")
             

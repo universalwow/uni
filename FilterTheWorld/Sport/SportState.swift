@@ -207,7 +207,7 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
     }
   }
   
-    func complexRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>) {
+    func complexRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<String>, Int) {
     
     var rules : [ComplexRules] = []
     switch ruleType {
@@ -217,16 +217,16 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
         rules = complexViolateRules
     }
     // 只要有一组条件满足
-    return rules.reduce((false, Set<String>()), { result, complexRules in
+    return rules.reduce((false, Set<String>(), 0), { result, complexRules in
         // 每一组条件全部满足
   //      (!complexRules.rules.isEmpty) &&
-      let rulesSatisfy = complexRules.rules.reduce((true, Set<String>()), { satisfy, complexRule in
+      let rulesSatisfy = complexRules.rules.reduce((true, Set<String>(), 0), { satisfy, complexRule in
         let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-        print("rule satisfy ... \(ruleSatisfy) - \(satisfy.0 && ruleSatisfy.0)")
-        return (satisfy.0 && ruleSatisfy.0, satisfy.1.union(ruleSatisfy.1))
+//        print("rule satisfy ... \(ruleSatisfy) - \(satisfy.0 && ruleSatisfy.0)")
+          return (satisfy.0 && ruleSatisfy.0, satisfy.1.union(ruleSatisfy.1), ruleSatisfy.0 ? (satisfy.2 + 1) : satisfy.2)
       })
-    print("rules satisfy ... \(rulesSatisfy.0) - \(result.0 || rulesSatisfy.0)")
-      return (result.0 || rulesSatisfy.0, result.1.union(rulesSatisfy.1))
+//    print("rules satisfy ... \(rulesSatisfy.0) - \(result.0 || rulesSatisfy.0)")
+        return (result.0 || rulesSatisfy.0, result.1.union(rulesSatisfy.1), max(result.2, rulesSatisfy.2))
       
     })
   }

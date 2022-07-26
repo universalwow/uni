@@ -85,12 +85,10 @@ struct StateTimerView: View {
     var body: some View {
         HStack {
             HStack {
-                Text("检查周期")
+                Text("检查周期(s)")
                 TextField("检查周期", value: $checkCycle, formatter: formatter, onEditingChanged: { flag in
                     if !flag {
-                        
                         sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
-                        
                     }
                     
                 }).textFieldStyle(RoundedBorderTextFieldStyle())
@@ -158,6 +156,8 @@ struct SportView: View {
     @State var scoreTimeLimit = 1.0
     @State var warningDelay = 1.0
     @State var sportClass = SportClass.None
+    @State var sportPeriod = SportPeriod.None
+    @State var noStateWarning = ""
     
     
 
@@ -177,7 +177,12 @@ struct SportView: View {
                 Text("基础信息")
                 Spacer()
                 Button(action: {
-                    sportManager.updateSport(editedSport: sport, sportName: sportName, sportDescription: sportDescription, sportClass: sportClass)
+                    sportManager.updateSport(editedSport: sport,
+                                             sportName: sportName,
+                                             sportDescription: sportDescription,
+                                             sportClass: sportClass,
+                                             sportPeriod: sportPeriod,
+                                             noStateWarning: noStateWarning)
                     
                 }) {
                     Text("保存名称/简介")
@@ -185,9 +190,11 @@ struct SportView: View {
             }
             
             HStack{
-                Text("名称")
+                Text("名称:")
                 TextField("名称", text: $sportName)
                 Spacer()
+                Text("无状态提醒:")
+                TextField("无状态提醒", text: $noStateWarning)
                 Text("类型")
                 Picker("运动类型", selection: $sportClass) {
                     ForEach(SportClass.allCases) { _sportClass in
@@ -195,9 +202,17 @@ struct SportView: View {
                     }
                 }
                 
+                Text("周期性")
+                Picker("周期性", selection: $sportPeriod) {
+                    ForEach(SportPeriod.filteredCases(sportClass: sportClass)) { _sportPeriod in
+                        Text(_sportPeriod.rawValue).tag(_sportPeriod)
+                    }
+                }
+                
+                
             }
             HStack{
-                Text("简介")
+                Text("简介:")
                 TextField("简介", text: $sportDescription)
             }
             
@@ -645,9 +660,11 @@ struct SportView: View {
             if let sport = sportManager.findFirstSport(sport: self.sport) {
                 self.sportName = sport.name
                 self.sportDescription = sport.description
-                self.sportClass = sport.sportClass ?? SportClass.None
+                self.sportClass = sport.sportClass ?? .None
+                self.sportPeriod = sport.sportPeriod ?? .None
                 self.scoreTimeLimit = sport.scoreTimeLimit ?? 1.0
                 self.warningDelay = sport.warningDelay ?? 1.0
+                self.noStateWarning = sport.noStateWarning ?? ""
             }
         }
     }
