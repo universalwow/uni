@@ -178,17 +178,16 @@ struct SporterView: View {
                     Text("\(sporter.sport.name):\(sporter.name)").padding()
                         .background(Capsule().fill(Color.green))
                     Spacer()
-                    Text("当前状态:\(sporter.currentStateTime.sportState.name)")
+                    Text("Current:\(sporter.currentStateTime.sportState.name)")
                         .padding()
                         .background(Capsule().fill(Color.green))
                     if SportClass.TimeCounter == sporter.sport.sportClass ||  SportClass.Counter == sporter.sport.sportClass {
-                        Text("下一状态:\(sporter.nextState.name)")
+                        Text("Next:\(sporter.nextState.name)")
                             .padding()
                             .background(Capsule().fill(Color.red))
                     }
                     
-                        
-                    Text("成绩:\(sporter.scoreTimes.count)").padding()
+                    Text("Score:\(sporter.scoreTimes.count)").padding()
                         .background(Capsule().fill(Color.green))
                 }.foregroundColor(.white)
                 
@@ -320,13 +319,17 @@ struct VideoAnalysorView: View {
             
             
             HStack {
-                Text("速率(每秒钟播放的图片数)")
+                HStack {
+                    Text("时间:\(secondToStandardedTime)")
+                    Text("缓存:\(imageAnalysis.cachedFrames.count)")
+                }
+                Spacer()
                 Slider(
                     value: $framesPerSeconds,
                     in: 1...StaticValue.maxFramesPerSecond,
                     step: 1,
                     label: {
-                        Text("最小帧率")
+                        Text("最小速率")
                     },
                     minimumValueLabel: {
                         Image(systemName: "minus.circle.fill")
@@ -346,20 +349,14 @@ struct VideoAnalysorView: View {
                     },
                     
                     onEditingChanged: { _ in
-                        //                        if !flag {
-                        //                            updateRemoteData()
-                        //                        }
-                        //
                         
                     }).background(content: {
-                        Text("\(self.framesPerSeconds)")
+                        Text("速率:\(self.framesPerSeconds)")
                             .offset(y: StaticValue.angleTextOffsetY)
                             .foregroundColor( .black)
                         
                     })
                 
-                
-                Text("帧率(每秒抽取的帧数)")
                 Slider(
                     value: $fps,
                     in: 1...StaticValue.maxFramesPerSecond,
@@ -385,13 +382,9 @@ struct VideoAnalysorView: View {
                     },
                     
                     onEditingChanged: { _ in
-                        //                        if !flag {
-                        //                            updateRemoteData()
-                        //                        }
-                        //
                         
                     }).background(content: {
-                        Text("\(self.fps)")
+                        Text("帧率:\(self.fps)")
                             .offset(y: StaticValue.angleTextOffsetY)
                             .foregroundColor( .black)
                         
@@ -399,125 +392,106 @@ struct VideoAnalysorView: View {
                 
             }
             HStack {
-                HStack {
-                    Text("当前位置  \(secondToStandardedTime)")
-                    Text("缓存帧数  \(imageAnalysis.cachedFrames.count)")
+                Picker("选择项目", selection: $currentSportIndex) {
+                    ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
+                        Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass?.rawValue ?? SportClass.None.rawValue)/\(sportGround.sports[sportIndex].sportPeriod?.rawValue ?? SportPeriod.None.rawValue)").tag(sportIndex)
+                    }
                 }
                 
-                Spacer()
-                HStack {
-                    Picker("选择项目", selection: $currentSportIndex) {
-                        ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
-                            Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass?.rawValue ?? SportClass.None.rawValue)/\(sportGround.sports[sportIndex].sportPeriod?.rawValue ?? SportPeriod.None.rawValue)").tag(sportIndex)
-                        }
+                Button(action: {
+                    sportGround.updateSports()
+                }) {
+                    Text("更新")
+                }
+                
+                Button(action: {
+                    if !sportGround.sports.isEmpty {
+                        print("运动员准备")
+                        sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
+                        self.scrollViewContentOffset = 0.0
+                        
+                    }
+                }) {
+                    Text("准备")
+                }
+                
+                Button(action: {
+                    self.mediaFlag = true
+                    
+                }) {
+                    Text("选择视频")
+                }
+                
+                
+                Button(action: {
+                    switch self.orientation {
+                    case .up:
+                        self.orientation = .right
+                    case .right:
+                        self.orientation = .down
+                    case .down:
+                        self.orientation = .left
+                    case .left:
+                        self.orientation = .up
+                        
+                    default: break
+                        
+                        
                     }
                     
-                    Button(action: {
-                        sportGround.updateSports()
-                    }) {
-                        Text("更新项目")
+                    
+                }) {
+                    Text("旋转")
+                }
+                
+                
+                Button(action: {
+                    if let frame = self.videoManager.frame {
+                        imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: 0.0)
                     }
                     
-                    Button(action: {
-                        if !sportGround.sports.isEmpty {
-                            print("运动员准备")
-                            sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
-                            self.scrollViewContentOffset = 0.0
+                }) {
+                    Text("分析图片")
+                }
+                
+                Button(action: {
+                    if !stopAnalysis {
+                        return
+                    }
+                    
+                    self.stopAnalysis = false
+                    if let _ = videoUrl {
+                        DispatchQueue.global(qos: .userInitiated).async {
                             
-                        }
-                    }) {
-                        Text("设置运动员")
-                    }
-                    
-                    Button(action: {
-                        self.mediaFlag = true
-                        
-                    }) {
-                        Text("选择视频")
-                    }
-                    
-                    
-                    Button(action: {
-                        switch self.orientation {
-                        case .up:
-                            self.orientation = .right
-                        case .right:
-                            self.orientation = .down
-                        case .down:
-                            self.orientation = .left
-                        case .left:
-                            self.orientation = .up
-                            
-                        default: break
-                            
-                            
-                        }
-                        
-                        
-                    }) {
-                        Text("旋转图片")
-                    }
-                    
-                    
-                    Button(action: {
-                        if let frame = self.videoManager.frame {
-                            imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: 0.0)
-                        }
-                        
-                    }) {
-                        Text("分析图片")
-                    }
-                    
-                    Button(action: {
-                        if !stopAnalysis {
-                            return
-                        }
-                        
-                        self.stopAnalysis = false
-                        if let _ = videoUrl {
-                            DispatchQueue.global(qos: .userInitiated).async {
-                                
-                                while !self.stopAnalysis && self.scrollOffset < self.frameWidth*CGFloat(self.videoManager.allFrames.count) && self.scrollOffset >= 0 {
-                                    Thread.sleep(forTimeInterval: 1/self.framesPerSeconds)
-                                    DispatchQueue.main.async {
-                                        self.scrollViewContentOffset = self.scrollViewContentOffset + self.frameWidth / self.fps
-                                    }
-                                }
+                            while !self.stopAnalysis && self.scrollOffset < self.frameWidth*CGFloat(self.videoManager.allFrames.count) && self.scrollOffset >= 0 {
+                                Thread.sleep(forTimeInterval: 1/self.framesPerSeconds)
                                 DispatchQueue.main.async {
-                                    if !self.stopAnalysis {
-                                        self.stopAnalysis = true
-                                        self.scrollViewContentOffset = 0
-                                    }
+                                    self.scrollViewContentOffset = self.scrollViewContentOffset + self.frameWidth / self.fps
                                 }
-                                
-                                
-                                
+                            }
+                            DispatchQueue.main.async {
+                                if !self.stopAnalysis {
+                                    self.stopAnalysis = true
+                                    self.scrollViewContentOffset = 0
+                                }
                             }
                             
-                            
                         }
                         
-                        
-                        
-                    }) {
-                        Text("分析视频")
                     }
-                    
-                    Button(action: {
-                        self.stopAnalysis = true
-                    }) {
-                        Text("停止分析")
-                    }
+
+                }) {
+                    Text("分析视频")
                 }
                 
-                
+                Button(action: {
+                    self.stopAnalysis = true
+                }) {
+                    Text("停止")
+                }
             }.padding()
         }
         .padding()
-        //        .onAppear(perform: {
-        //            currentSportIndex = sportGround.sports.
-        //        })
-        
         .sheet(isPresented: $mediaFlag,
                onDismiss: {
             if let videoUrl = videoUrl {

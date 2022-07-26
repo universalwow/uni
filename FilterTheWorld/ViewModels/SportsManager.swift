@@ -118,6 +118,15 @@ extension SportsManager {
         }
     }
     
+    func addSport(sport:Sport, sportId: UUID) {
+        var newSport = sport
+        print("old \(sport.id) new \(sportId)")
+        newSport.id = sportId
+        if findFirstSport(sportId: newSport.id) == nil {
+            sports.append(newSport)
+        }
+    }
+    
     func saveSport(editedSport: Sport) {
         Storage.store(editedSport, to: .documents, as: editedSport.sportFileName)
     }

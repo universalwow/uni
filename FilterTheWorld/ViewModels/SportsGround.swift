@@ -100,6 +100,7 @@ class SportsGround: ObservableObject {
 
 extension SportsGround {
     static var allSports: [Sport] {
+//        MARK: 此处加载的项目 从服务端加载时去掉图片等大资源。提升存储和网络效率
         Storage.allFiles(.documents).map{ url in
             Storage.retrieve(url: url, as: Sport.self)
         }

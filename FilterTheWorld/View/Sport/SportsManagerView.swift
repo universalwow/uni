@@ -46,6 +46,13 @@ struct SportsManagerView: View {
                                                         }
                                                         
                                                         Button(action: {
+                                                            sportManager.addSport(sport: sport, sportId: UUID())
+
+                                                        }) {
+                                                            Text("增加副本")
+                                                        }
+                                                        
+                                                        Button(action: {
                                                             sportManager.deleteSport(editedSport: sport)
                                                         }) {
                                                             Text("删除")

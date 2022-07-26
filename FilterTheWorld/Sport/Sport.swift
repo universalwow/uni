@@ -89,6 +89,7 @@ struct Sport: Identifiable, Hashable, Codable {
 }
 
 extension Sport {
+    
   
   static var newSport: Sport = Sport(name: "New")
   
