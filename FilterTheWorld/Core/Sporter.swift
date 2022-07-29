@@ -145,10 +145,7 @@ class Sporter: Identifiable {
                             
                             while timerScoreTimes.count > 1 && timerScoreTimes[timerScoreTimes.count - 2].0 == state.id {
                                 timerScoreTimes.remove(at: timerScoreTimes.count - 2)
-
-                                print("rermove last............................ \(last_1.1 - last_2.1)")
                             }
-                            
                         }
                     }
                 
@@ -157,15 +154,16 @@ class Sporter: Identifiable {
                             stateId == state.id
                         }) {
                             currentStateTime = StateTime(sportState: state, time: timerScoreTimes.last!.1, poseMap: [:])
-                            
-                            scoreTimes.append(contentsOf: timerScoreTimes[timerScoreTimes.count - state.keepTime!.toInt..<timerScoreTimes.count])
-                            
-                            
+                            if sport.scoreStateSequence[0].contains(state.id) {
+                                scoreTimes.append(contentsOf: timerScoreTimes[timerScoreTimes.count - state.keepTime!.toInt..<timerScoreTimes.count])
+                            }
                         }
                     }
                     
-                }
+            } else if sport.sportClass == .Timer  && !timerScoreTimes.isEmpty {
+                scoreTimes.append(timerScoreTimes.last!)
             }
+        }
 
     }
     
@@ -193,23 +191,20 @@ class Sporter: Identifiable {
                         )
                     
                     if result.0 > 0 && result.1/result.0 > state.passingRate! {
-                        if let sportPeriod = sport.sportPeriod {
-                            switch sportPeriod {
-                            case .CompletePeriod:
-                                self.scoreTimes.append((state.id, currentTime, true))
-                            case .HarfPeriod:
-                                self.scoreTimes.append((state.id, currentTime, true))
+                        if let sportClass = sport.sportClass {
+                            switch sportClass {
+                                case .Counter:
+                                    self.scoreTimes.append((state.id, currentTime, true))
 
-                            case .Continuous:
-                                self.timerScoreTimes.append((state.id, currentTime, true))
-//                                self.scoreTimes.append((state.id, currentTime, true))
+                                case .Timer:
+                                    self.timerScoreTimes.append((state.id, currentTime, true))
 
-                            case .Discrete:
-                                self.scoreTimes.append((state.id, currentTime, true))
+                                case .TimeCounter:
+                                    self.timerScoreTimes.append((state.id, currentTime, true))
 
-                            case .None:
-                                break
-                            }
+                                case .None:
+                                    break
+                                }
                         }
                     }
                     inCheckingStateHistory.removeValue(forKey: state.name)
@@ -360,10 +355,7 @@ class Sporter: Identifiable {
                 if self.inCheckingStatesTimer.keys.contains(state.name) {
                     allCurrentFrameWarnings = allCurrentFrameWarnings.union(satisfy.1)
                     print("warnings--------------------\(allCurrentFrameWarnings)")
-
                 }
-                
-                //            updateWarnings(allCurrentFrameWarnings: satisfy.1)
             }
             
             if self.inCheckingStatesTimer.keys.contains(state.name) {
@@ -376,7 +368,6 @@ class Sporter: Identifiable {
             
             if satisfy.0 {
                 currentStateTime = StateTime(sportState: state, time: currentTime, poseMap: [:])
-                
             }
             
             return satisfy
@@ -392,7 +383,7 @@ class Sporter: Identifiable {
         if self.inCheckingStatesTimer.isEmpty {
             if self.scoreTimes.isEmpty {
                 allCurrentFrameWarnings = allCurrentFrameWarnings.union(["开始\(sport.name)"])
-            }else{
+            }else {
                 let allRulesSatisfySorted = allRulesSatisfy.sorted(by: {($0).2 >= ($1).2})
                 if allRulesSatisfySorted.count > 1 && allRulesSatisfySorted[0].2 > allRulesSatisfySorted[1].2 && !allRulesSatisfySorted[0].0 {
                     allCurrentFrameWarnings = allCurrentFrameWarnings.union(allRulesSatisfySorted[0].1)
