@@ -15,8 +15,8 @@ struct SportsGroundView: View {
                         ForEach(sportGround.sports) { sport in
                             NavigationLink(
                                 destination:
-                                    SportView(sport: Binding.constant(sport))
-                                    .navigationTitle(Text(sport.name))
+                                    CameraPlayingView(sport: sport)
+                                    .navigationTitle(Text("\(sport.name)-\(sport.sportClass!.rawValue)-\(sport.sportPeriod!.rawValue)"))
                                     .navigationBarTitleDisplayMode(.inline)
                                 
                                 

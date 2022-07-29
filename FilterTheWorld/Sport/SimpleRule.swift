@@ -57,20 +57,31 @@ struct LandmarkToAxisAndState: Codable {
     //相对
     var fromLandmarkToAxis: LandmarkToAxis {
         didSet {
-            initBound()
+            if fromLandmarkToAxis.axis.id != oldValue.axis.id ||
+                fromLandmarkToAxis.landmark.id != oldValue.landmark.id {
+                initBound()
+            }
+            
         }
     }
     
     var toLandmarkToAxis: LandmarkToAxis {
         didSet {
-            initBound()
+            if toLandmarkToAxis.axis.id != oldValue.axis.id ||
+                toLandmarkToAxis.landmark.id != oldValue.landmark.id {
+                initBound()
+            }
         }
     }
     
     
     var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
         didSet {
-            initBound()
+            if toLandmarkSegmentToAxis.axis.id != oldValue.axis.id ||
+                toLandmarkSegmentToAxis.landmarkSegment.id != oldValue.landmarkSegment.id {
+                initBound()
+            }
+            
         }
     }
     
@@ -382,23 +393,36 @@ struct ObjectToObject: Codable {
     
     var fromPosition: ObjectPositionPoint {
         didSet {
-            initBound()
+            if fromPosition.id != oldValue.id ||
+                fromPosition.position.id != oldValue.position.id {
+                initBound()
+            }
+            
         }
     }
     var toPosition: ObjectPositionPoint {
         didSet {
-            initBound()
+            if toPosition.id != oldValue.id ||
+                toPosition.position.id != oldValue.position.id {
+                initBound()
+            }
         }
     }
     var fromAxis: CoordinateAxis {
         didSet {
-            initBound()
+            if fromAxis.id != oldValue.id {
+                initBound()
+            }
         }
     }
     
     var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
         didSet {
-            initBound()
+            if toLandmarkSegmentToAxis.axis.id != oldValue.axis.id ||
+                toLandmarkSegmentToAxis.landmarkSegment.id != oldValue.landmarkSegment.id {
+                initBound()
+            }
+            
         }
     }
     
@@ -487,25 +511,39 @@ struct ObjectToLandmark: Codable {
     
     var fromAxis: CoordinateAxis {
         didSet {
-            initBound()
+            if fromAxis.id != oldValue.id {
+                initBound()
+            }
+            
         }
     }
     
     var fromPosition: ObjectPositionPoint {
         didSet {
-            initBound()
+            
+            if fromPosition.id != oldValue.id ||
+                fromPosition.position.id != oldValue.position.id {
+                initBound()
+            }
         }
     }
     var toLandmark: Landmark {
         didSet {
-            initBound()
+            if toLandmark.id != oldValue.id {
+                initBound()
+            }
+            
         }
     }
     
     
     var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
         didSet {
-            initBound()
+            if toLandmarkSegmentToAxis.axis.id != oldValue.axis.id ||
+                toLandmarkSegmentToAxis.landmarkSegment.id != oldValue.landmarkSegment.id {
+                initBound()
+            }
+            
         }
     }
     
@@ -597,12 +635,19 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
     
     var from:LandmarkSegmentToAxis {
         didSet {
-            initBound()
+            if from.landmarkSegment.id != oldValue.landmarkSegment.id ||
+                from.axis.id != oldValue.axis.id {
+                initBound()
+            }
+            
         }
     }
     var to: LandmarkSegmentToAxis {
         didSet {
-            initBound()
+            if to.landmarkSegment.id != oldValue.landmarkSegment.id ||
+                to.axis.id != oldValue.axis.id {
+                initBound()
+            }
         }
     }
     
@@ -736,7 +781,9 @@ struct AngleRange: Codable {
     var upperBound = 0.0
     var landmarkSegment: LandmarkSegment {
         didSet {
-            initBound()
+            if oldValue.id != landmarkSegment.id {
+                initBound()
+            }
         }
     }
     var warning:String = ""

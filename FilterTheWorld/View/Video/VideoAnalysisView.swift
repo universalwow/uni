@@ -52,10 +52,6 @@ struct VideoAnalysisView: View {
                     },
                     
                     onEditingChanged: { _ in
-//                        if !flag {
-//                            updateRemoteData()
-//                        }
-//
                         
                     }).background(content: {
                         Text("\(self.framesPerSeconds)")
@@ -63,9 +59,7 @@ struct VideoAnalysisView: View {
                             .foregroundColor( .black)
                         
                     })
-                
-                
-                    
+
                     Slider(
                         value: $framesPerGenerator,
                         in: 0...10,

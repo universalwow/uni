@@ -7,7 +7,6 @@ class FrameManager: NSObject, ObservableObject {
 
   @Published var current: CVPixelBuffer?
   
-  
   var videoWriter: AVAssetWriter?
   var videoWriterInput: AVAssetWriterInput?
   var filePath: URL?

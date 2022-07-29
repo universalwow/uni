@@ -163,7 +163,7 @@ class CameraManager: NSObject, ObservableObject {
       session.commitConfiguration()
     }
       
-    let device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .back).devices.first
+      let device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .front).devices.first
 //    AVCaptureDevice.default(
 //      .builtInWideAngleCamera,
 //      for: .video,
@@ -203,6 +203,7 @@ class CameraManager: NSObject, ObservableObject {
       // Always process the frames
       videoConnection?.isEnabled = true
       videoConnection?.videoOrientation = .portrait
+        videoConnection?.isVideoMirrored = true
     } else {
       set(error: .cannotAddOutput)
       status = .failed

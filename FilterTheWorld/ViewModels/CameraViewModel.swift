@@ -29,15 +29,12 @@ struct Face: Identifiable {
   var rect: CGRect
 }
 
-class ContentViewModel: ObservableObject {
+class CameraViewModel: ObservableObject {
   @Published var error: Error?
   @Published var frame: CGImage?
   @Published var faces:[Face]?
   @Published var detectedObjects:[CGRect]?
   @Published var detectedBodyKeyPoints:[CGRect]?
-  
-  
-
 
 
   @Published var comicFilter = false
@@ -58,7 +55,6 @@ class ContentViewModel: ObservableObject {
   private var poseDetector: PoseDetector?
   
   var objectDetectorYOLO: ObjectRecoginzerYOLO?
-
 
   private let cameraManager = CameraManager.shared
   private let frameManager = FrameManager.shared
@@ -253,7 +249,7 @@ class ContentViewModel: ObservableObject {
 }
 
 
-extension ContentViewModel {
+extension CameraViewModel {
     private func detectFace(in image: CVPixelBuffer) {
         let faceDetectionRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request: VNRequest, error: Error?) in
             DispatchQueue.main.async {
@@ -274,10 +270,6 @@ extension ContentViewModel {
         let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: image, orientation: .up, options: [:])
         try? imageRequestHandler.perform([faceDetectionRequest])
     }
-    
-  
-  
-
     
     private func handleFaceDetectionResults(_ observedFaces: [VNFaceObservation]) {
         DispatchQueue.global(qos: .userInitiated).sync {
