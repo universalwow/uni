@@ -36,7 +36,7 @@ import SwiftUI
 struct AppMain: App {
     @StateObject var sportManager = SportsManager()
     @StateObject var imageAnalysor = ImageAnalysis()
-    @StateObject var sportGround = SportsGround()
+    @ObservedObject var sportGround = SportsGround()
     @StateObject var cameraSporter = CameraViewModel()
     
     

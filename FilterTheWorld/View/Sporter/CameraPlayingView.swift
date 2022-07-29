@@ -5,7 +5,7 @@ import SwiftUI
 
 
 struct CameraPlayingView: View {
-    var sport: Sport
+    @Binding var sport: Sport
     
     @EnvironmentObject var imageAnalysis:ImageAnalysis
     @EnvironmentObject var sportGround: SportsGround
@@ -46,7 +46,7 @@ struct CameraPlayingView: View {
         }.onAppear(perform: {
             cameraPlaying.startCamera()
             sportGround.addSporter(sport: sport)
-            print("start camera.........\(sport.name)")
+            print("start camera.........\(sport.name)- \(sport.scoreTimeLimit ?? 0)")
 
         })
         .onDisappear(perform: {

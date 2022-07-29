@@ -108,7 +108,11 @@ extension SportsGround {
     
     func updateSports() {
         sports = Storage.allFiles(.documents).map{ url in
-            Storage.retrieve(url: url, as: Sport.self)
+            
+            let sport = Storage.retrieve(url: url, as: Sport.self)
+            print("start camera update.........\(sport.name) - \(sport.scoreTimeLimit ?? 0)")
+            return sport
+            
         }
     }
 }

@@ -15,12 +15,10 @@ struct SportsGroundView: View {
                         ForEach(sportGround.sports) { sport in
                             NavigationLink(
                                 destination:
-                                    CameraPlayingView(sport: sport)
+                                    CameraPlayingView(sport: Binding.constant(sport))
                                     .navigationTitle(Text("\(sport.name)-\(sport.sportClass!.rawValue)-\(sport.sportPeriod!.rawValue)"))
                                     .navigationBarTitleDisplayMode(.inline)
-                                
-                                
-                                
+
                             ) {
                                 CardView(card: Card(
                                     content: sport.name,

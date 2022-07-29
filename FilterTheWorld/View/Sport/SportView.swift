@@ -298,7 +298,6 @@ struct SportView: View {
                         TextField("计分周期:", value: $scoreTimeLimit, formatter: formatter, onEditingChanged: { flag in
                             if !flag {
                                 sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, warningDelay: warningDelay)
-                                
                             }
                             
                         }).textFieldStyle(RoundedBorderTextFieldStyle())
