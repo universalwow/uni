@@ -108,8 +108,8 @@ struct StateTimerView: View {
             }
             
             HStack {
-                Text("保持时长(s)")
-                TextField("保持时长", value: $keepTime, formatter: formatter, onEditingChanged: { flag in
+                Text("计分周期")
+                TextField("记分周期数", value: $keepTime, formatter: formatter, onEditingChanged: { flag in
                     if !flag {
                         sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
                         

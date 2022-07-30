@@ -10,7 +10,8 @@ struct CameraPlayingView: View {
     @EnvironmentObject var imageAnalysis:ImageAnalysis
     @EnvironmentObject var sportGround: SportsGround
     @EnvironmentObject var cameraPlaying: CameraViewModel
-    
+    @Environment(\.presentationMode) var presentationMode
+
     
     var body: some View {
         let uiImage = imageAnalysis.sportData.frame
@@ -32,8 +33,6 @@ struct CameraPlayingView: View {
                                         Spacer()
                                     }
                                 }
-                                
-                                
                             }
                         }
                     }
@@ -72,7 +71,17 @@ struct CameraPlayingView: View {
                 sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
             }
             
-        })
+        }).navigationBarBackButtonHidden(true)
+            .navigationBarItems(
+                leading:
+                Button(action : { self.presentationMode.wrappedValue.dismiss()
+//                    sportGround.addSporter(sport: controlSport)
+//                    cameraPlaying.startCamera()
+//                    print("start camera 1.........")
+                }){
+                    Text("Cancel")
+                }
+                )
         
     }
 }

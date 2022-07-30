@@ -46,7 +46,6 @@ class ImageAnalysis : ObservableObject {
         DispatchQueue.global(qos: .userInteractive).async {
             self.faceRecognizer = FaceRecognizer()
             self.poseRecognizer = PoseRecognizer()
-            //      self.objectRecognizer = ObjectRecognizer()
             self.objectDetectorYOLO = ObjectRecoginzerYOLO(yoloModelName: "yolov5-pipeline")
             
             self.setupSubscriptions()
@@ -105,6 +104,14 @@ class ImageAnalysis : ObservableObject {
         }
     }
     
+    func detectorProcessForViewChange(image: UIImage, request: AVAsynchronousCIImageFilteringRequest?, currentTime: TimeInterval) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let visionImage = VisionImage(image: image)
+            visionImage.orientation = image.imageOrientation
+            self.findPoses(image: visionImage, request: request, currentTime: currentTime)
+        }
+    }
+    
     func detectorProcess(image: CIImage, request: AVAsynchronousCIImageFilteringRequest?, currentTime: TimeInterval) {
         DispatchQueue.global(qos: .userInitiated).async {
             
@@ -136,6 +143,14 @@ class ImageAnalysis : ObservableObject {
     }
     
     func imageAnalysis(image: UIImage, request: AVAsynchronousCIImageFilteringRequest?, currentTime: Double) {
+        DispatchQueue.main.async {
+            self.currentFrame = image
+            self.cachedFrames.append((currentTime, image))
+            self.detectorProcess(image: image, request: request, currentTime: currentTime)
+        }
+    }
+    
+    func imageAnalysisForViewChange(image: UIImage, request: AVAsynchronousCIImageFilteringRequest?, currentTime: Double) {
         DispatchQueue.main.async {
             self.currentFrame = image
             self.cachedFrames.append((currentTime, image))
