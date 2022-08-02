@@ -88,9 +88,19 @@ struct Sport: Identifiable, Hashable, Codable {
     var noStateWarning: String?
 }
 
+
+struct StateDescription: Identifiable, Codable {
+    var stateId: Int
+    var stateName: String
+    var checkCycle: Double?
+    var keepCycle: Double?
+    var id: Int {
+        stateId
+    }
+}
+
 extension Sport {
     
-  
   static var newSport: Sport = Sport(name: "New")
   
   var sportFileName : String {
@@ -98,9 +108,20 @@ extension Sport {
     return "\(self.id)_\(v).json"
   }
   
+    var sportFullName: String {
+        "\(self.name)-\(self.sportClass!.rawValue)-\(self.sportPeriod!.rawValue)"
+    }
+  
   var allStates: [SportState]  {
     states
   }
+    
+    var statesDescription: [StateDescription] {
+        self.states.map { sportState in
+            StateDescription(
+                stateId: sportState.id, stateName: sportState.name, checkCycle: sportState.checkCycle, keepCycle: sportState.keepTime)
+        }
+    }
   
     var allHasKeyFrameStates: [SportState]  {
         states.filter({ state in

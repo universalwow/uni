@@ -64,7 +64,6 @@ struct WarningsView:View {
                 if !sportGround.warningArray.contains(warningSecond) && warningSecond != "" {
                     warningSecondBack = warningSecond
                     warningSecond = ""
-
                 }
                 
                 if !sportGround.warningArray.contains(warningThird) && warningThird != "" {
@@ -100,7 +99,6 @@ struct WarningsView:View {
                             let channelToUse = inUsingTime.sorted { (leftElement, rightElement) -> Bool  in
                                 leftElement.value < rightElement.value
                             }.first!
-                            
                             
                             if Date().milliStamp - channelToUse.value > 2000 {
                                 let channel = channelToUse.key

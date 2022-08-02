@@ -3,15 +3,19 @@
 import SwiftUI
 
 struct SportsGroundView: View {
-    @EnvironmentObject var sportGround: SportsGround
     @EnvironmentObject var imageAnalysis:ImageAnalysis
+    @EnvironmentObject var sportGround: SportsGround
     @EnvironmentObject var cameraPlaying: CameraViewModel
     
     @State private var loading = false
     @Namespace var ns
-    @State private var selection = UUID()
-    @State private var selectionSubmited: UUID?
+    @State private var selection = 0
+    @State private var selectionSubmited: Int?
     @State private var lastScoreTime = 0.0
+    @State private var currentState = 1
+    
+    
+    
 
     var controlSport: Sport = SportsGround.allSports.first(where: { sport in
         sport.name == "控制手势"
@@ -22,31 +26,41 @@ struct SportsGroundView: View {
             ZStack(alignment: .topTrailing) {
                 ScrollView([.vertical]) {
                     LazyVGrid(columns: [GridItem(),GridItem(),GridItem(),GridItem()]) {
-                        ForEach(sportGround.sports) { sport in
+                        ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
+                            let sport = sportGround.sports[sportIndex]
                             NavigationLink(destination:
                                             CameraPlayingView(sport: Binding.constant(sport))
                                             .navigationTitle(Text("\(sport.name)-\(sport.sportClass!.rawValue)-\(sport.sportPeriod!.rawValue)"))
                                             .navigationBarTitleDisplayMode(.inline)
+                                            .onAppear(perform: {
+//                                                cameraPlaying.startCamera()
+                                                sportGround.addSporter(sport: sport)
+                                                print("start camera.........\(sport.name)- \(sport.scoreTimeLimit ?? 0)")
+
+                                            })
                                             .onDisappear {
+                                                
+                                                sportGround.saveSportReport(endTime: Date().timeIntervalSince1970)
+                                                
                                                 sportGround.addSporter(sport: controlSport)
-                                                cameraPlaying.startCamera()
-                                                print("start camera 1.........")
+//                                                cameraPlaying.startCamera()
+                                                print("start camera 1.........\(UIScreen.main.bounds.size.width)")
                                                     },
-                                tag: sport.id, selection: $selectionSubmited
+                                tag: sportIndex, selection: $selectionSubmited
                             ) {
                                 CardView(card: Card(
                                     content: sport.name,
                                     sportClass: sport.sportClass ?? .None,
                                     sportPeriod: sport.sportPeriod ?? .None,
                                     backColor: .green))
-                                .matchedGeometryEffect(id: sport.id, in: ns)
+                                .matchedGeometryEffect(id: sportIndex, in: ns)
                                 
                             }
                         }
                     }
                     .padding([.top, .horizontal], 10)
                     .background(
-                        Rectangle().stroke(Color.red, lineWidth: 5)
+                        Rectangle().stroke(currentState == 3 ? Color.yellow : Color.red , lineWidth: 10)
                             .matchedGeometryEffect(id: selection, in: ns, isSource: false)
                     )
                     Text("\(sportGround.sporters.first?.scoreTimes.count ?? -1)/\(imageAnalysis.cachedFrames.count)\n\(self.selection)").font(.largeTitle)
@@ -70,7 +84,7 @@ struct SportsGroundView: View {
         }.navigationViewStyle(.stack)
             .onAppear(perform: {
                 if !sportGround.sports.isEmpty {
-                    self.selection = sportGround.sports[0].id
+                    self.selection = 0
                 }
                 sportGround.addSporter(sport: controlSport)
                 cameraPlaying.startCamera()
@@ -83,6 +97,9 @@ struct SportsGroundView: View {
                 print("stop camera 1.........")
             })
             .onChange(of: cameraPlaying.frame, perform: { frame in
+                if selectionSubmited != nil {
+                    return
+                }
                 if imageAnalysis.cachedFrames.count < 5 {
                     if let frame = frame {
                         print("sportGround-1")
@@ -94,9 +111,12 @@ struct SportsGroundView: View {
                 
             })
             .onChange(of: imageAnalysis.sportData.frame, perform: { _ in
+                if selectionSubmited != nil {
+                    return
+                }
                 let poses = imageAnalysis.sportData.frameData.poses
                 
-                print("sportGround- \(sportGround.sporters.isEmpty)\(poses.isEmpty)  \(sportGround.sporters.first?.scoreTimes.count)")
+                print("sportGround- \(selectionSubmited ?? -1)")
                 
                 if !sportGround.sporters.isEmpty && !poses.isEmpty {
                     
@@ -106,9 +126,12 @@ struct SportsGroundView: View {
                         let afterPlayScoreTimes = sportGround.sporters[0].scoreTimes
             
 
-                        if afterPlayScoreTimes.count > 1 {
-                            let stateId = afterPlayScoreTimes.last!.0
-                            let scoreTime = afterPlayScoreTimes.last!.1
+                        if afterPlayScoreTimes.count > 0 {
+                            
+                            let stateId = afterPlayScoreTimes.last!.stateId
+                            currentState = stateId
+
+                            let scoreTime = afterPlayScoreTimes.last!.time
                             
                             if scoreTime <= lastScoreTime {
                                 return
@@ -117,9 +140,7 @@ struct SportsGroundView: View {
         //                    4：左 5： 右 6：上 7：下 8：进入
                             
                             let sportSize = sportGround.sports.count
-                            var currentIndex = sportGround.sports.firstIndex(where: { sport in
-                                sport.id == selection
-                            })!
+                            var currentIndex = selection
                             print("stateId \(stateId) - currentIndex \(currentIndex)")
 
                             if stateId == 4 {
@@ -149,8 +170,8 @@ struct SportsGroundView: View {
                                 selectionSubmited = self.selection
                             }
                             
-                            withAnimation(.easeInOut(duration: 1.0)) {
-                                self.selection = sportGround.sports[currentIndex].id
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                self.selection = currentIndex
                             }
                         }
                     }

@@ -345,7 +345,7 @@ struct VideoAnalysorView: View {
                 let ropes = imageAnalysis.objects.filter{ object in
                     object.label == ObjectLabel.ROPE.rawValue
                 }
-                print("sportGround \(sportGround.sporters.isEmpty)  \(poses.isEmpty)  \(ropes.isEmpty) \(sportGround.sporters.first?.scoreTimes.count)")
+                print("sportGround-2 \(sportGround.sporters.isEmpty)  \(poses.isEmpty)  \(ropes.isEmpty) \(sportGround.sporters.first?.scoreTimes.count)")
                 
                 if !sportGround.sporters.isEmpty && !poses.isEmpty {
                     

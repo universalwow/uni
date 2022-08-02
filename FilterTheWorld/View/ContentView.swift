@@ -31,12 +31,12 @@ struct ContentView: View {
             
             VStack {
 //                VideoView()
-                WarningsView()
+                SportReportView()
 //                WarningView(warning: "aaaaa",  offset: CGSize(width: 400, height: 0)).padding()
 //                VideoPlayerCoreImageView().padding()
             }
             .tabItem{
-                Text("warning")
+                Text("Reports")
             }
             
             

@@ -751,7 +751,7 @@ struct AngleToLandmarkSegment: Codable {
         let fromSegment = self.from.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         let toSegment = self.to.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         
-        return range.contains(fromSegment.angle2d - toSegment.angle2d) || range.contains(fromSegment.angle2d - toSegment.angle2d + 360)
+        return range.contains(fromSegment.angle2d - toSegment.angle2d) || range.contains(fromSegment.angle2d - toSegment.angle2d + 360) || range.contains(fromSegment.angle2d - toSegment.angle2d - 360)
     }
     
     init(from: LandmarkSegment, to: LandmarkSegment, warning: String) {
@@ -763,13 +763,8 @@ struct AngleToLandmarkSegment: Codable {
     
     private mutating func initBound() {
         let bound = from.angle2d - to.angle2d
-        if bound > 0 {
-            lowerBound = bound
-            upperBound = bound
-        } else {
-            lowerBound = bound + 360
-            upperBound = bound + 360
-        }
+        lowerBound = bound
+        upperBound = bound
         
     }
     

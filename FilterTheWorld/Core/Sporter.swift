@@ -45,6 +45,147 @@ struct StateTime {
     
 }
 
+
+struct ScoreTime: Identifiable, Codable {
+    var stateId: Int
+    var time: Double
+    var vaild: Bool
+    
+    var id: String {
+        "\(stateId)-\(time)"
+    }
+}
+struct WarningData : Identifiable, Codable {
+    var content: String
+    var stateId: Int
+    var time: Double
+    
+    var id: String {
+        "\(stateId)-\(content)-\(time)"
+    }
+}
+
+struct SportReport: Identifiable, Codable {
+    var id = UUID()
+    var sporterName:String
+    var sportName: String
+    var sportClass: SportClass?
+    var sportPeriod: SportPeriod?
+    var startTime = -1.0
+    var endTime = -1.0
+    var statesDescription: [StateDescription]?
+    var scoreTimes: [ScoreTime] = []
+    var warnings: [WarningData] = []
+    
+    
+    var warningsGroupByContents: [String] {
+        self.warnings.reduce([String](), { (result, newWarning) in
+            var newResult = result
+            if !newResult.contains(newWarning.content) {
+                newResult.append(newWarning.content)
+            }
+            return newResult
+        })
+    }
+    
+    
+    var fileName: String {
+        "\(self.id).json"
+    }
+    
+    var sportFullName: String {
+        "\(self.sportName)\(self.sportClass?.rawValue != nil ? "-\(self.sportClass!.rawValue)" : "" )\(self.sportPeriod?.rawValue != nil ? "-\(self.sportPeriod!.rawValue)" : "")"
+    }
+    
+    var sportTime: String {
+        let time = self.endTime - self.startTime
+        let minutes = Int(time/60)
+        let seconds = Int(time) % 60
+        return "\(minutes > 0 ? "\(minutes)分" : "")\(seconds > 0 ? "\(seconds)秒" : "")"
+    }
+    
+    func findStateDescription(stateId: Int) -> StateDescription {
+        print("statesDescription")
+
+        return self.statesDescription!.first(where: { stateDescription in
+            print("statesDescription \(stateDescription) - \(stateId)")
+            return stateDescription.stateId == stateId
+        })!
+    }
+    
+    
+    
+    
+    
+    
+    func findStateScoreTimes(stateId: Int) -> [ScoreTime] {
+        self.scoreTimes.filter( { scoreTime in
+            scoreTime.stateId == stateId
+        })
+    }
+    
+    func filterWarningsByContent(content: String) -> Int {
+        self.warnings.filter({ warning in
+            warning.content == content
+        }).count
+    }
+    
+    var sortWarningsByTime : [WarningData] {
+        self.warnings.sorted(by: { (leftWarning, rightWarning) in
+            leftWarning.time < rightWarning.time
+        })
+    }
+    
+    var scoreTimesGroup: [Int:Int] {
+        print("result \(self.scoreTimes)")
+        return self.scoreTimes.reduce([Int:Int]()) { (result, nextScoreTime) in
+            var newResult = result
+            if newResult.keys.contains(nextScoreTime.stateId) {
+                newResult[nextScoreTime.stateId] = newResult[nextScoreTime.stateId]! + 1
+            }else{
+                newResult[nextScoreTime.stateId] = 1
+            }
+            print("result \(newResult)")
+            return newResult
+        }
+    }
+    
+    var scoreStates: [Int] {
+        print("result \(self.scoreTimes)")
+        return self.scoreTimes.reduce([Int]()) { (result, nextScoreTime) in
+            var newResult = result
+            if !newResult.contains(nextScoreTime.stateId) {
+                newResult.append(nextScoreTime.stateId)
+            }
+            print("result \(newResult)")
+            return newResult
+        }
+    }
+    
+    
+    static func timeFormater(time: Double) -> String {
+        if time < 1000000 {
+            return String(time)
+        }else {
+            let date = Date(timeIntervalSince1970: time)
+//            let zone = NSTimeZone.system // 获得系统的时区
+//            let addSeconds = zone.secondsFromGMT(for: date)
+//            date.addTimeInterval(TimeInterval(addSeconds))
+            let dateFormatter = DateFormatter()
+            
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+            return dateFormatter.string(from: date)
+        }
+    }
+    
+    static func secondFormater(time: Double) -> String {
+        let minutes = Int(time/60)
+        let seconds = Int(time) % 60
+        let milliseconds = Int((time - Double(minutes * 60 + seconds)) * 1000)
+        return "\(minutes > 0 ? "\(minutes)分" : "")\(seconds > 0 ? "\(seconds)秒" : "")\(milliseconds)毫秒"
+    }
+}
+
 class Sporter: Identifiable {
     var id = UUID()
     var name:String
@@ -53,8 +194,6 @@ class Sporter: Identifiable {
         self.name = name
         self.sport = sport
     }
-    
-    
     
     var currentStateTime = StateTime(sportState: SportState.startState, time: 0, poseMap: [:]) {
         
@@ -79,7 +218,7 @@ class Sporter: Identifiable {
     
     var nextState = SportState.startState
     
-    var scoreTimes: [(Int, Double, Bool)] = [] {
+    var scoreTimes: [ScoreTime] = [] {
         didSet {
             // 计分保留最后一个状态
             
@@ -93,39 +232,41 @@ class Sporter: Identifiable {
         }
     }
     
+    var warnings: [WarningData] = []
     
-    var timerScoreTimes: [(Int, Double, Bool)] = [] {
+    
+    var timerScoreTimes: [ScoreTime] = [] {
         didSet {
             if oldValue.count > timerScoreTimes.count {
                 return
             }
-            if sport.sportClass == .TimeCounter && timerScoreTimes.count > 1, let state = sport.findFirstSportStateByUUID(editedStateUUID: timerScoreTimes.last!.0) {
+            if sport.sportClass == .TimeCounter && timerScoreTimes.count > 1, let state = sport.findFirstSportStateByUUID(editedStateUUID: timerScoreTimes.last!.stateId) {
                     if sport.sportPeriod == .Continuous {
-//                        如果是连续的 则判断和上一个状态一样的时间间隔
+                        // 如果是连续的 则判断和上一个状态一样的时间间隔
                         let last_1 = timerScoreTimes.last!
                         let last_2 = timerScoreTimes[timerScoreTimes.count - 2]
                         
-                        if last_2.0 == last_1.0 && last_1.1 - last_2.1 > state.checkCycle! + 1 {
+                        if last_2.stateId == last_1.stateId && last_1.time - last_2.time > state.checkCycle! + 0.5 {
                             
-                            while timerScoreTimes.count > 1 && timerScoreTimes[timerScoreTimes.count - 2].0 == state.id {
+                            while timerScoreTimes.count > 1 && timerScoreTimes[timerScoreTimes.count - 2].stateId == state.id {
                                 timerScoreTimes.remove(at: timerScoreTimes.count - 2)
                             }
                         }
                     }
                 
                     if timerScoreTimes.count >= state.keepTime!.toInt {
-                        if timerScoreTimes[timerScoreTimes.count - state.keepTime!.toInt..<timerScoreTimes.count].allSatisfy({ (stateId, _, _) in
-                            stateId == state.id
+                        if timerScoreTimes[timerScoreTimes.count - state.keepTime!.toInt..<timerScoreTimes.count].allSatisfy({ sportScore in
+                            sportScore.stateId == state.id
                         }) {
-                            
+                            currentStateTime = StateTime(sportState: state, time: timerScoreTimes.last!.time, poseMap: [:])
+//                            此处也应该放开
                             if sport.scoreStateSequence[0].contains(state.id) {
-                                currentStateTime = StateTime(sportState: state, time: timerScoreTimes.last!.1, poseMap: [:])
                                 scoreTimes.append(contentsOf: timerScoreTimes[timerScoreTimes.count - state.keepTime!.toInt..<timerScoreTimes.count])
                             }
                         }
                     }
                     
-            } else if sport.sportClass == .Timer  && !timerScoreTimes.isEmpty, let state = sport.findFirstSportStateByUUID(editedStateUUID: timerScoreTimes.last!.0) {
+            } else if sport.sportClass == .Timer  && !timerScoreTimes.isEmpty, let state = sport.findFirstSportStateByUUID(editedStateUUID: timerScoreTimes.last!.stateId) {
                     if sport.scoreStateSequence[0].contains(state.id) {
                         scoreTimes.append(timerScoreTimes.last!)
                     }
@@ -161,13 +302,19 @@ class Sporter: Identifiable {
                         if let sportClass = sport.sportClass {
                             switch sportClass {
                                 case .Counter:
-                                    self.scoreTimes.append((state.id, currentTime, true))
+                                    self.scoreTimes.append(
+                                        ScoreTime(stateId: state.id, time: currentTime, vaild: true)
+                                        )
 
                                 case .Timer:
-                                    self.timerScoreTimes.append((state.id, currentTime, true))
+                                    self.timerScoreTimes.append(
+                                        ScoreTime(stateId: state.id, time: currentTime, vaild: true)
+                                    )
 
                                 case .TimeCounter:
-                                    self.timerScoreTimes.append((state.id, currentTime, true))
+                                    self.timerScoreTimes.append(
+                                        ScoreTime(stateId: state.id, time: currentTime, vaild: true)
+                                    )
 
                                 case .None:
                                     break
@@ -268,8 +415,11 @@ class Sporter: Identifiable {
     
     var lastTime: Double = 0
     
-    func updateWarnings(allCurrentFrameWarnings: Set<String>) {
+    func updateWarnings(currentTime: Double, allCurrentFrameWarnings: Set<String>) {
         totalWarnings = allCurrentFrameWarnings
+        allCurrentFrameWarnings.forEach { warning in
+            warnings.append(WarningData(content: warning, stateId: currentStateTime.sportState.id, time: currentTime))
+        }
     }
     
     func play(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
@@ -374,7 +524,7 @@ class Sporter: Identifiable {
         }
         
         allCurrentFrameWarnings.remove("")
-        updateWarnings(allCurrentFrameWarnings: allCurrentFrameWarnings)
+        updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)
         
     }
     
@@ -475,7 +625,7 @@ class Sporter: Identifiable {
         }
         
         allCurrentFrameWarnings.remove("")
-        updateWarnings(allCurrentFrameWarnings: allCurrentFrameWarnings)
+        updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)
         
         // 长度等于计数序列开始判断是否满足计分条件
         
@@ -586,7 +736,7 @@ class Sporter: Identifiable {
         }
         
         allCurrentFrameWarnings.remove("")
-        updateWarnings(allCurrentFrameWarnings: allCurrentFrameWarnings)
+        updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)
         
         // 长度等于计数序列开始判断是否满足计分条件
         
@@ -613,7 +763,9 @@ class Sporter: Identifiable {
                 
                 if allStateSatisfy && timeSatisfy {
                     // 检查状态改变后是否满足多帧条件 决定是否计分
-                    scoreTimes.append((currentStateTime.sportState.id, currentTime, true))
+                    scoreTimes.append(
+                        ScoreTime(stateId: currentStateTime.sportState.id, time: currentTime, vaild: true)
+                    )
 
                 }
                 

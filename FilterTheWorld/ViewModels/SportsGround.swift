@@ -9,6 +9,9 @@ class SportsGround: ObservableObject {
     
     @Published var sporters : [Sporter] = []
     @Published var warnings: Set<String> = []
+    var sportersReport: [SportReport] = []
+    
+    
     
     var warningArray: [String] {
         warnings.map{ warning in
@@ -26,13 +29,29 @@ class SportsGround: ObservableObject {
     }
     
     func addSporter(sport: Sport) {
-        sporters = [Sporter(name: "Uni", sport: sport)]
+        let sporter = Sporter(name: "Uni", sport: sport)
+        sporters = [sporter]
+        sportersReport = [SportReport(sporterName: sporter.name, sportName: sport.name, sportClass: sport.sportClass, sportPeriod: sport.sportPeriod, statesDescription: sport.statesDescription)]
         clearWarning()
     }
     
+    func saveSportReport(endTime: Double) {
+        sporters.indices.forEach({ sporterIndex in
+            let sporter = sporters[sporterIndex]
+            sportersReport[sporterIndex].endTime = endTime
+            sportersReport[sporterIndex].scoreTimes = sporter.scoreTimes
+            sportersReport[sporterIndex].warnings = sporter.warnings
+            
+            Storage.store(sportersReport[sporterIndex], to: .documents, secondaryDirectory: "sportsReport", as: sportersReport[sporterIndex].fileName)
+            
+        })
+    }
+    
     func play(poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
-        
         sporters.indices.forEach { sporterIndex in
+            if sportersReport[sporterIndex].startTime < 0 {
+                sportersReport[sporterIndex].startTime = currentTime
+            }
             sporters[sporterIndex].play(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
             // 该帧到来的提醒
             // 1. 如果该提醒不存在 将其加入map

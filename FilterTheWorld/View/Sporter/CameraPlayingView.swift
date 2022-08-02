@@ -19,7 +19,7 @@ struct CameraPlayingView: View {
             if uiImage.size.width > 0 {
                 FrameView(uiImage: imageAnalysis.sportData.frame) //uiImage
                     .scaledToFit()
-                    .overlay{
+                    .overlay {
                         GeometryReader { geometry in
                             ZStack {
                                 PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
@@ -42,16 +42,17 @@ struct CameraPlayingView: View {
                         .resizable()
                         .scaledToFit()
                 }
-        }.onAppear(perform: {
-            cameraPlaying.startCamera()
-            sportGround.addSporter(sport: sport)
-            print("start camera.........\(sport.name)- \(sport.scoreTimeLimit ?? 0)")
-
-        })
-        .onDisappear(perform: {
-            cameraPlaying.stopCamera()
-            print("stop camera.........")
-        })
+        }
+//        .onAppear(perform: {
+//            cameraPlaying.startCamera()
+//            sportGround.addSporter(sport: sport)
+//            print("start camera.........\(sport.name)- \(sport.scoreTimeLimit ?? 0)")
+//
+//        })
+//        .onDisappear(perform: {
+//            cameraPlaying.stopCamera()
+//            print("stop camera.........")
+//        })
         .onChange(of: cameraPlaying.frame, perform: { frame in
             if let frame = frame {
                 let uiImage = UIImage(cgImage: frame)

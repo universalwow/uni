@@ -7,7 +7,7 @@ import SwiftUI
 
 
 struct Config {
-  static let originPreset = AVCaptureSession.Preset.vga640x480
+    static let originPreset = AVCaptureSession.Preset.hd1280x720
 }
 
 
