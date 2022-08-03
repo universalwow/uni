@@ -5,7 +5,7 @@ import AVFAudio
 
 
 
-extension VideoAnalysorView {
+extension LabelImageView {
     var frameWidth: CGFloat {
         if self.videoManager.allFrames.count > 0 {
             
@@ -16,7 +16,7 @@ extension VideoAnalysorView {
     }
 }
 
-struct VideoAnalysorView: View {
+struct LabelImageView: View {
     
     struct StaticValue {
         static let imageHeight:CGFloat = 50
@@ -30,7 +30,6 @@ struct VideoAnalysorView: View {
     
     @StateObject var videoManager = VideoManager()
     @EnvironmentObject var imageAnalysis:ImageAnalysis
-    @EnvironmentObject var sportGround: SportsGround
     
     
     @State var mediaFlag = false
@@ -76,25 +75,19 @@ struct VideoAnalysorView: View {
     
     var body: some View {
         VStack {
-            if let frame = self.videoManager.frame {
-                let uiImage = UIImage(cgImage: frame, scale: 1, orientation: orientation).fixedOrientation()!
-                FrameView(uiImage: imageAnalysis.sportData.frame) //uiImage
-                    .scaledToFit()
-                    .overlay{
-                        GeometryReader { geometry in
-                            ZStack {
-                                PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
-                                ObjectsViewForSportsGround(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
-                                SporterView()
+            let uiImage = imageAnalysis.sportData.frame
+            FrameView(uiImage: uiImage) //uiImage
+                .scaledToFit()
+                .overlay{
+                    GeometryReader { geometry in
+                        ZStack {
+                            PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
+                            ObjectsViewForSportsGround(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
+                            SporterView()
 //                                    .clipped()
-                            }
                         }
                     }
-            }else {
-                Image(systemName: "photo.fill")
-                    .resizable()
-                    .scaledToFit()
-            }
+                }
             
             Spacer()
             
@@ -203,25 +196,10 @@ struct VideoAnalysorView: View {
                 
             }
             HStack {
-                Picker("选择项目", selection: $currentSportIndex) {
-                    ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
-                        Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass?.rawValue ?? SportClass.None.rawValue)/\(sportGround.sports[sportIndex].sportPeriod?.rawValue ?? SportPeriod.None.rawValue)").tag(sportIndex)
-                    }
-                }
                 
                 Button(action: {
-                    sportGround.updateSports()
-                }) {
-                    Text("更新")
-                }
-                
-                Button(action: {
-                    if !sportGround.sports.isEmpty {
-                        print("运动员准备")
-                        sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
-                        self.scrollViewContentOffset = 0.0
-                        
-                    }
+                    self.scrollViewContentOffset = 0.0
+
                 }) {
                     Text("准备")
                 }
@@ -309,33 +287,13 @@ struct VideoAnalysorView: View {
             if let videoUrl = videoUrl {
                 
                 videoManager.generatorAllFrames(videoUrl: videoUrl, fps: 1.0)
-                selectedPoseIndex = -1
+//                selectedPoseIndex = -1
             }
             
         }) {
             MediaPicker(mediaType: .videos, image: Binding.constant(nil), video: $videoUrl)
         }
-        .onChange(of: stopAnalysis, perform: { flag in
-            if flag {
-                sportGround.clearWarning()
-            }
-            
-        })
-//        .onChange(of:self.selectedPoseIndex){ _ in
-//            if self.imageAnalysis.sportData.frameData.poses.indices.contains(self.selectedPoseIndex) {
-//                self.imageAnalysis.selectHumanPose(
-//                    selectedHumanPose: self.imageAnalysis.sportData.frameData.poses[selectedPoseIndex]
-//                )
-//            }else{
-//                print("------------------------invalid \(self.selectedPoseIndex)")
-//                self.imageAnalysis.selectHumanPose(
-//                    selectedHumanPose: nil
-//                )
-//            }
-//        }
-        .onChange(of: currentSportIndex) { _ in
-            print("currentsport \(currentSportIndex)")
-        }
+
         .onChange(of: self.scrollOffset) { newValue in
             if self.frameWidth > 0 &&  self.scrollOffset >= 0 {
                 videoManager.getFrame(time: self.scrollOffset/self.frameWidth)
@@ -344,14 +302,9 @@ struct VideoAnalysorView: View {
                 
                 let poses = imageAnalysis.sportData.frameData.poses
                 let ropes = imageAnalysis.objects.filter{ object in
-                    object.label == ObjectLabel.BASKETBALL.rawValue
+                    object.label == ObjectLabel.ROPE.rawValue
                 }
-                print("sportGround-2 \(sportGround.sporters.isEmpty)  \(poses.isEmpty)  \(ropes.isEmpty) \(sportGround.sporters.first?.scoreTimes.count)")
-                
-                if !sportGround.sporters.isEmpty && !poses.isEmpty {
-                    
-                    sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
-                }
+  
             }
             
         }

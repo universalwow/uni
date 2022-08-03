@@ -15,9 +15,9 @@ class ObjectRecoginzerYOLO: ObservableObject {
   // Vision parts
   private var lastTime = Date().timeIntervalSince1970
 
-  private var detectionOverlay: CALayer! = nil
+//  private var detectionOverlay: CALayer! = nil
   var bufferSize = CGSize.zero
-  var rootLayer: CALayer! = nil
+//  var rootLayer: CALayer! = nil
   var imageSize = CGSize.zero
   var modelSize = CGSize.zero
 
@@ -27,7 +27,7 @@ class ObjectRecoginzerYOLO: ObservableObject {
   init(yoloModelName: String) {
     self.modelSize = setupModelSize(yoloModelName: yoloModelName)
     let _ = setupVision(modelName: yoloModelName)
-    print("setupVision")
+    print("setupVision..........................\(yoloModelName)")
     
   }
   
@@ -72,13 +72,11 @@ class ObjectRecoginzerYOLO: ObservableObject {
         }
         let topLabelObservation = objectObservation.labels[0]
       
-      print("object position before \(topLabelObservation.identifier) (\(objectObservation.boundingBox.midX), \(objectObservation.boundingBox.midY), \(objectObservation.boundingBox.width), \(objectObservation.boundingBox.height))")
-//        let objectBounds = VNImageRectForNormalizedRect(
-//          objectObservation.boundingBox,
-//          Int(self.imageSize.width), Int(self.imageSize.height))
+      print("object position before \(currentScale) \(topLabelObservation.identifier) (\(objectObservation.boundingBox.midX), \(objectObservation.boundingBox.midY), \(objectObservation.boundingBox.width), \(objectObservation.boundingBox.height))")
+
       
         
-      
+        
         let newBound = CGRect(
           origin: CGPoint(
             x: objectObservation.boundingBox.minX / currentScale ,
@@ -141,63 +139,63 @@ class ObjectRecoginzerYOLO: ObservableObject {
       return textLayer
   }
   
-  func createRoundedRectLayerWithBounds(_ bounds: CGRect) -> CALayer {
-      let shapeLayer = CALayer()
-      shapeLayer.bounds = bounds
-      shapeLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
-      shapeLayer.name = "Found Object"
-      shapeLayer.backgroundColor = CGColor(colorSpace: CGColorSpaceCreateDeviceRGB(), components: [1.0, 1.0, 0.2, 0.4])
-      shapeLayer.cornerRadius = 7
-      return shapeLayer
-  }
+//  func createRoundedRectLayerWithBounds(_ bounds: CGRect) -> CALayer {
+//      let shapeLayer = CALayer()
+//      shapeLayer.bounds = bounds
+//      shapeLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
+//      shapeLayer.name = "Found Object"
+//      shapeLayer.backgroundColor = CGColor(colorSpace: CGColorSpaceCreateDeviceRGB(), components: [1.0, 1.0, 0.2, 0.4])
+//      shapeLayer.cornerRadius = 7
+//      return shapeLayer
+//  }
   
-  func updateLayerGeometry() {
-      let bounds = rootLayer.bounds
-      var scale: CGFloat
-      
-      let xScale: CGFloat = bounds.size.width / bufferSize.height
-      let yScale: CGFloat = bounds.size.height / bufferSize.width
-      
-      scale = fmax(xScale, yScale)
-      if scale.isInfinite {
-          scale = 1.0
-      }
-      CATransaction.begin()
-      CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
-      
-      // rotate the layer into screen orientation and scale and mirror
-      detectionOverlay.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(.pi / 2.0)).scaledBy(x: scale, y: -scale))
-      // center the layer
-      detectionOverlay.position = CGPoint(x: bounds.midX, y: bounds.midY)
-      
-      CATransaction.commit()
-      
-  }
+//  func updateLayerGeometry() {
+//      let bounds = rootLayer.bounds
+//      var scale: CGFloat
+//      
+//      let xScale: CGFloat = bounds.size.width / bufferSize.height
+//      let yScale: CGFloat = bounds.size.height / bufferSize.width
+//      
+//      scale = fmax(xScale, yScale)
+//      if scale.isInfinite {
+//          scale = 1.0
+//      }
+//      CATransaction.begin()
+//      CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+//      
+//      // rotate the layer into screen orientation and scale and mirror
+//      detectionOverlay.setAffineTransform(CGAffineTransform(rotationAngle: CGFloat(.pi / 2.0)).scaledBy(x: scale, y: -scale))
+//      // center the layer
+//      detectionOverlay.position = CGPoint(x: bounds.midX, y: bounds.midY)
+//      
+//      CATransaction.commit()
+//      
+//  }
 
   
-  func drawVisionRequestResults(_ results: [Any]) {
-      CATransaction.begin()
-      CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
-      detectionOverlay.sublayers = nil // remove all the old recognized objects
-      for observation in results where observation is VNRecognizedObjectObservation {
-          guard let objectObservation = observation as? VNRecognizedObjectObservation else {
-              continue
-          }
-          // Select only the label with the highest confidence.
-          let topLabelObservation = objectObservation.labels[0]
-          let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
-          
-          let shapeLayer = self.createRoundedRectLayerWithBounds(objectBounds)
-          
-          let textLayer = self.createTextSubLayerInBounds(objectBounds,
-                                                          identifier: topLabelObservation.identifier,
-                                                          confidence: topLabelObservation.confidence)
-          shapeLayer.addSublayer(textLayer)
-          detectionOverlay.addSublayer(shapeLayer)
-      }
-      self.updateLayerGeometry()
-      CATransaction.commit()
-  }
+//  func drawVisionRequestResults(_ results: [Any]) {
+//      CATransaction.begin()
+//      CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
+//      detectionOverlay.sublayers = nil // remove all the old recognized objects
+//      for observation in results where observation is VNRecognizedObjectObservation {
+//          guard let objectObservation = observation as? VNRecognizedObjectObservation else {
+//              continue
+//          }
+//          // Select only the label with the highest confidence.
+//          let topLabelObservation = objectObservation.labels[0]
+//          let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
+//
+//          let shapeLayer = self.createRoundedRectLayerWithBounds(objectBounds)
+//
+//          let textLayer = self.createTextSubLayerInBounds(objectBounds,
+//                                                          identifier: topLabelObservation.identifier,
+//                                                          confidence: topLabelObservation.confidence)
+//          shapeLayer.addSublayer(textLayer)
+//          detectionOverlay.addSublayer(shapeLayer)
+//      }
+//      self.updateLayerGeometry()
+//      CATransaction.commit()
+//  }
   
   
   func detectObject(in image: CVPixelBuffer, imageSize: CGSize, currentTime: Double) {

@@ -19,12 +19,12 @@ extension LandmarkInArea {
     area.indices.forEach{ index in
       if index == areaIndics.lowerBound {
         path.move(to: area[index].cgPoint)
-      }else if index == areaIndics.upperBound - 1 {
-        path.addLine(to: area[areaIndics.lowerBound].cgPoint)
       }else {
         path.addLine(to: area[index].cgPoint)
       }
     }
+    
+    path.addLine(to: area[0].cgPoint)
     
     return path
   }

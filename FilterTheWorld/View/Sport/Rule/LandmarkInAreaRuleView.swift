@@ -14,6 +14,8 @@ struct LandmarkInAreaRuleView: View {
     @State var rightBottomY = 0.0
     @State var landmarkInAreaToggle = false
     @State var landmarkInAreaWarning = ""
+    @State var satisfyWarning = false
+
     
     var landmarkInAreaTextColor : Color {
         return (self.leftTopX < self.rightBottomX && self.leftTopY < self.rightBottomY) ? .black : .red
@@ -33,7 +35,7 @@ struct LandmarkInAreaRuleView: View {
     func setInitData() {
         if landmarkInAreaToggle {
             if let imageSize = sportManager.findFirstSportState()?.image?.imageSize {
-                self.sportManager.setRuleLandmarkInArea(landmarkType: landmarkTypeInArea, imageSize: Point2D(x: imageSize.width, y: imageSize.height), warning: landmarkInAreaWarning)
+                self.sportManager.setRuleLandmarkInArea(landmarkType: landmarkTypeInArea, imageSize: Point2D(x: imageSize.width, y: imageSize.height), warning: landmarkInAreaWarning, satisfyWarning: satisfyWarning)
             }
             
         }
@@ -41,7 +43,7 @@ struct LandmarkInAreaRuleView: View {
     
     func resetInitData() {
         if landmarkInAreaToggle {
-            sportManager.updateRuleLandmarkInArea(landmarkType: landmarkTypeInArea, warning: landmarkInAreaWarning)
+            sportManager.updateRuleLandmarkInArea(landmarkType: landmarkTypeInArea, warning: landmarkInAreaWarning, satisfyWarning: satisfyWarning)
             
         }
     }
@@ -76,6 +78,8 @@ struct LandmarkInAreaRuleView: View {
         rightBottomX = 0.0
         rightBottomY = 0.0
         landmarkInAreaWarning = ""
+        satisfyWarning = false
+
     }
     
     
@@ -101,6 +105,10 @@ struct LandmarkInAreaRuleView: View {
                         }
                         
                     }
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
+                    })
                 }
                 HStack {
                     Text("当前关节:")
@@ -169,6 +177,8 @@ struct LandmarkInAreaRuleView: View {
                 rightBottomX = area.area[2].x/imageSize.width
                 rightBottomY = area.area[2].y/imageSize.height
                 landmarkInAreaWarning = area.warning
+                satisfyWarning = area.satisfyWarning ?? false
+                
                 landmarkInAreaToggle = true
             }else {
                 self.landmarkTypeInArea = self.sportManager.findSelectedSegment()!.landmarkTypes.first!

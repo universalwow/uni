@@ -8,6 +8,8 @@ struct ToStateLandmarkRuleView: View {
     
     @State var landmarkToStateToggle = false
     @State var landmarkToStateWarning = ""
+    @State var satisfyWarning = false
+
     @State var landmarkTypeToState = LandmarkType.LeftAnkle
     @State var currentAxis = CoordinateAxis.X
     @State var relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
@@ -20,7 +22,7 @@ struct ToStateLandmarkRuleView: View {
     func setInitData() {
         if landmarkToStateToggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setRuleToStateLandmark(toStateId: relativeToState, fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning)
+            sportManager.setRuleToStateLandmark(toStateId: relativeToState, fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning, satisfyWarning: satisfyWarning)
         }
 
     }
@@ -28,7 +30,7 @@ struct ToStateLandmarkRuleView: View {
     func resetInitData() {
         if landmarkToStateToggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateRuleToStateLandmark(stateId: relativeToState, fromAxis: currentAxis, landmarkType: landmarkTypeToState,  landmarkSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning)
+            sportManager.updateRuleToStateLandmark(stateId: relativeToState, fromAxis: currentAxis, landmarkType: landmarkTypeToState,  landmarkSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning, satisfyWarning: satisfyWarning)
         }
        
     }
@@ -52,6 +54,8 @@ struct ToStateLandmarkRuleView: View {
     
     func toggleOff() {
         landmarkToStateWarning = ""
+        satisfyWarning = false
+        
         landmarkTypeToState =  sportManager.findSelectedSegment()!.landmarkTypes.first!
         currentAxis = CoordinateAxis.X
         relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
@@ -82,6 +86,10 @@ struct ToStateLandmarkRuleView: View {
                         }
                         
                     }
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
+                    })
                 }
                 VStack {
                     HStack {
@@ -180,6 +188,8 @@ struct ToStateLandmarkRuleView: View {
         .onAppear{
             if let length = sportManager.getRuleToStateLandmark() {
                 landmarkToStateWarning = length.warning
+                satisfyWarning = length.satisfyWarning ?? false
+                
                 landmarkTypeToState = length.fromLandmarkToAxis.landmark.landmarkType
                 currentAxis = length.fromLandmarkToAxis.axis
                 relativelandmarkSegmentType = length.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType

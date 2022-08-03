@@ -14,11 +14,12 @@ struct AngleToLandmarkSegmentRuleView : View {
     
     @State var toggle = false
     @State var warning = ""
+    @State var satisfyWarning = false
     
     func setInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warning: warning)
+            sportManager.setRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warning: warning, satisfyWarning: satisfyWarning)
       
         }
     }
@@ -27,7 +28,7 @@ struct AngleToLandmarkSegmentRuleView : View {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
             
-            sportManager.updateRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warning: warning)
+            sportManager.updateRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warning: warning, satisfyWarning: satisfyWarning)
 
         }
 
@@ -40,6 +41,7 @@ struct AngleToLandmarkSegmentRuleView : View {
         lowerBound = 0.0
         upperBound = 0.0
         warning = ""
+        satisfyWarning = false
     }
     
     func updateLocalData() {
@@ -81,6 +83,10 @@ struct AngleToLandmarkSegmentRuleView : View {
                             resetInitData()
                         }
                         
+                    })
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
                     })
                 }
                 HStack {
@@ -139,6 +145,7 @@ struct AngleToLandmarkSegmentRuleView : View {
                 self.lowerBound = angleToLandmarkSegment.lowerBound
                 self.upperBound = angleToLandmarkSegment.upperBound
                 self.warning = angleToLandmarkSegment.warning
+                self.satisfyWarning = angleToLandmarkSegment.satisfyWarning ?? false
                 self.toggle = true
                 
             }

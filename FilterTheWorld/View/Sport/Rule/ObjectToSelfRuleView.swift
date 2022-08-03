@@ -12,6 +12,8 @@ struct ObjectToSelfRuleView: View {
     
     @State var toggle = false
     @State var warning = ""
+    @State var satisfyWarning = false
+
     @State var fromObjectId = ""
     @State var direction = Direction.UP
     @State var xLowerBound = 0.0
@@ -22,7 +24,7 @@ struct ObjectToSelfRuleView: View {
         if toggle {
 
             
-            sportManager.setRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning)
+            sportManager.setRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning, satisfyWarning: satisfyWarning)
          
         }
 
@@ -30,7 +32,7 @@ struct ObjectToSelfRuleView: View {
     
     func resetInitData() {
         if toggle {
-            sportManager.updateRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning)
+            sportManager.updateRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning, satisfyWarning: satisfyWarning)
         }
        
     }
@@ -52,6 +54,7 @@ struct ObjectToSelfRuleView: View {
     
     func toggleOff() {
         warning = ""
+        satisfyWarning = false
         if self.sportManager.findSelectedObjects().count > 1 {
             fromObjectId = self.sportManager.findSelectedObjects().first(where: { object in
                 object.label != ObjectLabel.POSE.rawValue
@@ -86,6 +89,10 @@ struct ObjectToSelfRuleView: View {
                         }
                         
                     }
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
+                    })
                 }
                 VStack {
                     HStack {
@@ -145,6 +152,7 @@ struct ObjectToSelfRuleView: View {
         .onAppear{
             if let objectToSelf = sportManager.getRuleObjectToSelf() {
                 warning = objectToSelf.warning
+                satisfyWarning = objectToSelf.satisfyWarning ?? false
                 fromObjectId = objectToSelf.objectId
                 direction = objectToSelf.toDirection
                 xLowerBound = objectToSelf.xLowerBound

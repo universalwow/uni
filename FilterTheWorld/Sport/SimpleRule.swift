@@ -86,6 +86,7 @@ struct LandmarkToAxisAndState: Codable {
     }
     
     var warning:String = ""
+    var satisfyWarning: Bool?
     
     var range: Range<Double> {
         lowerBound..<upperBound
@@ -122,12 +123,13 @@ struct LandmarkToAxisAndState: Codable {
                                    toSegment: toSegment)
     }
     
-    init(toStateId: Int, fromLandmarkToAxis: LandmarkToAxis, toLandmarkToAxis: LandmarkToAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String) {
+    init(toStateId: Int, fromLandmarkToAxis: LandmarkToAxis, toLandmarkToAxis: LandmarkToAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String, satisfyWarning: Bool) {
         self.toStateId = toStateId
         self.fromLandmarkToAxis = fromLandmarkToAxis
         self.toLandmarkToAxis = toLandmarkToAxis
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
         initBound()
     }
     
@@ -193,6 +195,7 @@ struct LandmarkToSelf: Codable {
     var toLandmarkSegmentToAxis: LandmarkSegmentToAxis
     
     var warning:String = ""
+    var satisfyWarning:Bool?
     
     func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
         //相对于当前状态收集到的边界位移
@@ -277,13 +280,14 @@ struct LandmarkToSelf: Codable {
     }
     
     
-    init(landmarkType: LandmarkType, toDirection: Direction, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, xLowerBound: Double, yLowerBound: Double, warning: String) {
+    init(landmarkType: LandmarkType, toDirection: Direction, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, xLowerBound: Double, yLowerBound: Double, warning: String, satisfyWarning: Bool) {
         self.landmarkType = landmarkType
         self.toDirection = toDirection
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
         self.xLowerBound = xLowerBound
         self.yLowerBound = yLowerBound
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
     }
     
     
@@ -302,6 +306,7 @@ struct ObjectToSelf: Codable {
 
     var toDirection: Direction
     var warning:String = ""
+    var satisfyWarning: Bool?
     
     func satisfy(stateTimeHistory: [StateTime], object: Observation) -> Bool {
         //相对于当前状态收集到的边界位移
@@ -366,12 +371,13 @@ struct ObjectToSelf: Codable {
     }
     
     
-    init(objectId: String, toDirection: Direction, xLowerBound: Double, yLowerBound: Double, warning: String) {
+    init(objectId: String, toDirection: Direction, xLowerBound: Double, yLowerBound: Double, warning: String, satisfyWarning: Bool) {
         self.objectId = objectId
         self.toDirection = toDirection
         self.xLowerBound = xLowerBound
         self.yLowerBound = yLowerBound
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
     }
     
     
@@ -427,14 +433,16 @@ struct ObjectToObject: Codable {
     }
     
     var warning = ""
+    var satisfyWarning: Bool?
     
     init(fromPosition:  ObjectPositionPoint, toPosition: ObjectPositionPoint,
-         fromAxis: CoordinateAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String) {
+         fromAxis: CoordinateAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String, satisfyWarning: Bool) {
         self.fromPosition = fromPosition
         self.toPosition = toPosition
         self.fromAxis = fromAxis
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
         initBound()
     }
     
@@ -548,14 +556,16 @@ struct ObjectToLandmark: Codable {
     }
     
     var warning = ""
+    var satisfyWarning: Bool?
     
     
-    init(fromAxis: CoordinateAxis, fromPosition: ObjectPositionPoint, toLandmark: Landmark, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String) {
+    init(fromAxis: CoordinateAxis, fromPosition: ObjectPositionPoint, toLandmark: Landmark, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: String, satisfyWarning: Bool) {
         self.fromAxis = fromAxis
         self.fromPosition = fromPosition
         self.toLandmark = toLandmark
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
         initBound()
     }
     
@@ -632,6 +642,8 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
     var lowerBound:Double = 0
     var upperBound:Double = 0
     var warning:String = ""
+    var satisfyWarning: Bool?
+
     
     var from:LandmarkSegmentToAxis {
         didSet {
@@ -668,10 +680,11 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
                                    toSegment: toSegment)
     }
     
-    init(from: LandmarkSegmentToAxis, to: LandmarkSegmentToAxis, warning: String) {
+    init(from: LandmarkSegmentToAxis, to: LandmarkSegmentToAxis, warning: String, satisfyWarning: Bool) {
         self.from = from
         self.to = to
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
         initBound()
     }
     
@@ -725,6 +738,7 @@ struct AngleToLandmarkSegment: Codable {
     var lowerBound:Double = 0
     var upperBound:Double = 0
     var warning:String = ""
+    var satisfyWarning: Bool?
     
     var from:LandmarkSegment {
         didSet {
@@ -754,10 +768,11 @@ struct AngleToLandmarkSegment: Codable {
         return range.contains(fromSegment.angle2d - toSegment.angle2d) || range.contains(fromSegment.angle2d - toSegment.angle2d + 360) || range.contains(fromSegment.angle2d - toSegment.angle2d - 360)
     }
     
-    init(from: LandmarkSegment, to: LandmarkSegment, warning: String) {
+    init(from: LandmarkSegment, to: LandmarkSegment, warning: String, satisfyWarning: Bool) {
         self.from = from
         self.to = to
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
         initBound()
     }
     
@@ -782,6 +797,7 @@ struct AngleRange: Codable {
         }
     }
     var warning:String = ""
+    var satisfyWarning:Bool?
     
     var range: Range<Int> {
         if lowerBound < upperBound {
@@ -791,9 +807,10 @@ struct AngleRange: Codable {
         }
     }
     
-    init(landmarkSegment: LandmarkSegment, warning: String) {
+    init(landmarkSegment: LandmarkSegment, warning: String, satisfyWarning: Bool) {
         self.landmarkSegment = landmarkSegment
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
         initBound()
     }
     
@@ -840,15 +857,17 @@ struct LandmarkInArea: Codable {
     var area: [Point2D]
     
     var warning:String = ""
+    var satisfyWarning:Bool?
+
     
-    
-    init(landmarkType: LandmarkType, imageSize: Point2D, warning: String) {
+    init(landmarkType: LandmarkType, imageSize: Point2D, warning: String, satisfyWarning: Bool) {
         self.landmarkType = landmarkType
         self.imageSize = imageSize
         self.warning = warning
+        self.satisfyWarning = satisfyWarning
+        
         self.area = [Point2D.zero,Point2D.zero,Point2D.zero,Point2D.zero]
     }
-    
     
     func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap, frameSize: Point2D) -> Bool? {
         
@@ -1089,38 +1108,89 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         
         if let length = length {
             lengthSatisfy = self.lengthSatisfy(relativeDistance: length, poseMap: poseMap)
-            if lengthSatisfy == false {
-                warnings.insert(length.warning)
+            if let satisfyWarning = length.satisfyWarning {
+                if satisfyWarning && lengthSatisfy == true {
+                    warnings.insert(length.warning)
+                }else if !satisfyWarning && lengthSatisfy == false {
+                    warnings.insert(length.warning)
+                }
+                
+            }else {
+                if lengthSatisfy == false {
+                    warnings.insert(length.warning)
+                }
             }
+            
         }
         
         if let angleRange = angle {
             angleSatisfy = self.angleSatisfy(angleRange: angleRange, poseMap: poseMap)
-            print("angle range - \(angleRange) - \(angleSatisfy)")
-            if angleSatisfy == false {
-                warnings.insert(angleRange.warning)
+
+            
+            if let satisfyWarning = angleRange.satisfyWarning {
+                if satisfyWarning && angleSatisfy == true {
+                    warnings.insert(angleRange.warning)
+                }else if !satisfyWarning && angleSatisfy == false {
+                    warnings.insert(angleRange.warning)
+                }
+                
+            }else {
+                if angleSatisfy == false {
+                    warnings.insert(angleRange.warning)
+                }
             }
         }
         
         if let angleToLandmarkSegment = angleToLandmarkSegment {
             angleToLandmarkSegmentSatisfy = self.angleToLandmarkSatisfy(angleToLandmarkSegment: angleToLandmarkSegment, poseMap: poseMap)
-            if angleToLandmarkSegmentSatisfy == false {
-                warnings.insert(angleToLandmarkSegment.warning)
+            
+            if let satisfyWarning = angleToLandmarkSegment.satisfyWarning {
+                if satisfyWarning && angleToLandmarkSegmentSatisfy == true {
+                    warnings.insert(angleToLandmarkSegment.warning)
+                }else if !satisfyWarning && angleToLandmarkSegmentSatisfy == false {
+                    warnings.insert(angleToLandmarkSegment.warning)
+                }
+                
+            }else {
+                if angleToLandmarkSegmentSatisfy == false {
+                    warnings.insert(angleToLandmarkSegment.warning)
+                }
             }
         }
         
         if let landmarkInArea = landmarkInArea {
             landmarkInAreaSatisfy = self.landmarkInAreaSatisfy(landmarkInArea: landmarkInArea, poseMap: poseMap, frameSize: frameSize)
-            if landmarkInAreaSatisfy == false {
-                warnings.insert(landmarkInArea.warning)
+            
+            
+            if let satisfyWarning = landmarkInArea.satisfyWarning {
+                if satisfyWarning && landmarkInAreaSatisfy == true {
+                    warnings.insert(landmarkInArea.warning)
+                }else if !satisfyWarning && landmarkInAreaSatisfy == false {
+                    warnings.insert(landmarkInArea.warning)
+                }
+                
+            }else {
+                if landmarkInAreaSatisfy == false {
+                    warnings.insert(landmarkInArea.warning)
+                }
             }
         }
         
         
         if let length = lengthToState {
             lengthToStateSatisfy = self.lengthToStateSatisfy(relativeDistance: length, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
-            if lengthToStateSatisfy == false {
-                warnings.insert(length.warning)
+            
+            if let satisfyWarning = length.satisfyWarning {
+                if satisfyWarning && lengthToStateSatisfy == true {
+                    warnings.insert(length.warning)
+                }else if !satisfyWarning && lengthToStateSatisfy == false {
+                    warnings.insert(length.warning)
+                }
+                
+            }else {
+                if lengthToStateSatisfy == false {
+                    warnings.insert(length.warning)
+                }
             }
         }
         
@@ -1131,8 +1201,19 @@ struct ComplexRule: Identifiable, Hashable, Codable {
             } else {
                 objectToLandmarkSatisfy = false
             }
-            if objectToLandmarkSatisfy == false {
-                warnings.insert(objectTolandmark.warning)
+            
+            
+            if let satisfyWarning = objectTolandmark.satisfyWarning {
+                if satisfyWarning && objectToLandmarkSatisfy == true {
+                    warnings.insert(objectTolandmark.warning)
+                }else if !satisfyWarning && objectToLandmarkSatisfy == false {
+                    warnings.insert(objectTolandmark.warning)
+                }
+                
+            }else {
+                if objectToLandmarkSatisfy == false {
+                    warnings.insert(objectTolandmark.warning)
+                }
             }
         }
         
@@ -1140,10 +1221,20 @@ struct ComplexRule: Identifiable, Hashable, Codable {
             if let object = object, let targetObject = targetObject {
                 objectToObjectSatisfy = self.objectToObjectSatisfy(objectToObject: objectToObject, poseMap: poseMap, object: object, targetObject: targetObject)
             } else {
-                objectToLandmarkSatisfy = false
+                objectToObjectSatisfy = false
             }
-            if objectToLandmarkSatisfy == false {
-                warnings.insert(objectToObject.warning)
+            
+            if let satisfyWarning = objectToObject.satisfyWarning {
+                if satisfyWarning && objectToObjectSatisfy == true {
+                    warnings.insert(objectToObject.warning)
+                }else if !satisfyWarning && objectToObjectSatisfy == false {
+                    warnings.insert(objectToObject.warning)
+                }
+                
+            }else {
+                if objectToObjectSatisfy == false {
+                    warnings.insert(objectToObject.warning)
+                }
             }
         }
         
@@ -1153,16 +1244,35 @@ struct ComplexRule: Identifiable, Hashable, Codable {
             } else {
                 objectToSelfSatisfy = false
             }
-            if objectToSelfSatisfy == false {
-                warnings.insert(objectToSelf.warning)
+            
+            if let satisfyWarning = objectToSelf.satisfyWarning {
+                if satisfyWarning && objectToSelfSatisfy == true {
+                    warnings.insert(objectToSelf.warning)
+                }else if !satisfyWarning && objectToSelfSatisfy == false {
+                    warnings.insert(objectToSelf.warning)
+                }
+                
+            }else {
+                if objectToSelfSatisfy == false {
+                    warnings.insert(objectToSelf.warning)
+                }
             }
         }
         
         if let landmarkToSelf = landmarkToSelf {
             landmarkToSelfSatisfy = self.landmarkToSelfSatisfy(landmarkToSelf: landmarkToSelf, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
             
-            if landmarkToSelfSatisfy == false {
-                warnings.insert(landmarkToSelf.warning)
+            if let satisfyWarning = landmarkToSelf.satisfyWarning {
+                if satisfyWarning && landmarkToSelfSatisfy == true {
+                    warnings.insert(landmarkToSelf.warning)
+                }else if !satisfyWarning && landmarkToSelfSatisfy == false {
+                    warnings.insert(landmarkToSelf.warning)
+                }
+                
+            }else {
+                if landmarkToSelfSatisfy == false {
+                    warnings.insert(landmarkToSelf.warning)
+                }
             }
         }
         

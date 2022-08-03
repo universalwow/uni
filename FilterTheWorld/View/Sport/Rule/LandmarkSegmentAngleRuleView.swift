@@ -34,6 +34,8 @@ struct LandmarkSegmentAngleRuleView: View {
     @State var minAngle = 0.0
     @State var maxAngle = 0.0
     @State var warning = ""
+    @State var satisfyWarning = false
+
     @State var angleToggle = false
     
     
@@ -43,19 +45,20 @@ struct LandmarkSegmentAngleRuleView: View {
         minAngle = 0.0
         maxAngle = 0.0
         warning = ""
+        satisfyWarning = false
     }
     
     func setInitData() {
         if angleToggle {
             let landmarkSegment = sportManager.findSelectedSegment()!
-            sportManager.setRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning)
+            sportManager.setRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning, satisfyWarning: satisfyWarning)
         }
     }
     
     func resetInitData() {
         if angleToggle {
             let landmarkSegment = sportManager.findSelectedSegment()!
-            sportManager.updateRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning)
+            sportManager.updateRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning, satisfyWarning: satisfyWarning)
         }
     }
     
@@ -186,6 +189,11 @@ struct LandmarkSegmentAngleRuleView: View {
                         }
                         
                     }
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
+                    })
+                    
                 }
                 HStack {
                     Text("最小角度")
@@ -212,6 +220,7 @@ struct LandmarkSegmentAngleRuleView: View {
                 self.minAngle = angle.lowerBound
                 self.maxAngle = angle.upperBound
                 self.warning = angle.warning
+                self.satisfyWarning = angle.satisfyWarning ?? false
                 self.angleToggle = true
             }
         })

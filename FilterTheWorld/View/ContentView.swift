@@ -17,7 +17,7 @@ struct ContentView: View {
                 SportsGroundView().padding()
             }
             .tabItem{
-                Text("Sports")
+                Text("Sports Ground")
             }
             
             VStack {
@@ -26,7 +26,7 @@ struct ContentView: View {
 //                VideoPlayerCoreImageView().padding()
             }
             .tabItem{
-                Text("Video Player")
+                Text("Video Test")
             }
             
             VStack {
@@ -42,12 +42,12 @@ struct ContentView: View {
             
             
             
-//            VStack {
-//                LineDrawerView().padding()
-//            }
-//            .tabItem{
-//                Text("Draw Line")
-//            }
+            VStack {
+                LabelImageView().padding()
+            }
+            .tabItem{
+                Text("Label Me")
+            }
             
             
             

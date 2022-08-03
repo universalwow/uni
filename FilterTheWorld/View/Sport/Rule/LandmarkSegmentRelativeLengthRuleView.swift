@@ -16,18 +16,20 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     
     @State var toggle = false
     @State var relativeLengthWarning = ""
+    @State var satisfyWarning = false
+
     
     func setInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning)
+            sportManager.setRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning, satisfyWarning: satisfyWarning)
         }
     }
     
     func resetInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning)
+            sportManager.updateRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning, satisfyWarning: satisfyWarning)
         }
 
     }
@@ -40,6 +42,8 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
         minRelativeLength = 0.0
         maxRelativeLength = 0.0
         relativeLengthWarning = ""
+        satisfyWarning = false
+
     }
     
     func updateLocalData() {
@@ -82,6 +86,12 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                         }
                         
                     })
+                    
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
+                    })
+                    
                 }
                 HStack {
                     Text("当前轴")
@@ -158,6 +168,8 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                 self.minRelativeLength = length.lowerBound
                 self.maxRelativeLength = length.upperBound
                 self.relativeLengthWarning = length.warning
+                self.satisfyWarning = length.satisfyWarning ?? false
+
                 self.toggle = true
             }
         }

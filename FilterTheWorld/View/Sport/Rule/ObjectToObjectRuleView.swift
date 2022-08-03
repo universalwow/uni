@@ -7,7 +7,10 @@ struct ObjectToObjectRuleView: View {
     
     @State var toggle = false
     
+    
     @State var warning = ""
+    @State var satisfyWarning = false
+
     @State var currentAxis = CoordinateAxis.X
 //    此处id为label
     @State var fromObjectId = ""
@@ -25,14 +28,14 @@ struct ObjectToObjectRuleView: View {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: toLandmarkSegmentType)
             sportManager.setRuleObjectToObject(
-                fromAxis: currentAxis, fromObjectId: fromObjectId, fromObjectPosition: fromObjectPosition, toObjectId: toObjectId, toObjectPosition: toObjectPosition, relativeSegment: relativeSegment, toAxis: toLandmarkSegmentAxis, warning: warning)
+                fromAxis: currentAxis, fromObjectId: fromObjectId, fromObjectPosition: fromObjectPosition, toObjectId: toObjectId, toObjectPosition: toObjectPosition, relativeSegment: relativeSegment, toAxis: toLandmarkSegmentAxis, warning: warning, satisfyWarning: satisfyWarning)
         }
     }
     func resetInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: toLandmarkSegmentType)
             sportManager.updateRuleObjectToObject(
-                fromAxis: currentAxis, fromObjectId: fromObjectId, fromObjectPosition: fromObjectPosition, toObjectId: toObjectId, toObjectPosition: toObjectPosition, relativeSegment: relativeSegment, toAxis: toLandmarkSegmentAxis, warning: warning)
+                fromAxis: currentAxis, fromObjectId: fromObjectId, fromObjectPosition: fromObjectPosition, toObjectId: toObjectId, toObjectPosition: toObjectPosition, relativeSegment: relativeSegment, toAxis: toLandmarkSegmentAxis, warning: warning, satisfyWarning: satisfyWarning)
         }
     }
     func updateLocalData() {
@@ -51,6 +54,7 @@ struct ObjectToObjectRuleView: View {
     
     func toggleOf() {
         warning = ""
+        satisfyWarning = false
         fromObjectId = sportManager.findSelectedObjects().first!.label
         fromObjectPosition = ObjectPosition.middle
         toObjectId = sportManager.findSelectedObjects().first!.label
@@ -84,6 +88,11 @@ struct ObjectToObjectRuleView: View {
                         if !flag {
                             resetInitData()
                         }
+                    })
+                    
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
                     })
                 }
                 
@@ -205,6 +214,7 @@ struct ObjectToObjectRuleView: View {
         }.onAppear{
             if let objectToObject = sportManager.getRuleObjectToObject() {
                 warning = objectToObject.warning
+                satisfyWarning = objectToObject.satisfyWarning ?? false
                 fromObjectId = objectToObject.fromPosition.id
                 fromObjectPosition = objectToObject.fromPosition.position
                 toObjectId = objectToObject.toPosition.id

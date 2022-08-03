@@ -51,6 +51,7 @@ extension CGRect {
 enum ObjectLabel: String {
     case ROPE = "rope"
     case POSE = "person"
+    case BASKETBALL = "basketball"
 }
 
 

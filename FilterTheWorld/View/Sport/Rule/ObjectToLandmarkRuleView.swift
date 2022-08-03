@@ -11,6 +11,8 @@ struct ObjectToLandmarkRuleView: View {
     @State var lowerBound = 0.0
     @State var upperBound = 0.0
     @State var warning = ""
+    @State var satisfyWarning = false
+
     //    此处的id是label
     @State var objectId = ""
     @State var objectPosition = ObjectPosition.middle
@@ -27,7 +29,7 @@ struct ObjectToLandmarkRuleView: View {
             objectPosition: objectPosition,
             landmarkSegment: relativeSegment,
             toAxis: toLandmarkSegmentAxis,
-            warning: warning)
+            warning: warning, satisfyWarning: satisfyWarning)
         
     }
 
@@ -41,7 +43,7 @@ struct ObjectToLandmarkRuleView: View {
                 objectPosition: objectPosition,
                 landmarkSegment: relativeSegment,
                 toAxis: toLandmarkSegmentAxis,
-                warning: warning)
+                warning: warning, satisfyWarning: satisfyWarning)
         }
     }
     
@@ -64,6 +66,8 @@ struct ObjectToLandmarkRuleView: View {
         lowerBound = 0.0
         upperBound = 0.0
         warning = ""
+        satisfyWarning = false
+        
         objectId = sportManager.findSelectedObjects().first!.label
         objectPosition = ObjectPosition.middle
         toLandmarkType = sportManager.findSelectedSegment()!.landmarkTypes.first!
@@ -90,6 +94,11 @@ struct ObjectToLandmarkRuleView: View {
                         if !flag {
                             resetInitData()
                         }
+                    })
+                    
+                    Spacer()
+                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                        resetInitData()
                     })
                 }
 //                MARK: 有多个物体时，迁移规则可能出错 重新选择关键帧也会导致识别到的物体顺序或者多余而出错
@@ -200,6 +209,8 @@ struct ObjectToLandmarkRuleView: View {
                 lowerBound = objectToLandmark.lowerBound
                 upperBound = objectToLandmark.upperBound
                 warning = objectToLandmark.warning
+                satisfyWarning = objectToLandmark.satisfyWarning ?? false
+                
                 currentAxis = objectToLandmark.fromAxis
                 objectId = objectToLandmark.fromPosition.id
                 objectPosition = objectToLandmark.fromPosition.position
