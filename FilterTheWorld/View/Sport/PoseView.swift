@@ -167,7 +167,7 @@ struct PosesView: View {
                 }.onTapGesture {
                     //选择一个人
                     imageAnalysis.selectHumanPose(selectedHumanPose: pose)
-                    sportManager.updateSportState(image: imageAnalysis.sportData.frame, landmarkSegments: imageAnalysis.selectedHumanPose()?.landmarkSegments ?? [])
+                    sportManager.updateSportState(image: imageAnalysis.sportData.frame, humanPose: imageAnalysis.selectedHumanPose())
                     print("选择一个人 \(imageAnalysis.selectedHumanPose() == nil ? false : true )")
                     
                     

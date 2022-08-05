@@ -14,6 +14,7 @@ struct FrameShowData {
   var fps = 0
   var currentTime = 0.0
   var poses: [HumanPose] = []
+  var objects: [Observation] = []
   
   mutating func selectePose(pose: HumanPose?) {
       if let pose = pose {

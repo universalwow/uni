@@ -256,13 +256,14 @@ extension SportsManager {
             sports[sportIndex].updateSport(state: state)
         }
     }
-    
-    func updateSportState(image: UIImage, landmarkSegments: [LandmarkSegment]) {
+        
+    func updateSportState(image: UIImage, humanPose: HumanPose?) {
         if let state = findFirstSportState() {
             var newState = state
             newState.image = PngImage(photo: image.pngData()!, width: Int(image.size.width), height: Int(image.size.height))
             
-            newState.landmarkSegments = landmarkSegments
+            newState.humanPose = humanPose
+            newState.landmarkSegments = humanPose?.landmarkSegments ?? []
             self.updateSportState(state: newState)
             
         }
@@ -312,9 +313,21 @@ extension SportsManager {
         }
     }
     
+    func addSportStateViolateSequence(sport:Sport, index: Int, violateState: SportState, warning: String) {
+        if let sportIndex = firstIndex(editedSportId: sport.id) {
+            sports[sportIndex].addSportStateViolateSequence(index: index, violateState: violateState, warning: warning)
+        }
+    }
+    
     func addSportStateScoreSequence(sport:Sport) {
         if let sportIndex = firstIndex(editedSportId: sport.id) {
             sports[sportIndex].addSportStateScoreSequence()
+        }
+    }
+    
+    func addSportStateViolateSequence(sport:Sport) {
+        if let sportIndex = firstIndex(editedSportId: sport.id) {
+            sports[sportIndex].addSportStateViolateSequence()
         }
     }
     
@@ -329,6 +342,12 @@ extension SportsManager {
     func deleteSportStateFromScoreSequence(sport:Sport, sequenceIndex: Int, stateIndex:Int) {
         if let sportIndex = firstIndex(editedSportId: sport.id){
             sports[sportIndex].deleteSportStateFromScoreSequence(sequenceIndex: sequenceIndex, stateIndex: stateIndex)
+        }
+    }
+    
+    func deleteSportStateFromViolateSequence(sport:Sport, sequenceIndex: Int, stateIndex:Int) {
+        if let sportIndex = firstIndex(editedSportId: sport.id){
+            sports[sportIndex].deleteSportStateFromViolateSequence(sequenceIndex: sequenceIndex, stateIndex: stateIndex)
         }
     }
     

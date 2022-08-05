@@ -12,23 +12,12 @@ class SportsGround: ObservableObject {
     var sportersReport: [SportReport] = []
     
     
-    
-    var warningArray: [String] {
-        warnings.map{ warning in
-            warning
-        }.sorted()
-    }
-    
     func clearWarning() {
-        totalWarnings = []
-        //    warnings = []
-        //    cancelableWarningMap.forEach{ key, _ in
-        //      cancelableWarningMap[key]?.invalidate()
-        //    }
-        //    cancelableWarningMap.removeAll()
+        warnings = []
     }
     
     func addSporter(sport: Sport) {
+        print("add Sporter")
         let sporter = Sporter(name: "Uni", sport: sport)
         sporters = [sporter]
         sportersReport = [SportReport(sporterName: sporter.name, sportName: sport.name, sportClass: sport.sportClass, sportPeriod: sport.sportPeriod, statesDescription: sport.statesDescription)]
@@ -40,10 +29,9 @@ class SportsGround: ObservableObject {
             let sporter = sporters[sporterIndex]
             sportersReport[sporterIndex].endTime = endTime
             sportersReport[sporterIndex].scoreTimes = sporter.scoreTimes
-            sportersReport[sporterIndex].warnings = sporter.warnings
+            sportersReport[sporterIndex].warnings = sporter.warningsData
             
             Storage.store(sportersReport[sporterIndex], to: .documents, secondaryDirectory: "sportsReport", as: sportersReport[sporterIndex].fileName)
-            
         })
     }
     
@@ -53,17 +41,10 @@ class SportsGround: ObservableObject {
                 sportersReport[sporterIndex].startTime = currentTime
             }
             sporters[sporterIndex].play(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
-            // 该帧到来的提醒
-            // 1. 如果该提醒不存在 将其加入map
-            // 2. 如果该提醒存在 则不管
-            // 3. 如果没提醒 则取消所有
-            
-            //      cancelingWarnings = sporters[sporterIndex].cancelingWarnings
-            //      newWarnings = sporters[sporterIndex].cancelingWarnings
-            
-            totalWarnings = sporters[sporterIndex].totalWarnings
-//
-//            print("warnings \(sporters[sporterIndex].currentStateTime.sportState.name)/\(warnings)")
+            DispatchQueue.main.async {
+                self.warnings = self.sporters[sporterIndex].warnings
+            }
+
         }
     }
     
@@ -84,8 +65,9 @@ class SportsGround: ObservableObject {
                 cancelableWarningMap[cancelWarning]?.invalidate()
                 cancelableWarningMap.removeValue(forKey: cancelWarning)
             }
-            
-            warnings = warnings.subtracting(cancelWarnings)
+            DispatchQueue.main.async {
+                self.warnings = self.warnings.subtracting(cancelWarnings)
+            }
             
             totalWarnings.filter { newWarning in
                 !cancelableWarningMap.contains(where: { warning, _ in
@@ -106,13 +88,8 @@ class SportsGround: ObservableObject {
         Timer.scheduledTimer(
             withTimeInterval: warningDelay, repeats: false) { [weak self] _ in
                 self?.warnings.insert(warning)
-                // 加入后取消
-                //        self?.cancelableWarningMap[warning]?.invalidate()
-                //        self?.cancelableWarningMap.removeValue(forKey: warning)
             }
     }
-    
-    
     
 }
 

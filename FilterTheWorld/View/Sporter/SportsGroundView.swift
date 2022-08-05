@@ -14,12 +14,10 @@ struct SportsGroundView: View {
     @State private var lastScoreTime = 0.0
     @State private var currentState = 1
     
-    
-    
 
-    var controlSport: Sport = SportsGround.allSports.first(where: { sport in
+    var controlSport: Sport? = SportsGround.allSports.first(where: { sport in
         sport.name == "控制手势"
-    })!
+    })
     
     var body: some View {
         NavigationView {
@@ -41,8 +39,10 @@ struct SportsGroundView: View {
                                             .onDisappear {
                                                 
                                                 sportGround.saveSportReport(endTime: Date().timeIntervalSince1970)
+                                                if let controlSport = controlSport {
+                                                    sportGround.addSporter(sport: controlSport)
+                                                }
                                                 
-                                                sportGround.addSporter(sport: controlSport)
 //                                                cameraPlaying.startCamera()
                                                 print("start camera 1.........\(UIScreen.main.bounds.size.width)")
                                                     },
@@ -86,7 +86,10 @@ struct SportsGroundView: View {
                 if !sportGround.sports.isEmpty {
                     self.selection = 0
                 }
-                sportGround.addSporter(sport: controlSport)
+                if let controlSport = controlSport {
+                    sportGround.addSporter(sport: controlSport)
+
+                }
                 cameraPlaying.startCamera()
                 print("start camera 0.........")
 

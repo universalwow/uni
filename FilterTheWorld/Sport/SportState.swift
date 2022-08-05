@@ -9,6 +9,7 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   var description:String = ""
   var image: PngImage?
   var landmarkSegments :[LandmarkSegment] = []
+  var humanPose: HumanPose? 
   var objects: [Observation] = []
   
   // MARK: TO DELETE

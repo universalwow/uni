@@ -16,7 +16,7 @@ struct SportDataShow: Equatable {
     }
     
     var frameData:FrameShowData = FrameShowData()
-    var frame:UIImage = UIImage()
+    var frame:UIImage = UIImage(systemName: "photo.fill")!
 }
 
 class ImageAnalysis : ObservableObject {
@@ -60,22 +60,41 @@ class ImageAnalysis : ObservableObject {
     func setupSubscriptions() {
         
         
-        objectDetectorYOLO?.$results.receive(on: RunLoop.main)
-            .assign(to: &$objects)
+//        objectDetectorYOLO?.$results.receive(on: RunLoop.main)
+//            .assign(to: &$objects)
+        
+        
         
         poseRecognizer?.$frameData
             .receive(on: RunLoop.main)
             .map { frameData in
+                var newFrameData = frameData
                 
                 if let index = self.cachedFrames.firstIndex(where: { cache in
-                    String(cache.0) == String(frameData.currentTime)
+                    String(cache.0) == String(newFrameData.currentTime)
                 }) {
                     let image = self.cachedFrames[index].1
                     self.cachedFrames.removeAll(where: { cache in
-                        cache.0 <= frameData.currentTime
+                        cache.0 <= newFrameData.currentTime
                     })
                     
-                    return SportDataShow(frameData: frameData, frame: image)
+                    print("currentIndex \(index) - \(newFrameData.currentTime)")
+                    if let observationAndTime = self.objectDetectorYOLO?.timeResults.first(where: { observationAndTime in
+                        observationAndTime.time == frameData.currentTime
+
+                    }) {
+                        print("observationAndTime add ...")
+                        self.objects = observationAndTime.objects
+                        newFrameData.objects = observationAndTime.objects
+                    }
+                    
+                    self.objectDetectorYOLO?.timeResults.removeAll(where: { observationAndTime in
+                        observationAndTime.time <= frameData.currentTime
+
+                    })
+                    
+                    return SportDataShow(frameData: newFrameData, frame: image)
+                    
                 }else{
                     self.cachedFrames.removeAll(where: { cache in
                         cache.0 <= frameData.currentTime

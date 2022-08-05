@@ -23,7 +23,7 @@ struct WarningView: View {
             .font(.largeTitle)
             .offset(x: show ? offset.width * 2 / 3 : offset.width + 30, y: 0)
             .animation(
-                .linear(duration: 2), value: show)
+                .linear(duration: 0.5), value: show)
     }
 }
 
@@ -53,26 +53,26 @@ struct WarningsView:View {
                 WarningView(warning: self.$warningSecond,warningBack: $warningSecondBack, offset: geometry.size)
                 WarningView(warning: self.$warningThird, warningBack: $warningThirdBack, offset: geometry.size)
                                 
-            }.onChange(of: sportGround.warningArray) { _ in
+            }.onChange(of: sportGround.warnings) { _ in
                 
                 // 找到在轨道但不在warningArray中的的提示 清空对应轨道
-                if !sportGround.warningArray.contains(warningFirst) && warningFirst != "" {
+                if !sportGround.warnings.contains(warningFirst) && warningFirst != "" {
                     
                     warningFirstBack = warningFirst
                     warningFirst = ""
                 }
-                if !sportGround.warningArray.contains(warningSecond) && warningSecond != "" {
+                if !sportGround.warnings.contains(warningSecond) && warningSecond != "" {
                     warningSecondBack = warningSecond
                     warningSecond = ""
                 }
                 
-                if !sportGround.warningArray.contains(warningThird) && warningThird != "" {
+                if !sportGround.warnings.contains(warningThird) && warningThird != "" {
                     warningThirdBack = warningThird
                     warningThird = ""
 
                 }
                 
-                sportGround.warningArray.forEach { warning in
+                sportGround.warnings.forEach { warning in
 //                    如果提示消息不在展示 找到空闲时间最长的轨道
                     
                     if ![warningFirst, warningSecond, warningThird].contains(warning) {

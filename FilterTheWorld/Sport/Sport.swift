@@ -44,6 +44,11 @@ enum SportClass: String, Codable, CaseIterable, Identifiable {
 }
 
 
+struct ViolateSequenceAndWarning: Codable {
+    var warning: String = ""
+    var stateIds: [Int] = []
+}
+
 struct Sport: Identifiable, Hashable, Codable {
   static func == (lhs: Sport, rhs: Sport) -> Bool {
     lhs.id == rhs.id
@@ -73,7 +78,7 @@ struct Sport: Identifiable, Hashable, Codable {
   var stateTransForm: [SportStateTransform] = []
   //MARK: 添加计分状态序列 使之可用于半周期
   var scoreStateSequence: [[Int]] = []
-    
+  var violateStateSequence: [ViolateSequenceAndWarning] = []
     
     //需要收集的关节点或者物体
     var selectedLandmarkTypes : [LandmarkType] = []
@@ -82,7 +87,7 @@ struct Sport: Identifiable, Hashable, Codable {
 
   // 时间限制 秒
   var scoreTimeLimit:Double?
-    var warningDelay: Double?
+  var warningDelay: Double?
   var sportClass:SportClass?
     var sportPeriod:SportPeriod?
     var noStateWarning: String?
@@ -251,8 +256,17 @@ extension Sport {
         scoreStateSequence[index].append(scoreState.id)
     }
     
+    mutating func addSportStateViolateSequence(index: Int, violateState: SportState, warning: String) {
+        violateStateSequence[index].stateIds.append(violateState.id)
+        violateStateSequence[index].warning = warning
+    }
+    
     mutating func addSportStateScoreSequence() {
       scoreStateSequence.append([])
+    }
+    
+    mutating func addSportStateViolateSequence() {
+      violateStateSequence.append(ViolateSequenceAndWarning())
     }
   
   mutating func deleteSportStateScoreSequence() {
@@ -264,6 +278,13 @@ extension Sport {
         scoreStateSequence[sequenceIndex].remove(at: stateIndex)
         if scoreStateSequence[sequenceIndex].count == 0 {
             scoreStateSequence.remove(at: sequenceIndex)
+        }
+    }
+    
+    mutating func deleteSportStateFromViolateSequence(sequenceIndex: Int, stateIndex: Int) {
+        violateStateSequence[sequenceIndex].stateIds.remove(at: stateIndex)
+        if violateStateSequence[sequenceIndex].stateIds.count == 0 {
+            violateStateSequence.remove(at: sequenceIndex)
         }
     }
   

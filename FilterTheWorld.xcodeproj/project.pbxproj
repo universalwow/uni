@@ -37,6 +37,17 @@
 		9545750527BB846100129153 /* ObjectRecoginzerYOLO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */; };
 		9545750F27BBA98A00129153 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750E27BBA98A00129153 /* Observation.swift */; };
 		9545751327BD1B1600129153 /* StandAndJump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545751227BD1B1500129153 /* StandAndJump.swift */; };
+		954AA30A289BBAEB001BEAAF /* SportReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA307289BBAEA001BEAAF /* SportReportView.swift */; };
+		954AA30B289BBAEB001BEAAF /* CameraPlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA308289BBAEB001BEAAF /* CameraPlayingView.swift */; };
+		954AA30C289BBAEB001BEAAF /* SporterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA309289BBAEB001BEAAF /* SporterView.swift */; };
+		954AA32C289BBD6A001BEAAF /* CameraViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA32A289BBD6A001BEAAF /* CameraViewModel.swift */; };
+		954AA32D289BBD6A001BEAAF /* SportsReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA32B289BBD6A001BEAAF /* SportsReport.swift */; };
+		954AA335289BBE6E001BEAAF /* ObjectToSelfRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA332289BBE6D001BEAAF /* ObjectToSelfRuleView.swift */; };
+		954AA336289BBE6E001BEAAF /* AngleToLandmarkSegmentRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA333289BBE6D001BEAAF /* AngleToLandmarkSegmentRuleView.swift */; };
+		954AA337289BBE6E001BEAAF /* LandmarkToSelfRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA334289BBE6E001BEAAF /* LandmarkToSelfRuleView.swift */; };
+		954AA33B289BC207001BEAAF /* UIScreen+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA33A289BC207001BEAAF /* UIScreen+Extension.swift */; };
+		954AA33E289BC858001BEAAF /* LabelImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954AA33D289BC858001BEAAF /* LabelImageView.swift */; };
+		954AA340289BD894001BEAAF /* yolov5-pipeline-basketball.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 954AA33F289BD894001BEAAF /* yolov5-pipeline-basketball.mlmodel */; };
 		954B7A442843657400904A36 /* VideoAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B7A432843657400904A36 /* VideoAnalysisView.swift */; };
 		954B7A4A2843876900904A36 /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B7A492843876900904A36 /* VideoView.swift */; };
 		954B7A4C2843882300904A36 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B7A4B2843882300904A36 /* Utility.swift */; };
@@ -95,7 +106,6 @@
 		95E79E2B27A13CED00AC36E1 /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E2027A13CED00AC36E1 /* UIImage+Extension.swift */; };
 		95E79E2C27A13CED00AC36E1 /* CGPoint+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E2127A13CED00AC36E1 /* CGPoint+Extension.swift */; };
 		95E79E2D27A13CED00AC36E1 /* CGFloat+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E2227A13CED00AC36E1 /* CGFloat+Extension.swift */; };
-		95E79E3227A13D0600AC36E1 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E2E27A13D0600AC36E1 /* ContentViewModel.swift */; };
 		95E79E3327A13D0600AC36E1 /* ImageAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E2F27A13D0600AC36E1 /* ImageAnalysis.swift */; };
 		95E79E3427A13D0600AC36E1 /* LineRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */; };
 		95E79E3527A13D0600AC36E1 /* SportsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E3127A13D0600AC36E1 /* SportsManager.swift */; };
@@ -145,6 +155,18 @@
 		9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectRecoginzerYOLO.swift; sourceTree = "<group>"; };
 		9545750E27BBA98A00129153 /* Observation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observation.swift; sourceTree = "<group>"; };
 		9545751227BD1B1500129153 /* StandAndJump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandAndJump.swift; sourceTree = "<group>"; };
+		954AA307289BBAEA001BEAAF /* SportReportView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SportReportView.swift; sourceTree = "<group>"; };
+		954AA308289BBAEB001BEAAF /* CameraPlayingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraPlayingView.swift; sourceTree = "<group>"; };
+		954AA309289BBAEB001BEAAF /* SporterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SporterView.swift; sourceTree = "<group>"; };
+		954AA31A289BBB34001BEAAF /* FilterTheWorld.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = FilterTheWorld.entitlements; sourceTree = "<group>"; };
+		954AA32A289BBD6A001BEAAF /* CameraViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
+		954AA32B289BBD6A001BEAAF /* SportsReport.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SportsReport.swift; sourceTree = "<group>"; };
+		954AA332289BBE6D001BEAAF /* ObjectToSelfRuleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectToSelfRuleView.swift; sourceTree = "<group>"; };
+		954AA333289BBE6D001BEAAF /* AngleToLandmarkSegmentRuleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AngleToLandmarkSegmentRuleView.swift; sourceTree = "<group>"; };
+		954AA334289BBE6E001BEAAF /* LandmarkToSelfRuleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LandmarkToSelfRuleView.swift; sourceTree = "<group>"; };
+		954AA33A289BC207001BEAAF /* UIScreen+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIScreen+Extension.swift"; sourceTree = "<group>"; };
+		954AA33D289BC858001BEAAF /* LabelImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LabelImageView.swift; sourceTree = "<group>"; };
+		954AA33F289BD894001BEAAF /* yolov5-pipeline-basketball.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "yolov5-pipeline-basketball.mlmodel"; sourceTree = "<group>"; };
 		954B7A432843657400904A36 /* VideoAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAnalysisView.swift; sourceTree = "<group>"; };
 		954B7A492843876900904A36 /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
 		954B7A4B2843882300904A36 /* Utility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
@@ -202,7 +224,6 @@
 		95E79E2027A13CED00AC36E1 /* UIImage+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
 		95E79E2127A13CED00AC36E1 /* CGPoint+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Extension.swift"; sourceTree = "<group>"; };
 		95E79E2227A13CED00AC36E1 /* CGFloat+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGFloat+Extension.swift"; sourceTree = "<group>"; };
-		95E79E2E27A13D0600AC36E1 /* ContentViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
 		95E79E2F27A13D0600AC36E1 /* ImageAnalysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageAnalysis.swift; sourceTree = "<group>"; };
 		95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineRecognizer.swift; sourceTree = "<group>"; };
 		95E79E3127A13D0600AC36E1 /* SportsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SportsManager.swift; sourceTree = "<group>"; };
@@ -244,6 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				957573442851933E000447D1 /* Doc */,
+				954AA31A289BBB34001BEAAF /* FilterTheWorld.entitlements */,
 				95A9921E283CE08900F79FB1 /* Tool */,
 				95B7BFE5283668950037EC55 /* View */,
 				95D6E438276F4D1200C0F1CD /* Sport */,
@@ -359,9 +381,20 @@
 			path = Object;
 			sourceTree = "<group>";
 		};
+		954AA33C289BC858001BEAAF /* LabelMe */ = {
+			isa = PBXGroup;
+			children = (
+				954AA33D289BC858001BEAAF /* LabelImageView.swift */,
+			);
+			path = LabelMe;
+			sourceTree = "<group>";
+		};
 		9554E85E2840F259002D8345 /* Rule */ = {
 			isa = PBXGroup;
 			children = (
+				954AA333289BBE6D001BEAAF /* AngleToLandmarkSegmentRuleView.swift */,
+				954AA334289BBE6E001BEAAF /* LandmarkToSelfRuleView.swift */,
+				954AA332289BBE6D001BEAAF /* ObjectToSelfRuleView.swift */,
 				95A9921C283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift */,
 				95A99221283CEF1C00F79FB1 /* LandmarkInAreaRuleView.swift */,
 				95A99223283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift */,
@@ -375,6 +408,9 @@
 		9554E8602840F41F002D8345 /* Sporter */ = {
 			isa = PBXGroup;
 			children = (
+				954AA308289BBAEB001BEAAF /* CameraPlayingView.swift */,
+				954AA309289BBAEB001BEAAF /* SporterView.swift */,
+				954AA307289BBAEA001BEAAF /* SportReportView.swift */,
 				9554E8612840F468002D8345 /* SportsGroundView.swift */,
 			);
 			path = Sporter;
@@ -401,6 +437,7 @@
 		958F8C2B2760560500F6DF48 /* ml */ = {
 			isa = PBXGroup;
 			children = (
+				954AA33F289BD894001BEAAF /* yolov5-pipeline-basketball.mlmodel */,
 				9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */,
 				950F555627EB04AC00480F17 /* yolov5-pipeline.mlmodel */,
 				958F8C2C2760560500F6DF48 /* Facenet6.mlmodel */,
@@ -424,6 +461,7 @@
 		95B7BFE5283668950037EC55 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				954AA33C289BC858001BEAAF /* LabelMe */,
 				9554E8652841C717002D8345 /* LineDrawerView.swift */,
 				9554E8672841C971002D8345 /* LinesView.swift */,
 				9554E8602840F41F002D8345 /* Sporter */,
@@ -481,7 +519,8 @@
 		9F69EE582696F17100746CD7 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				95E79E2E27A13D0600AC36E1 /* ContentViewModel.swift */,
+				954AA32A289BBD6A001BEAAF /* CameraViewModel.swift */,
+				954AA32B289BBD6A001BEAAF /* SportsReport.swift */,
 				95E79E2F27A13D0600AC36E1 /* ImageAnalysis.swift */,
 				95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */,
 				95E79E3127A13D0600AC36E1 /* SportsManager.swift */,
@@ -496,6 +535,7 @@
 		9F69EE612698A1B700746CD7 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				954AA33A289BC207001BEAAF /* UIScreen+Extension.swift */,
 				95E79E1C27A13CEC00AC36E1 /* Binding+Extension.swift */,
 				95E79E2227A13CED00AC36E1 /* CGFloat+Extension.swift */,
 				95E79E1E27A13CEC00AC36E1 /* CGImage+Extension.swift */,
@@ -678,20 +718,26 @@
 			buildActionMask = 2147483647;
 			files = (
 				954B7A4A2843876900904A36 /* VideoView.swift in Sources */,
+				954AA337289BBE6E001BEAAF /* LandmarkToSelfRuleView.swift in Sources */,
 				954B7A442843657400904A36 /* VideoAnalysisView.swift in Sources */,
 				95E79E2827A13CED00AC36E1 /* Color+Extension.swift in Sources */,
+				954AA30A289BBAEB001BEAAF /* SportReportView.swift in Sources */,
+				954AA336289BBE6E001BEAAF /* AngleToLandmarkSegmentRuleView.swift in Sources */,
 				95A99226283E207400F79FB1 /* ToStateLandmarkRuleView.swift in Sources */,
 				958F8C352760560500F6DF48 /* SVC6.mlmodel in Sources */,
 				95E79E2C27A13CED00AC36E1 /* CGPoint+Extension.swift in Sources */,
+				954AA340289BD894001BEAAF /* yolov5-pipeline-basketball.mlmodel in Sources */,
 				958F8C312760560500F6DF48 /* Facenet6.mlmodel in Sources */,
 				95E79E0427A13C3000AC36E1 /* Storage.swift in Sources */,
 				95E79E0E27A13C9700AC36E1 /* PoseRecognizer.swift in Sources */,
+				954AA335289BBE6E001BEAAF /* ObjectToSelfRuleView.swift in Sources */,
 				954B7A4C2843882300904A36 /* Utility.swift in Sources */,
 				95A99220283CE0A200F79FB1 /* Constants.swift in Sources */,
 				95E79DF827A13AEC00AC36E1 /* CancellableDelayedTask.swift in Sources */,
 				95B7BFE4283668740037EC55 /* ContentView.swift in Sources */,
 				95E79E0527A13C3000AC36E1 /* Landmark.swift in Sources */,
 				9554E8642841B6FB002D8345 /* ObjectToObjectRuleView.swift in Sources */,
+				954AA30B289BBAEB001BEAAF /* CameraPlayingView.swift in Sources */,
 				951FB32D2838CDF600A62931 /* SportView.swift in Sources */,
 				95E79E0F27A13C9700AC36E1 /* HumanPose.swift in Sources */,
 				95E79E0627A13C3000AC36E1 /* LineSegment.swift in Sources */,
@@ -711,11 +757,11 @@
 				9554E8622840F468002D8345 /* SportsGroundView.swift in Sources */,
 				95E79E0727A13C3000AC36E1 /* BlackWhiteFilter.swift in Sources */,
 				9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */,
+				954AA30C289BBAEB001BEAAF /* SporterView.swift in Sources */,
 				95A99224283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift in Sources */,
 				951FB324283747AB00A62931 /* LoginView.swift in Sources */,
 				9F69EE5226957E1300746CD7 /* FrameManager.swift in Sources */,
 				95E79E2D27A13CED00AC36E1 /* CGFloat+Extension.swift in Sources */,
-				95E79E3227A13D0600AC36E1 /* ContentViewModel.swift in Sources */,
 				95E79E2427A13CED00AC36E1 /* UIImageView.swift in Sources */,
 				950F555727EB04AC00480F17 /* yolov5-pipeline.mlmodel in Sources */,
 				95E79E2927A13CED00AC36E1 /* CGImage+Extension.swift in Sources */,
@@ -724,9 +770,11 @@
 				95435E582845ABD0007139A6 /* VideoAnalysorView.swift in Sources */,
 				9506B87A284A19E600AFF749 /* Date+Extension.swift in Sources */,
 				95E79E2627A13CED00AC36E1 /* PerspectiveTransform+Extension.swift in Sources */,
+				954AA32C289BBD6A001BEAAF /* CameraViewModel.swift in Sources */,
 				95E79E3427A13D0600AC36E1 /* LineRecognizer.swift in Sources */,
 				95E79E2B27A13CED00AC36E1 /* UIImage+Extension.swift in Sources */,
 				950F556227F149B100480F17 /* Annotation.swift in Sources */,
+				954AA33E289BC858001BEAAF /* LabelImageView.swift in Sources */,
 				951ABE4C283B2555009AB8F6 /* MultiSelector.swift in Sources */,
 				95878ECD27DEDD8300F31A9B /* SportsGround.swift in Sources */,
 				1839F4B025190F2A00BB00F1 /* AppMain.swift in Sources */,
@@ -736,6 +784,7 @@
 				951ABE42283A13A9009AB8F6 /* MediaPicker.swift in Sources */,
 				95986F3528406CEE0090B22C /* ObjectToLandmarkRuleView.swift in Sources */,
 				9554E8662841C717002D8345 /* LineDrawerView.swift in Sources */,
+				954AA32D289BBD6A001BEAAF /* SportsReport.swift in Sources */,
 				9545751327BD1B1600129153 /* StandAndJump.swift in Sources */,
 				95171C9727CE140B0051249D /* Sporter.swift in Sources */,
 				95E79E0327A13C3000AC36E1 /* Card.swift in Sources */,
@@ -759,6 +808,7 @@
 				951FB329283892F700A62931 /* SportsManagerView.swift in Sources */,
 				951ABE48283A6A01009AB8F6 /* ObjectsView.swift in Sources */,
 				951ABE46283A5526009AB8F6 /* PoseView.swift in Sources */,
+				954AA33B289BC207001BEAAF /* UIScreen+Extension.swift in Sources */,
 				95A9921B283C81AB00F79FB1 /* BackgroundClearView.swift in Sources */,
 				95A3E60427E2DDEC0005E364 /* Warning.swift in Sources */,
 				95878ED327DF277600F31A9B /* UIView+Extension.swift in Sources */,

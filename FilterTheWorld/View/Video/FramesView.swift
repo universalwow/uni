@@ -55,9 +55,7 @@ struct FramesView: View {
             Button(action: {
                 self.sportManager.updateSportState(
                     image: self.imageAnalysis.sportData.frame,
-                    landmarkSegments: self.imageAnalysis.selectedHumanPose()?.landmarkSegments ?? [])
-                print("---------------aa\(self.selectedPoseIndex)")
-                
+                    humanPose: self.imageAnalysis.selectedHumanPose())                
                 
             }) {
                 Text("保存 \(self.selectedPoseIndex)")

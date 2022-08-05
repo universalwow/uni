@@ -7,7 +7,10 @@ import UIKit
 
 
 
-
+struct ObservationAndTime {
+    var objects:[Observation] = []
+    var time: Double
+}
 
 
 class ObjectRecoginzerYOLO: ObservableObject {
@@ -23,8 +26,15 @@ class ObjectRecoginzerYOLO: ObservableObject {
 
   private var requests = [VNRequest]()
   @Published var results: [Observation] = []
+    
+    
+    
+    @Published var timeResults: [ObservationAndTime] = []
+    
+    
 
   init(yoloModelName: String) {
+      
     self.modelSize = setupModelSize(yoloModelName: yoloModelName)
     let _ = setupVision(modelName: yoloModelName)
     print("setupVision..........................\(yoloModelName)")
@@ -47,7 +57,11 @@ class ObjectRecoginzerYOLO: ObservableObject {
           let visionModel = try VNCoreMLModel(for: MLModel(contentsOf: modelURL))
           let objectRecognition = VNCoreMLRequest(model: visionModel, completionHandler: { (request, error) in
             DispatchQueue.main.async(execute: { [weak self] in
+                
               if let results = request.results {
+                  
+                  
+//                  print("currentTime yolo \(String(describing: request.value(forKey: "currentTime")))")
                 self?.processVisionRequestResults(results: results)
               }
               })
@@ -95,6 +109,15 @@ class ObjectRecoginzerYOLO: ObservableObject {
         )
     }
     self.results = observations
+      
+      DispatchQueue.main.async {
+          if let index = self.timeResults.firstIndex(where: { observationAndTime in
+              observationAndTime.objects.isEmpty
+          }) {
+              print("observationAndTime add")
+              self.timeResults[index].objects = observations
+          }
+      }
     self.lastTime = currentTime
   }
   
@@ -204,8 +227,12 @@ class ObjectRecoginzerYOLO: ObservableObject {
       cvPixelBuffer: image,
       orientation: .up,
       options: [:])
+      DispatchQueue.main.async {
+          self.timeResults.append(ObservationAndTime(objects: [], time: currentTime))
+      }
     
     do {
+//        self.requests[0].setValue(currentTime, forUndefinedKey: "currentTime")
         try imageRequestHandler.perform(self.requests)
     } catch {
         print("error ",error)

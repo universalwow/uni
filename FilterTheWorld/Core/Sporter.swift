@@ -105,18 +105,11 @@ struct SportReport: Identifiable, Codable {
     }
     
     func findStateDescription(stateId: Int) -> StateDescription {
-        print("statesDescription")
-
         return self.statesDescription!.first(where: { stateDescription in
             print("statesDescription \(stateDescription) - \(stateId)")
             return stateDescription.stateId == stateId
         })!
     }
-    
-    
-    
-    
-    
     
     func findStateScoreTimes(stateId: Int) -> [ScoreTime] {
         self.scoreTimes.filter( { scoreTime in
@@ -195,6 +188,18 @@ class Sporter: Identifiable {
         self.sport = sport
     }
     
+    deinit {
+        print("deinit---------------")
+        cancelableWarningMap.keys.forEach({ key in
+            cancelableWarningMap[key]?.invalidate()
+            cancelableWarningMap.removeValue(forKey: key)
+        })
+        inCheckingStatesTimer.keys.forEach({ key in
+            inCheckingStatesTimer[key]?.invalidate()
+            inCheckingStatesTimer.removeValue(forKey: key)
+        })
+    }
+    
     var currentStateTime = StateTime(sportState: SportState.startState, time: 0, poseMap: [:]) {
         
         didSet {
@@ -212,7 +217,7 @@ class Sporter: Identifiable {
             }
             
             // 状态切换 取消历史提示
-            totalWarnings = []
+            warnings = []
         }
     }
     
@@ -232,8 +237,7 @@ class Sporter: Identifiable {
         }
     }
     
-    var warnings: [WarningData] = []
-    
+    var warnings: Set<String> = []
     
     var timerScoreTimes: [ScoreTime] = [] {
         didSet {
@@ -274,20 +278,43 @@ class Sporter: Identifiable {
         }
 
     }
-    
-    
-    var totalWarnings: Set<String> = []
-    
+
     
     var stateTimeHistory: [StateTime] = [StateTime(sportState: SportState.startState, time: 0, poseMap: [:])]
     
+  
+    var cancelableWarningMap: [String: Timer] = [:]
+    
+    var warningsData: [WarningData] = []
+    
+    func warningTimer(warning: WarningData, warningDelay: TimeInterval) -> Timer {
+        let timer =
+        Timer.scheduledTimer(
+            withTimeInterval: warningDelay, repeats: false) { [self] timer in
+                print("warning.....4\(warning.content)")
+
+                DispatchQueue.main.async {
+                    self.warnings.insert(warning.content)
+                    print("warning.....\(warning.content)")
+                    self.warningsData.append(warning)
+                }
+        
+                timer.invalidate()
+                
+            }
+        print("warning...2 \(warning.content) - \(timer.isValid) - \(timer.timeInterval) - \(timer.fireDate) - \(Date())")
+        return timer
+
+    }
+
+    
+    var inCheckingStateHistory: [String: [Bool]] = [:]
     // 检测到状态维护的计时器
     var inCheckingStatesTimer: [String: Timer] = [:]
-    var inCheckingStateHistory: [String: [Bool]] = [:]
     
-    func timer(state: SportState, currentTime: Double, withTimeInterval: TimeInterval) -> Timer {
+    func checkStateTimer(state: SportState, currentTime: Double, withTimeInterval: TimeInterval) -> Timer {
         Timer.scheduledTimer(
-            withTimeInterval: withTimeInterval, repeats: false) {[self] _ in
+            withTimeInterval: withTimeInterval, repeats: false) {[self] timer in
                 if self.inCheckingStateHistory.keys.contains(state.name) {
                     let result = self.inCheckingStateHistory[state.name]!
                         .reduce((0.0, 0.0), { result, newValue in
@@ -321,6 +348,7 @@ class Sporter: Identifiable {
                                 }
                         }
                     }
+                    timer.invalidate()
                     inCheckingStateHistory.removeValue(forKey: state.name)
                     inCheckingStatesTimer.removeValue(forKey: state.name)
                 }
@@ -416,9 +444,42 @@ class Sporter: Identifiable {
     var lastTime: Double = 0
     
     func updateWarnings(currentTime: Double, allCurrentFrameWarnings: Set<String>) {
-        totalWarnings = allCurrentFrameWarnings
-        allCurrentFrameWarnings.forEach { warning in
-            warnings.append(WarningData(content: warning, stateId: currentStateTime.sportState.id, time: currentTime))
+        if let warningDelay = sport.warningDelay, warningDelay < 0.3 {
+            warnings = allCurrentFrameWarnings
+            return
+        }
+        let totalWarnings =
+        allCurrentFrameWarnings.map { warning in
+            WarningData(content: warning, stateId: currentStateTime.sportState.id, time: currentTime)
+            
+        }
+        // 所有存在 totalWarnings 而不在 map 中的规则 加入map
+        // 所有不存在 totalWarnings 而在 map中的 取消
+        // 存在双方的 不管
+        let cancelWarnings = cancelableWarningMap.map { warning, _ in
+            warning
+        }.filter { warning in
+            !totalWarnings.contains(where: { newWarning in
+                warning == newWarning.content
+            })
+        }
+        print("warning... cancel \(cancelWarnings.count) - \(cancelableWarningMap.count)")
+        cancelWarnings.forEach { cancelWarning in
+            print("warning... cancel \(cancelableWarningMap[cancelWarning]?.fireDate) -\(Date())")
+            cancelableWarningMap[cancelWarning]?.invalidate()
+            cancelableWarningMap.removeValue(forKey: cancelWarning)
+        }
+        
+        DispatchQueue.main.async {
+            self.warnings = self.warnings.subtracting(cancelWarnings)
+        }
+        
+        totalWarnings.filter { newWarning in
+            !cancelableWarningMap.contains(where: { warning, _ in
+                warning == newWarning.content
+            })
+        }.forEach { newWarning in
+            cancelableWarningMap[newWarning.content] = warningTimer(warning: newWarning, warningDelay: sport.warningDelay ?? 1.0)
         }
     }
     
@@ -460,7 +521,7 @@ class Sporter: Identifiable {
             if satisfy.0 {
 //                如果不包含该状态 则建立计时器
                 if !inCheckingStatesTimer.keys.contains(state.name) {
-                    inCheckingStatesTimer[state.name] = timer(state: state, currentTime: currentTime, withTimeInterval: state.checkCycle!)
+                    inCheckingStatesTimer[state.name] = checkStateTimer(state: state, currentTime: currentTime, withTimeInterval: state.checkCycle!)
                 }
             }
 //            else {
@@ -579,9 +640,7 @@ class Sporter: Identifiable {
         }
 
 //        计分逻辑 状态未切换时判断
-        
-        var allCurrentFrameScoreWarnings : Set<String> = []
-
+   
         let scoreRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<String>, Int) in
             
             if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to), transform.from == currentStateTime.sportState.id {
@@ -589,7 +648,7 @@ class Sporter: Identifiable {
                 let satisfy = toState.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
                 if satisfy.0  {
                     if !inCheckingStatesTimer.keys.contains(toState.name) {
-                        inCheckingStatesTimer[toState.name] = timer(state: toState, currentTime: currentTime, withTimeInterval: toState.checkCycle!)
+                        inCheckingStatesTimer[toState.name] = checkStateTimer(state: toState, currentTime: currentTime, withTimeInterval: toState.checkCycle!)
                     }
                 }
                 
@@ -735,26 +794,33 @@ class Sporter: Identifiable {
             allCurrentFrameWarnings = []
         }
         
-        allCurrentFrameWarnings.remove("")
-        updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)
-        
         // 长度等于计数序列开始判断是否满足计分条件
+        
+        sport.violateStateSequence.forEach({ _violateStateSequence in
+            if stateTimeHistory.count >= _violateStateSequence.stateIds.count {
+                let allStateSatisfy = _violateStateSequence.stateIds.indices.allSatisfy{ index in
+                    _violateStateSequence.stateIds[index] == stateTimeHistory[index + stateTimeHistory.count - _violateStateSequence.stateIds.count].sportState.id
+                }
+                
+                if allStateSatisfy {
+                    allCurrentFrameWarnings = allCurrentFrameWarnings.union([_violateStateSequence.warning])
+                }
+                
+            }
+            
+        })
         
         sport.scoreStateSequence.forEach({ _scoreStateSequence in
             if stateTimeHistory.count >= _scoreStateSequence.count {
                 let allStateSatisfy = _scoreStateSequence.indices.allSatisfy{ index in
                     _scoreStateSequence[index] == stateTimeHistory[index + stateTimeHistory.count - _scoreStateSequence.count].sportState.id
                 }
-                
                 var timeSatisfy = true
-                
                 if let timeLimit = sport.scoreTimeLimit, _scoreStateSequence.count > 1, let startTime = stateTimeHistory.first?.time, let endTime = stateTimeHistory.last?.time {
                     if endTime - startTime > timeLimit {
                         timeSatisfy = false
                     }
                 }
-                
-                
                 // 时间间隔不满足 抛出warning
                 if !timeSatisfy {
                     allCurrentFrameWarnings = allCurrentFrameWarnings.union(["时间间隔过长"])
@@ -774,7 +840,8 @@ class Sporter: Identifiable {
         })
         
         
-        
+        allCurrentFrameWarnings.remove("")
+        updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)
         
         if currentTime > lastTime {
             lastTime = currentTime

@@ -143,6 +143,7 @@ struct SportView: View {
     @State var toState = SportState.endState
     
     @State var scoreState = SportState.startState
+    @State var violateState = SportState.startState
     @State var scoreSequenceIndex = 0
     
     @State var selectedLandmarkType = LandmarkType.LeftAnkle
@@ -158,7 +159,7 @@ struct SportView: View {
     @State var sportClass = SportClass.None
     @State var sportPeriod = SportPeriod.None
     @State var noStateWarning = ""
-    
+    @State var violateSequenceWarning = ""
     
 
     
@@ -617,6 +618,63 @@ struct SportView: View {
                                 Spacer()
                                 Button(action: {
                                     sportManager.deleteSportStateFromScoreSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
+                                }) {
+                                    Text("删除")
+                                }
+                            }.padding([.top], StaticValue.padding)
+                            
+                        }
+                        
+                    }
+                }
+                
+                VStack {
+                    Divider()
+                    HStack {
+                        Text("违规状态序列")
+                        Spacer()
+                        HStack {
+                            Text("状态")
+                            Picker("违规序列", selection: $violateState) {
+                                ForEach(sport.allStates) { state in
+                                    Text(state.name).tag(state)
+                                }
+                            }
+                        }
+                        Spacer()
+                        Button(action: {
+                            sportManager.addSportStateViolateSequence(sport: sport)
+                            
+                        }) {
+                            Text("添加违规序列")
+                        }
+                    }
+                    
+                    ForEach(sport.violateStateSequence.indices, id: \.self) { sequenceIndex in
+                        Divider()
+                        HStack {
+                            Text("序列\(sequenceIndex)")
+                            Spacer()
+                            
+                            Text("提醒:\(sport.violateStateSequence[sequenceIndex].warning)")
+                            TextField("违规提醒", text: $violateSequenceWarning)
+
+                            Button(action: {
+                                sportManager.addSportStateViolateSequence(sport: sport, index: sequenceIndex, violateState: violateState, warning: violateSequenceWarning)
+
+                           }) {
+                               Text("添加状态")
+                           }
+                            
+                        }.padding([.top], StaticValue.padding)
+                        
+                        ForEach(sport.violateStateSequence[sequenceIndex].stateIds.indices, id: \.self) { stateIndex in
+                            HStack {
+                                Text(sport.findFirstSportStateByUUID(editedStateUUID:
+                                                                        sport.violateStateSequence[sequenceIndex].stateIds[stateIndex])!.name)
+                                Spacer()
+                                Button(action: {
+                                    sportManager.deleteSportStateFromViolateSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
                                 }) {
                                     Text("删除")
                                 }

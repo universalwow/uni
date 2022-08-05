@@ -13,7 +13,7 @@ import SwiftUI
 
 typealias PoseMap = [LandmarkType: Point3D]
 
-struct HumanPose:Identifiable, Equatable {
+struct HumanPose:Identifiable, Equatable, Codable  {
   var id: Int
   //关节点
   private(set) var landmarks:[Landmark] = []
