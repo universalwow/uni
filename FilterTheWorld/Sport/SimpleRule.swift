@@ -786,6 +786,8 @@ struct AngleToLandmarkSegment: Codable {
 }
 
 
+
+
 struct AngleRange: Codable {
     var lowerBound = 0.0
     var upperBound = 0.0
@@ -858,6 +860,7 @@ struct LandmarkInArea: Codable {
     
     var warning:String = ""
     var satisfyWarning:Bool?
+    
 
     
     init(landmarkType: LandmarkType, imageSize: Point2D, warning: String, satisfyWarning: Bool) {

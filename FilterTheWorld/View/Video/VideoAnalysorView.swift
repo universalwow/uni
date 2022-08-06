@@ -345,11 +345,11 @@ struct VideoAnalysorView: View {
         }) {
             MediaPicker(mediaType: .videos, image: Binding.constant(nil), video: $videoUrl)
         }
-        .onChange(of: stopAnalysis, perform: { flag in
-            if flag {
-                sportGround.clearWarning()
-            }
-        })
+//        .onChange(of: stopAnalysis, perform: { flag in
+//            if flag {
+//                sportGround.clearWarning()
+//            }
+//        })
 
         .onChange(of: currentSportIndex) { _ in
             print("currentsport \(currentSportIndex)")

@@ -57,6 +57,12 @@ struct ContentView: View {
             }.tabItem{
                 Text("Login")
             }
+            
+            VStack {
+                WarningTest()
+            }.tabItem{
+                Text("Warnings")
+            }
         }
     }
 }

@@ -1,7 +1,8 @@
 
 import Foundation
 
-struct Warning {
+struct Warning: Codable {
   var content: String
-  var onScreen: Bool = true
+  var time: Double
+  var delayTime:Double
 }

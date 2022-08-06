@@ -8,7 +8,7 @@ class SportsGround: ObservableObject {
     @Published var sports: [Sport] = SportsGround.allSports
     
     @Published var sporters : [Sporter] = []
-    @Published var warnings: Set<String> = []
+    @Published var warnings: [String] = []
     var sportersReport: [SportReport] = []
     
     
@@ -42,54 +42,23 @@ class SportsGround: ObservableObject {
             }
             sporters[sporterIndex].play(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
             DispatchQueue.main.async {
-                self.warnings = self.sporters[sporterIndex].warnings
+                print("warning... 7 \(self.sporters[sporterIndex].warnings)")
+                self.sporters[sporterIndex].warnings.forEach({ newWarning in
+                    if !self.warnings.contains(newWarning) {
+                        self.warnings.append(newWarning)
+                    }
+                    
+                })
+                
             }
 
         }
     }
     
-    var totalWarnings: Set<String> = [] {
-        // 所有存在 totalWarnings 而不在 map 中的规则 加入map
-        // 所有不存在 totalWarnings 而在 map中的 取消
-        // 存在双方的 不管
-        didSet {
-            let cancelWarnings = cancelableWarningMap.map { warning, _ in
-                warning
-            }.filter { warning in
-                !totalWarnings.contains(where: { newWarning in
-                    warning == newWarning
-                })
-            }
-            
-            cancelWarnings.forEach { cancelWarning in
-                cancelableWarningMap[cancelWarning]?.invalidate()
-                cancelableWarningMap.removeValue(forKey: cancelWarning)
-            }
-            DispatchQueue.main.async {
-                self.warnings = self.warnings.subtracting(cancelWarnings)
-            }
-            
-            totalWarnings.filter { newWarning in
-                !cancelableWarningMap.contains(where: { warning, _ in
-                    warning == newWarning
-                })
-            }.forEach { newWarning in
-                cancelableWarningMap[newWarning] = timer(warning: newWarning, warningDelay: sporters.first?.sport.warningDelay ?? 1.0)
-            }
-            
-        }
-    }
-    
-    
     
     var cancelableWarningMap: [String: Timer] = [:]
     
-    func timer(warning: String, warningDelay: TimeInterval) -> Timer {
-        Timer.scheduledTimer(
-            withTimeInterval: warningDelay, repeats: false) { [weak self] _ in
-                self?.warnings.insert(warning)
-            }
-    }
+
     
 }
 

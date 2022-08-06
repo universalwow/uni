@@ -146,7 +146,10 @@ struct SporterView: View {
                 }.foregroundColor(.white)
             }
             Spacer()
-            WarningsView().padding([.bottom], 100)
+            WarningTest()
+//                .background(Color.green)
+                .padding([.bottom], 20)
+            
         }.padding()
     }
 }

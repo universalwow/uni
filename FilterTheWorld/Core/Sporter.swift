@@ -216,8 +216,8 @@ class Sporter: Identifiable {
                 }
             }
             
-            // 状态切换 取消历史提示
-            warnings = []
+//            // 状态切换 取消历史提示
+//            warnings = []
         }
     }
     
@@ -238,6 +238,9 @@ class Sporter: Identifiable {
     }
     
     var warnings: Set<String> = []
+//    MARK: 第一次捕获到时 添加到延迟展示
+//    当下一帧消失时 未必想取消该展示 比如运球过低 是在等高位置的出现
+//    开合跳之类的不存在这种问题是因为开合之间没有中间状态
     
     var timerScoreTimes: [ScoreTime] = [] {
         didSet {
@@ -445,6 +448,7 @@ class Sporter: Identifiable {
     
     func updateWarnings(currentTime: Double, allCurrentFrameWarnings: Set<String>) {
         if let warningDelay = sport.warningDelay, warningDelay < 0.3 {
+            print("warning... 6 \(warnings)")
             warnings = allCurrentFrameWarnings
             return
         }
