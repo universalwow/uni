@@ -37,7 +37,7 @@ struct ReportDetail: View {
                         }
                         
                         
-                        
+//
 //                        Chart(report.scoreStates) {
 //                                BarMark(
 //                                    x: .value("Category", $0.category),
@@ -48,53 +48,105 @@ struct ReportDetail: View {
                         
                         
                         
-//                        Section("时间轴") {
-//                            VStack(alignment: .leading) {
-//                                HStack {
-//                                    HStack {
-//                                        Text("时间")
-//                                        Spacer()
-//                                    }
-//                                    
-//                                    .frame(width: UIScreen.screenWidth/3)
-//                                    HStack {
-//                                        Text("相对时间")
-//                                        Spacer()
-//                                    }
-//                                    .frame(width: UIScreen.screenWidth/3)
-//                                    
-//                                    HStack {
-//                                        Text("状态")
-//                                        Spacer()
-//                                    }
-//                                    .frame(width: UIScreen.screenWidth/3)
-//                                }
-//                                
-//                                
-//                                ForEach(report.scoreTimes) { scoreTime in
-//                                    let stateDescription = report.findStateDescription(stateId: scoreTime.stateId)
-//                                    HStack {
-//                                        HStack {
-//                                            Text(SportReport.timeFormater(time: scoreTime.time))
-//                                            Spacer()
-//                                        }
-//                                        .frame(width: UIScreen.screenWidth/3)
-//                                        HStack {
-//                                            Text(SportReport.secondFormater(time: scoreTime.time - report.startTime))
-//                                            Spacer()
-//                                        }
-//                                        .frame(width: UIScreen.screenWidth/3)
-//                                        
-//                                        HStack {
-//                                            Text(stateDescription.stateName)
-//                                            Spacer()
-//                                        }
-//                                        .frame(width: UIScreen.screenWidth/3)
-//                                    }
-//                                }
-//                            }
-//                            
-//                        }
+                        Section("时间轴") {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    HStack {
+                                        Text("时间")
+                                        Spacer()
+                                    }
+                                    
+                                    .frame(width: UIScreen.screenWidth/3)
+                                    HStack {
+                                        Text("相对时间")
+                                        Spacer()
+                                    }
+                                    .frame(width: UIScreen.screenWidth/3)
+                                    
+                                    HStack {
+                                        Text("状态")
+                                        Spacer()
+                                    }
+                                    .frame(width: UIScreen.screenWidth/3)
+                                }
+                                
+                                
+                                ForEach(report.scoreTimes) { scoreTime in
+                                    let stateDescription = report.findStateDescription(stateId: scoreTime.stateId)
+                                    HStack {
+                                        HStack {
+                                            Text(SportReport.timeFormater(time: scoreTime.time))
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+                                        HStack {
+                                            Text(SportReport.secondFormater(time: scoreTime.time - report.startTime))
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+                                        
+                                        HStack {
+                                            Text(stateDescription.stateName)
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+                                    }
+                                }
+                            }
+                            
+                        }
+                        
+                        if let allStateTime = report.allStateTimes {
+                            Section("时间轴") {
+                                VStack(alignment: .leading) {
+                                    HStack {
+                                        HStack {
+                                            Text("时间")
+                                            Spacer()
+                                        }
+                                        
+                                        .frame(width: UIScreen.screenWidth/3)
+                                        HStack {
+                                            Text("相对时间")
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+                                        
+                                        HStack {
+                                            Text("状态")
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+                                    }
+                                    
+                                    
+                                    ForEach(allStateTime) { scoreTime in
+                                        let stateDescription = report.findStateDescription(stateId: scoreTime.stateId)
+                                        HStack {
+                                            HStack {
+                                                Text(SportReport.timeFormater(time: scoreTime.time))
+                                                Spacer()
+                                            }
+                                            .frame(width: UIScreen.screenWidth/3)
+                                            HStack {
+                                                Text(SportReport.secondFormater(time: scoreTime.time - report.startTime))
+                                                Spacer()
+                                            }
+                                            .frame(width: UIScreen.screenWidth/3)
+                                            
+                                            HStack {
+                                                Text(stateDescription.stateName)
+                                                Spacer()
+                                            }
+                                            .frame(width: UIScreen.screenWidth/3)
+                                        }
+                                    }
+                                }
+                                
+                            }
+                        }
+                        
+                        
                         
                         
                     }
@@ -116,53 +168,53 @@ struct ReportDetail: View {
 //                                )
 //                                .foregroundStyle(.green)
 //                            }
+//
                         
                         
-                        
-//                        Section("时间轴") {
-//                                VStack(alignment: .leading) {
-//                                    HStack {
-//                                        HStack {
-//                                            Text("时间")
-//                                            Spacer()
-//                                        }
-//                                        .frame(width: UIScreen.screenWidth/3)
-//                                        HStack {
-//                                            Text("相对时间")
-//                                            Spacer()
-//                                        }
-//                                        .frame(width: UIScreen.screenWidth/3)
-//
-//                                        HStack {
-//                                            Text("提示消息")
-//                                            Spacer()
-//                                        }
-//                                        .frame(width: UIScreen.screenWidth/3)
-//                                    }
-//
-//
-//                                    ForEach(report.sortWarningsByTime) { warningData in
-//                                        HStack {
-//                                            HStack {
-//                                                Text(SportReport.timeFormater(time: warningData.time))
-//                                                Spacer()
-//                                            }
-//                                            .frame(width: UIScreen.screenWidth/3)
-//                                            HStack {
-//                                                Text(SportReport.secondFormater(time: warningData.time - report.startTime))
-//                                                Spacer()
-//                                            }
-//                                            .frame(width: UIScreen.screenWidth/3)
-//
-//                                            HStack {
-//                                                Text(warningData.content)
-//                                                Spacer()
-//                                            }
-//                                            .frame(width: UIScreen.screenWidth/3)
-//                                        }
-//                                    }
-//                                }
-//                        }
+                        Section("时间轴") {
+                                VStack(alignment: .leading) {
+                                    HStack {
+                                        HStack {
+                                            Text("时间")
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+                                        HStack {
+                                            Text("相对时间")
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+
+                                        HStack {
+                                            Text("提示消息")
+                                            Spacer()
+                                        }
+                                        .frame(width: UIScreen.screenWidth/3)
+                                    }
+
+
+                                    ForEach(report.sortWarningsByTime) { warningData in
+                                        HStack {
+                                            HStack {
+                                                Text(SportReport.timeFormater(time: warningData.time))
+                                                Spacer()
+                                            }
+                                            .frame(width: UIScreen.screenWidth/3)
+                                            HStack {
+                                                Text(SportReport.secondFormater(time: warningData.time - report.startTime))
+                                                Spacer()
+                                            }
+                                            .frame(width: UIScreen.screenWidth/3)
+
+                                            HStack {
+                                                Text(warningData.warning.content)
+                                                Spacer()
+                                            }
+                                            .frame(width: UIScreen.screenWidth/3)
+                                        }
+                                    }
+                                }
+                        }
                         
                         
                     }

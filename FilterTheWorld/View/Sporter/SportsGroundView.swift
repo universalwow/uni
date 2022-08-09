@@ -28,7 +28,7 @@ struct SportsGroundView: View {
                             let sport = sportGround.sports[sportIndex]
                             NavigationLink(destination:
                                             CameraPlayingView(sport: Binding.constant(sport))
-                                            .navigationTitle(Text("\(sport.name)-\(sport.sportClass!.rawValue)-\(sport.sportPeriod!.rawValue)"))
+                                            .navigationTitle(Text("\(sport.name)-\(sport.sportClass.rawValue)-\(sport.sportPeriod.rawValue)"))
                                             .navigationBarTitleDisplayMode(.inline)
                                             .onAppear(perform: {
 //                                                cameraPlaying.startCamera()

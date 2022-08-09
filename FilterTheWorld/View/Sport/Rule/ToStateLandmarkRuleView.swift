@@ -6,9 +6,11 @@ struct ToStateLandmarkRuleView: View {
     
     @EnvironmentObject var sportManager: SportsManager
     
-    @State var landmarkToStateToggle = false
-    @State var landmarkToStateWarning = ""
-    @State var satisfyWarning = false
+    @State var toggle = false
+    
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
 
     @State var landmarkTypeToState = LandmarkType.LeftAnkle
     @State var currentAxis = CoordinateAxis.X
@@ -20,24 +22,25 @@ struct ToStateLandmarkRuleView: View {
     
     
     func setInitData() {
-        if landmarkToStateToggle {
+        if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setRuleToStateLandmark(toStateId: relativeToState, fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning, satisfyWarning: satisfyWarning)
+            sportManager.setRuleToStateLandmark(toStateId: relativeToState, fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis,
+                                                warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
         }
 
     }
     
     func resetInitData() {
-        if landmarkToStateToggle {
+        if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateRuleToStateLandmark(stateId: relativeToState, fromAxis: currentAxis, landmarkType: landmarkTypeToState,  landmarkSegment: relativeSegment, toAxis: relativeAxis, warning: landmarkToStateWarning, satisfyWarning: satisfyWarning)
+            sportManager.updateRuleToStateLandmark(stateId: relativeToState, fromAxis: currentAxis, landmarkType: landmarkTypeToState,  landmarkSegment: relativeSegment, toAxis: relativeAxis,warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
         }
        
     }
  
     
     func updateLocalData() {
-        if landmarkToStateToggle {
+        if toggle {
             let length = sportManager.getRuleToStateLandmark()!
             minRelativeLength = length.lowerBound
             maxRelativeLength = length.upperBound
@@ -46,15 +49,16 @@ struct ToStateLandmarkRuleView: View {
     }
     
     func updateRemoteData() {
-        if landmarkToStateToggle {
+        if toggle {
             sportManager.updateRuleToStateLandmark(lowerBound: minRelativeLength, upperBound: maxRelativeLength)
         }
     }
     
     
     func toggleOff() {
-        landmarkToStateWarning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
         
         landmarkTypeToState =  sportManager.findSelectedSegment()!.landmarkTypes.first!
         currentAxis = CoordinateAxis.X
@@ -67,7 +71,7 @@ struct ToStateLandmarkRuleView: View {
     
     var body: some View {
         VStack {
-            Toggle("关节相对状态位移", isOn: $landmarkToStateToggle.didSet { isOn in
+            Toggle("关节相对状态位移", isOn: $toggle.didSet { isOn in
                 if isOn {
                     setInitData()
                     updateLocalData()
@@ -80,14 +84,23 @@ struct ToStateLandmarkRuleView: View {
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $landmarkToStateWarning) { flag in
+                    TextField("提醒...", text: $warningContent) { flag in
                         if !flag {
                             resetInitData()
                         }
                         
                     }
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                 }
@@ -183,13 +196,14 @@ struct ToStateLandmarkRuleView: View {
                     
                 }
                 
-            }.disabled(!landmarkToStateToggle)
+            }.disabled(!toggle)
         }
         .onAppear{
             if let length = sportManager.getRuleToStateLandmark() {
-                landmarkToStateWarning = length.warning
-                satisfyWarning = length.satisfyWarning ?? false
-                
+                warningContent = length.warning.content
+                triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
+                delayTime = length.warning.delayTime
+                                
                 landmarkTypeToState = length.fromLandmarkToAxis.landmark.landmarkType
                 currentAxis = length.fromLandmarkToAxis.axis
                 relativelandmarkSegmentType = length.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
@@ -197,7 +211,7 @@ struct ToStateLandmarkRuleView: View {
                 relativeToState = length.toStateId
                 minRelativeLength = length.lowerBound
                 maxRelativeLength = length.upperBound
-                landmarkToStateToggle = true
+                toggle = true
 
             }else {
                 self.landmarkTypeToState = self.sportManager.findSelectedSegment()!.landmarkTypes.first!

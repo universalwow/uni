@@ -656,7 +656,7 @@ struct SportView: View {
                             Text("序列\(sequenceIndex)")
                             Spacer()
                             
-                            Text("提醒:\(sport.violateStateSequence[sequenceIndex].warning)")
+                            Text("提醒:\(sport.violateStateSequence[sequenceIndex].warning.content)")
                             TextField("违规提醒", text: $violateSequenceWarning)
 
                             Button(action: {

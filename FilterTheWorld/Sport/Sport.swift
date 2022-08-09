@@ -45,7 +45,7 @@ enum SportClass: String, Codable, CaseIterable, Identifiable {
 
 
 struct ViolateSequenceAndWarning: Codable {
-    var warning: String = ""
+    var warning: Warning = Warning(content: "", triggeredWhenRuleMet: true, delayTime: 0.0)
     var stateIds: [Int] = []
 }
 
@@ -86,11 +86,11 @@ struct Sport: Identifiable, Hashable, Codable {
     
 
   // 时间限制 秒
-  var scoreTimeLimit:Double?
-  var warningDelay: Double?
-  var sportClass:SportClass?
-    var sportPeriod:SportPeriod?
-    var noStateWarning: String?
+    var scoreTimeLimit:Double = 2.0
+    var warningDelay: Double = 2.0
+    var sportClass:SportClass = .Counter
+    var sportPeriod:SportPeriod = .CompletePeriod
+    var noStateWarning: String = ""
 }
 
 
@@ -114,7 +114,7 @@ extension Sport {
   }
   
     var sportFullName: String {
-        "\(self.name)-\(self.sportClass!.rawValue)-\(self.sportPeriod!.rawValue)"
+        "\(self.name)-\(self.sportClass.rawValue)-\(self.sportPeriod.rawValue)"
     }
   
   var allStates: [SportState]  {
@@ -258,7 +258,7 @@ extension Sport {
     
     mutating func addSportStateViolateSequence(index: Int, violateState: SportState, warning: String) {
         violateStateSequence[index].stateIds.append(violateState.id)
-        violateStateSequence[index].warning = warning
+        violateStateSequence[index].warning = Warning(content: warning, triggeredWhenRuleMet: true, delayTime: 0.0)
     }
     
     mutating func addSportStateScoreSequence() {

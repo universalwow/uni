@@ -33,10 +33,12 @@ struct LandmarkSegmentAngleRuleView: View {
     
     @State var minAngle = 0.0
     @State var maxAngle = 0.0
-    @State var warning = ""
-    @State var satisfyWarning = false
+    
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
 
-    @State var angleToggle = false
+    @State var toggle = false
     
     
     
@@ -44,21 +46,23 @@ struct LandmarkSegmentAngleRuleView: View {
     func toggleOff() {
         minAngle = 0.0
         maxAngle = 0.0
-        warning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
     }
     
     func setInitData() {
-        if angleToggle {
+        if toggle {
             let landmarkSegment = sportManager.findSelectedSegment()!
-            sportManager.setRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning, satisfyWarning: satisfyWarning)
+            sportManager.setRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
         }
     }
     
     func resetInitData() {
-        if angleToggle {
+        if toggle {
             let landmarkSegment = sportManager.findSelectedSegment()!
-            sportManager.updateRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warning: warning, satisfyWarning: satisfyWarning)
+            
+            sportManager.updateRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
         }
     }
     
@@ -70,8 +74,8 @@ struct LandmarkSegmentAngleRuleView: View {
     }
     
     func updateRemoteData() {
-        if angleToggle {
-            sportManager.updateRuleLandmarkSegmentAngle(lowerBound: minAngle, upperBound: maxAngle, warning: warning)
+        if toggle {
+            sportManager.updateRuleLandmarkSegmentAngle(lowerBound: minAngle, upperBound: maxAngle)
         }
         
     }
@@ -169,7 +173,7 @@ struct LandmarkSegmentAngleRuleView: View {
     
     var body: some View {
         VStack {
-            Toggle("角度", isOn: $angleToggle.didSet{ isOn in
+            Toggle("角度", isOn: $toggle.didSet{ isOn in
                 if isOn {
                     setInitData()
                     updateLocalData()
@@ -183,14 +187,24 @@ struct LandmarkSegmentAngleRuleView: View {
             VStack {
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $warning) { flag in
+                    TextField("提醒...", text: $warningContent) { flag in
                         if !flag {
-                            updateRemoteData()
+                            resetInitData()
                         }
                         
                     }
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                     
@@ -211,7 +225,7 @@ struct LandmarkSegmentAngleRuleView: View {
                         }
                     maxAngleslider
                 }
-            }.disabled(!angleToggle)
+            }.disabled(!toggle)
             
         }
         
@@ -219,9 +233,11 @@ struct LandmarkSegmentAngleRuleView: View {
             if let angle = sportManager.getRuleLandmarkSegmentAngle() {
                 self.minAngle = angle.lowerBound
                 self.maxAngle = angle.upperBound
-                self.warning = angle.warning
-                self.satisfyWarning = angle.satisfyWarning ?? false
-                self.angleToggle = true
+                self.warningContent = angle.warning.content
+                self.triggeredWhenRuleMet = angle.warning.triggeredWhenRuleMet
+                self.delayTime = angle.warning.delayTime
+                
+                self.toggle = true
             }
         })
     }

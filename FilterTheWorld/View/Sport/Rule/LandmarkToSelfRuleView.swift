@@ -11,8 +11,10 @@ struct LandmarkToSelfRuleView: View {
     @EnvironmentObject var sportManager: SportsManager
     
     @State var toggle = false
-    @State var warning = ""
-    @State var satisfyWarning = false
+    
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
 
     @State var landmarkType = LandmarkType.LeftAnkle
     @State var direction = Direction.UP
@@ -26,7 +28,8 @@ struct LandmarkToSelfRuleView: View {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
 
-            sportManager.setRuleLandmarkToSelf(landmarkType: landmarkType, direction: direction, toLandmarkSegment: relativeSegment, toAxis: relativeAxis, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning, satisfyWarning: satisfyWarning)
+            sportManager.setRuleLandmarkToSelf(landmarkType: landmarkType, direction: direction, toLandmarkSegment: relativeSegment, toAxis: relativeAxis, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
+
          
         }
 
@@ -35,7 +38,7 @@ struct LandmarkToSelfRuleView: View {
     func resetInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateRuleLandmarkToSelf(landmarkType: landmarkType, direction: direction, toLandmarkSegment: relativeSegment, toAxis: relativeAxis, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning, satisfyWarning: satisfyWarning)
+            sportManager.updateRuleLandmarkToSelf(landmarkType: landmarkType, direction: direction, toLandmarkSegment: relativeSegment, toAxis: relativeAxis, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
         }
        
     }
@@ -56,8 +59,10 @@ struct LandmarkToSelfRuleView: View {
     
     
     func toggleOff() {
-        warning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
+        
         landmarkType = LandmarkType.LeftAnkle
         direction = Direction.UP
         relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
@@ -81,7 +86,7 @@ struct LandmarkToSelfRuleView: View {
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $warning) { flag in
+                    TextField("提醒...", text: $warningContent) { flag in
                         if !flag {
                             resetInitData()
                         }
@@ -89,7 +94,17 @@ struct LandmarkToSelfRuleView: View {
                     }
                     
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                 }
@@ -177,8 +192,10 @@ struct LandmarkToSelfRuleView: View {
         }
         .onAppear{
             if let landmarkToSelf = sportManager.getRuleLandmarkToSelf() {
-                warning = landmarkToSelf.warning
-                satisfyWarning = landmarkToSelf.satisfyWarning ?? false
+                warningContent = landmarkToSelf.warning.content
+                triggeredWhenRuleMet = landmarkToSelf.warning.triggeredWhenRuleMet
+                delayTime = landmarkToSelf.warning.delayTime
+                
                 landmarkType = landmarkToSelf.landmarkType
                 direction = landmarkToSelf.toDirection
                 relativelandmarkSegmentType = landmarkToSelf.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType

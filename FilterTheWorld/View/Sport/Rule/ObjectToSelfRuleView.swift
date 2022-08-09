@@ -11,8 +11,11 @@ struct ObjectToSelfRuleView: View {
     @EnvironmentObject var sportManager: SportsManager
     
     @State var toggle = false
-    @State var warning = ""
     @State var satisfyWarning = false
+    
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
 
     @State var fromObjectId = ""
     @State var direction = Direction.UP
@@ -24,15 +27,17 @@ struct ObjectToSelfRuleView: View {
         if toggle {
 
             
-            sportManager.setRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning, satisfyWarning: satisfyWarning)
-         
+            sportManager.setRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound,
+                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
         }
 
     }
     
     func resetInitData() {
         if toggle {
-            sportManager.updateRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: warning, satisfyWarning: satisfyWarning)
+            sportManager.updateRuleObjectToSelf(objectId: fromObjectId, direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound,
+                                                warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
+            
         }
        
     }
@@ -53,8 +58,10 @@ struct ObjectToSelfRuleView: View {
     
     
     func toggleOff() {
-        warning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
+        
         if self.sportManager.findSelectedObjects().count > 1 {
             fromObjectId = self.sportManager.findSelectedObjects().first(where: { object in
                 object.label != ObjectLabel.POSE.rawValue
@@ -83,14 +90,23 @@ struct ObjectToSelfRuleView: View {
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $warning) { flag in
+                    TextField("提醒...", text: $warningContent) { flag in
                         if !flag {
                             resetInitData()
                         }
                         
                     }
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                 }
@@ -151,8 +167,10 @@ struct ObjectToSelfRuleView: View {
         }
         .onAppear{
             if let objectToSelf = sportManager.getRuleObjectToSelf() {
-                warning = objectToSelf.warning
-                satisfyWarning = objectToSelf.satisfyWarning ?? false
+                warningContent = objectToSelf.warning.content
+                triggeredWhenRuleMet = objectToSelf.warning.triggeredWhenRuleMet
+                delayTime = objectToSelf.warning.delayTime
+                
                 fromObjectId = objectToSelf.objectId
                 direction = objectToSelf.toDirection
                 xLowerBound = objectToSelf.xLowerBound

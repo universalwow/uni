@@ -12,9 +12,12 @@ struct LandmarkInAreaRuleView: View {
     @State var leftTopY = 0.0
     @State var rightBottomX = 0.0
     @State var rightBottomY = 0.0
-    @State var landmarkInAreaToggle = false
-    @State var landmarkInAreaWarning = ""
-    @State var satisfyWarning = false
+    
+    @State var toggle = false
+    
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
 
     
     var landmarkInAreaTextColor : Color {
@@ -33,17 +36,19 @@ struct LandmarkInAreaRuleView: View {
     }
     
     func setInitData() {
-        if landmarkInAreaToggle {
+        if toggle {
             if let imageSize = sportManager.findFirstSportState()?.image?.imageSize {
-                self.sportManager.setRuleLandmarkInArea(landmarkType: landmarkTypeInArea, imageSize: Point2D(x: imageSize.width, y: imageSize.height), warning: landmarkInAreaWarning, satisfyWarning: satisfyWarning)
+                self.sportManager.setRuleLandmarkInArea(landmarkType: landmarkTypeInArea, imageSize: Point2D(x: imageSize.width, y: imageSize.height),
+                                                        warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
             }
             
         }
     }
     
     func resetInitData() {
-        if landmarkInAreaToggle {
-            sportManager.updateRuleLandmarkInArea(landmarkType: landmarkTypeInArea, warning: landmarkInAreaWarning, satisfyWarning: satisfyWarning)
+        if toggle {
+            sportManager.updateRuleLandmarkInArea(landmarkType: landmarkTypeInArea,
+                                                  warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
             
         }
     }
@@ -51,7 +56,7 @@ struct LandmarkInAreaRuleView: View {
     
     
     func updateLocalData() {
-        if landmarkInAreaToggle {
+        if toggle {
             if let imageSize = sportManager.findFirstSportState()?.image?.imageSize,
                let area = sportManager.getRuleLandmarkInArea(), !area.area.isEmpty {
                 leftTopX = area.area[0].x/imageSize.width
@@ -64,7 +69,7 @@ struct LandmarkInAreaRuleView: View {
     }
         
         func updateRemoteData() {
-            if landmarkInAreaToggle {
+            if toggle {
                 if self.leftTopX < self.rightBottomX && self.leftTopY < self.rightBottomY {
                     sportManager.updateRuleLandmarkInArea(area: initArea)
                 }
@@ -77,15 +82,16 @@ struct LandmarkInAreaRuleView: View {
         leftTopY = 0.0
         rightBottomX = 0.0
         rightBottomY = 0.0
-        landmarkInAreaWarning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
 
     }
     
     
     var body: some View {
         VStack {
-            Toggle("关节点在区域", isOn: $landmarkInAreaToggle.didSet{ isOn in
+            Toggle("关节点在区域", isOn: $toggle.didSet{ isOn in
                 if isOn {
                     setInitData()
                     updateLocalData()
@@ -99,14 +105,24 @@ struct LandmarkInAreaRuleView: View {
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $landmarkInAreaWarning) { flag in
+                    TextField("提醒...", text: $warningContent) { flag in
                         if !flag {
                             resetInitData()
                         }
                         
                     }
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                 }
@@ -166,7 +182,7 @@ struct LandmarkInAreaRuleView: View {
                         }
                     }
                 }
-            }.disabled(!landmarkInAreaToggle)
+            }.disabled(!toggle)
         }
         .onAppear{
             if let imageSize = sportManager.findFirstSportState()?.image?.imageSize,
@@ -176,10 +192,10 @@ struct LandmarkInAreaRuleView: View {
                 leftTopY = area.area[0].y/imageSize.height
                 rightBottomX = area.area[2].x/imageSize.width
                 rightBottomY = area.area[2].y/imageSize.height
-                landmarkInAreaWarning = area.warning
-                satisfyWarning = area.satisfyWarning ?? false
-                
-                landmarkInAreaToggle = true
+                warningContent = area.warning.content
+                triggeredWhenRuleMet = area.warning.triggeredWhenRuleMet
+                delayTime = area.warning.delayTime
+                toggle = true
             }else {
                 self.landmarkTypeInArea = self.sportManager.findSelectedSegment()!.landmarkTypes.first!
             }

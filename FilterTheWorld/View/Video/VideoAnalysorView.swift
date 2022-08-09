@@ -91,14 +91,7 @@ struct VideoAnalysorView: View {
                         }
                     }
                 }
-//            if let frame = self.videoManager.frame {
-//                let uiImage = UIImage(cgImage: frame, scale: 1, orientation: orientation).fixedOrientation()!
-//
-//            }else {
-//                Image(systemName: "photo.fill")
-//                    .resizable()
-//                    .scaledToFit()
-//            }
+
             
             Spacer()
             
@@ -209,7 +202,7 @@ struct VideoAnalysorView: View {
             HStack {
                 Picker("选择项目", selection: $currentSportIndex) {
                     ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
-                        Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass?.rawValue ?? SportClass.None.rawValue)/\(sportGround.sports[sportIndex].sportPeriod?.rawValue ?? SportPeriod.None.rawValue)").tag(sportIndex)
+                        Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass.rawValue)/\(sportGround.sports[sportIndex].sportPeriod.rawValue)").tag(sportIndex)
                     }
                 }
                 
@@ -225,8 +218,16 @@ struct VideoAnalysorView: View {
                 Button(action: {
                     if !sportGround.sports.isEmpty {
                         print("运动员准备")
-                        sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
+                        self.stopAnalysis = true
                         self.scrollViewContentOffset = 0.0
+                        videoManager.getFrame(time: self.scrollOffset/self.frameWidth)
+                        imageAnalysis.reinit()
+                        if let frame = self.videoManager.frame {
+                            imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: self.scrollOffset/self.frameWidth)
+                        }
+                        
+
+                        sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
                         
                     }
                 }) {
@@ -300,6 +301,7 @@ struct VideoAnalysorView: View {
                                     if !sportGround.sporters.isEmpty && !poses.isEmpty {
                                         
                                         sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
+                                        self.sportGround.objectWillChange.send()
                                     }
                                 }
                                 
@@ -328,6 +330,7 @@ struct VideoAnalysorView: View {
                 
                 Button(action: {
                     self.stopAnalysis = true
+                    sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
                 }) {
                     Text("停止")
                 }

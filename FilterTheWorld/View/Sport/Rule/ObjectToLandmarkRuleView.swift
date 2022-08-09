@@ -10,8 +10,10 @@ struct ObjectToLandmarkRuleView: View {
     @State var currentAxis = CoordinateAxis.X
     @State var lowerBound = 0.0
     @State var upperBound = 0.0
-    @State var warning = ""
-    @State var satisfyWarning = false
+    
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
 
     //    此处的id是label
     @State var objectId = ""
@@ -28,8 +30,8 @@ struct ObjectToLandmarkRuleView: View {
             objectId: objectId,
             objectPosition: objectPosition,
             landmarkSegment: relativeSegment,
-            toAxis: toLandmarkSegmentAxis,
-            warning: warning, satisfyWarning: satisfyWarning)
+            toAxis: toLandmarkSegmentAxis, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
+
         
     }
 
@@ -42,8 +44,9 @@ struct ObjectToLandmarkRuleView: View {
                 objectId: objectId,
                 objectPosition: objectPosition,
                 landmarkSegment: relativeSegment,
-                toAxis: toLandmarkSegmentAxis,
-                warning: warning, satisfyWarning: satisfyWarning)
+                toAxis: toLandmarkSegmentAxis, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
+
+         
         }
     }
     
@@ -65,8 +68,9 @@ struct ObjectToLandmarkRuleView: View {
         currentAxis = CoordinateAxis.X
         lowerBound = 0.0
         upperBound = 0.0
-        warning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
         
         objectId = sportManager.findSelectedObjects().first!.label
         objectPosition = ObjectPosition.middle
@@ -90,14 +94,24 @@ struct ObjectToLandmarkRuleView: View {
             VStack {
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $warning, onEditingChanged: { flag in
+                    TextField("提醒...", text: $warningContent, onEditingChanged: { flag in
                         if !flag {
                             resetInitData()
                         }
                     })
                     
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                 }
@@ -208,9 +222,10 @@ struct ObjectToLandmarkRuleView: View {
             if let objectToLandmark = sportManager.getRuleObjectToLandmark() {
                 lowerBound = objectToLandmark.lowerBound
                 upperBound = objectToLandmark.upperBound
-                warning = objectToLandmark.warning
-                satisfyWarning = objectToLandmark.satisfyWarning ?? false
-                
+                warningContent = objectToLandmark.warning.content
+                triggeredWhenRuleMet = objectToLandmark.warning.triggeredWhenRuleMet
+                delayTime = objectToLandmark.warning.delayTime
+
                 currentAxis = objectToLandmark.fromAxis
                 objectId = objectToLandmark.fromPosition.id
                 objectPosition = objectToLandmark.fromPosition.position

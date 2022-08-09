@@ -40,7 +40,18 @@ class ImageAnalysis : ObservableObject {
     private(set) var objectDetectorYOLO: ObjectRecoginzerYOLO?
     
     
-    
+    func reinit() {
+        faces = nil
+        to_crop = nil
+        
+        detectedObjects = nil
+        sportData = SportDataShow()
+        objects = []
+        cachedFrames = []
+        cachedFramesCImage = []
+        currentFrame = nil
+        currentFrameCIImage = nil
+    }
     
     init() {
         DispatchQueue.global(qos: .userInteractive).async {

@@ -15,21 +15,24 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
     @State var maxRelativeLength = 0.0
     
     @State var toggle = false
-    @State var relativeLengthWarning = ""
-    @State var satisfyWarning = false
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
 
     
     func setInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning, satisfyWarning: satisfyWarning)
+         
+            sportManager.setRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
         }
     }
     
     func resetInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.updateRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warning: relativeLengthWarning, satisfyWarning: satisfyWarning)
+            sportManager.updateRuleLandmarkSegmentLength(fromAxis: currentAxis, relativeSegment: relativeSegment, toAxis: relativeAxis, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
+    
         }
 
     }
@@ -41,8 +44,9 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
         relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
         minRelativeLength = 0.0
         maxRelativeLength = 0.0
-        relativeLengthWarning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
 
     }
     
@@ -80,7 +84,7 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $relativeLengthWarning, onEditingChanged: { flag in
+                    TextField("提醒...", text: $warningContent, onEditingChanged: { flag in
                         if !flag {
                             resetInitData()
                         }
@@ -88,7 +92,18 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                     })
                     
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+
+                            
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                     
@@ -167,9 +182,9 @@ struct LandmarkSegmentRelativeLengthRuleView: View {
                 self.relativelandmarkSegmentType = length.to.landmarkSegment.landmarkSegmentType
                 self.minRelativeLength = length.lowerBound
                 self.maxRelativeLength = length.upperBound
-                self.relativeLengthWarning = length.warning
-                self.satisfyWarning = length.satisfyWarning ?? false
-
+                self.warningContent = length.warning.content
+                self.triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
+                self.delayTime = length.warning.delayTime
                 self.toggle = true
             }
         }

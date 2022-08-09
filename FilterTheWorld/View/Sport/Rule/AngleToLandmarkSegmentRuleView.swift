@@ -13,13 +13,15 @@ struct AngleToLandmarkSegmentRuleView : View {
     @State var upperBound = 0.0
     
     @State var toggle = false
-    @State var warning = ""
-    @State var satisfyWarning = false
+    
+    @State var warningContent = ""
+    @State var triggeredWhenRuleMet = false
+    @State var delayTime: Double = 2.0
     
     func setInitData() {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
-            sportManager.setRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warning: warning, satisfyWarning: satisfyWarning)
+            sportManager.setRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
       
         }
     }
@@ -28,7 +30,7 @@ struct AngleToLandmarkSegmentRuleView : View {
         if toggle {
             let relativeSegment = self.sportManager.findLandmarkSegment(landmarkTypeSegment: relativelandmarkSegmentType)
             
-            sportManager.updateRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warning: warning, satisfyWarning: satisfyWarning)
+            sportManager.updateRuleAngleToLandmarkSegment(relativeSegment: relativeSegment,  warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
 
         }
 
@@ -40,8 +42,9 @@ struct AngleToLandmarkSegmentRuleView : View {
         relativelandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
         lowerBound = 0.0
         upperBound = 0.0
-        warning = ""
-        satisfyWarning = false
+        warningContent = ""
+        triggeredWhenRuleMet = false
+        delayTime = 2.0
     }
     
     func updateLocalData() {
@@ -78,14 +81,24 @@ struct AngleToLandmarkSegmentRuleView : View {
             VStack{
                 HStack {
                     Text("提醒:")
-                    TextField("提醒...", text: $warning, onEditingChanged: { flag in
+                    TextField("提醒...", text: $warningContent, onEditingChanged: { flag in
                         if !flag {
                             resetInitData()
                         }
                         
                     })
                     Spacer()
-                    Toggle("规则满足时提示", isOn: $satisfyWarning.didSet{ _ in
+                    Text("延迟(s):")
+                    TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            resetInitData()
+                        }
+                        
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    
+                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
                         resetInitData()
                     })
                 }
@@ -144,8 +157,10 @@ struct AngleToLandmarkSegmentRuleView : View {
                 self.relativelandmarkSegmentType = angleToLandmarkSegment.to.landmarkSegmentType
                 self.lowerBound = angleToLandmarkSegment.lowerBound
                 self.upperBound = angleToLandmarkSegment.upperBound
-                self.warning = angleToLandmarkSegment.warning
-                self.satisfyWarning = angleToLandmarkSegment.satisfyWarning ?? false
+                self.warningContent = angleToLandmarkSegment.warning.content
+                self.triggeredWhenRuleMet = angleToLandmarkSegment.warning.triggeredWhenRuleMet
+                self.delayTime = angleToLandmarkSegment.warning.delayTime
+
                 self.toggle = true
                 
             }

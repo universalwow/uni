@@ -29,6 +29,8 @@ class SportsGround: ObservableObject {
             let sporter = sporters[sporterIndex]
             sportersReport[sporterIndex].endTime = endTime
             sportersReport[sporterIndex].scoreTimes = sporter.scoreTimes
+            sportersReport[sporterIndex].allStateTimes = sporter.allStateTimeHistory
+
             sportersReport[sporterIndex].warnings = sporter.warningsData
             
             Storage.store(sportersReport[sporterIndex], to: .documents, secondaryDirectory: "sportsReport", as: sportersReport[sporterIndex].fileName)
@@ -41,20 +43,14 @@ class SportsGround: ObservableObject {
                 sportersReport[sporterIndex].startTime = currentTime
             }
             sporters[sporterIndex].play(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
-            DispatchQueue.main.async {
-                print("warning... 7 \(self.sporters[sporterIndex].warnings)")
-                self.sporters[sporterIndex].warnings.forEach({ newWarning in
-                    if !self.warnings.contains(newWarning) {
-                        self.warnings.append(newWarning)
-                    }
-                    
-                })
-                
-            }
+            self.sporters[sporterIndex].warnings.forEach({ newWarning in
+                if !self.warnings.contains(newWarning) {
+                    self.warnings.append(newWarning)
+                }
+            })
 
         }
     }
-    
     
     var cancelableWarningMap: [String: Timer] = [:]
     
