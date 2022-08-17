@@ -249,7 +249,7 @@ class Sporter: Identifiable {
             if oldValue.count > timerScoreTimes.count {
                 return
             }
-            if sport.sportClass == .TimeCounter && timerScoreTimes.count > 1, let state = sport.findFirstSportStateByUUID(editedStateUUID: timerScoreTimes.last!.stateId) {
+            if sport.sportClass == .TimeCounter && timerScoreTimes.count > 1, let state = sport.findFirstStateByStateId(stateId: timerScoreTimes.last!.stateId) {
                     if sport.sportPeriod == .Continuous {
                         // 如果是连续的 则判断和上一个状态一样的时间间隔
                         let last_1 = timerScoreTimes.last!
@@ -275,7 +275,7 @@ class Sporter: Identifiable {
                         }
                     }
                     
-            } else if sport.sportClass == .Timer  && !timerScoreTimes.isEmpty, let state = sport.findFirstSportStateByUUID(editedStateUUID: timerScoreTimes.last!.stateId) {
+            } else if sport.sportClass == .Timer  && !timerScoreTimes.isEmpty, let state = sport.findFirstStateByStateId(stateId: timerScoreTimes.last!.stateId) {
                     if sport.scoreStateSequence[0].contains(state.id) {
                         scoreTimes.append(timerScoreTimes.last!)
                     }
@@ -515,13 +515,13 @@ class Sporter: Identifiable {
         var allCurrentFrameWarnings : Set<Warning> = []
 
         let allHasRuleStates = sport.states.filter({ state in
-            !state.complexScoreRules.isEmpty
+            !state.scoreRules.isEmpty
         })
         
         //如果有一个状态满足
         
-        let allRulesSatisfy = allHasRuleStates.map({state -> (Bool, Set<Warning>, Int) in
-            let satisfy = state.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+        let allRulesSatisfy = allHasRuleStates.map({state -> (Bool, Set<Warning>, Int, Int) in
+            let satisfy = state.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
             if satisfy.0 {
 //                如果不包含该状态 则建立计时器
                 if !inCheckingStatesTimer.keys.contains(state.name) {
@@ -554,7 +554,7 @@ class Sporter: Identifiable {
             }
         }
         
-        if allRulesSatisfy.contains(where: { (satisfy, _, _) in
+        if allRulesSatisfy.contains(where: { (satisfy, _, _, _) in
             satisfy
         }) {
             allCurrentFrameWarnings = []
@@ -616,13 +616,13 @@ class Sporter: Identifiable {
 //        违规逻辑
         let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
         
-        let violateRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int) in
+        let violateRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int, Int) in
 
-            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-                let satisfy = toState.complexRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            if let toState = sport.findFirstStateByStateId(stateId: transform.to) {
+                let satisfy = toState.rulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
                 return satisfy
             }
-            return (false, [], 0)
+            return (false, [], 0, 0)
             
         }
         // 违规逻辑 1.如果只有一个转换 则直接给提醒 2.如果有多个转换, 提示符合条多的那一个
@@ -639,7 +639,7 @@ class Sporter: Identifiable {
             }
         }
         
-        if violateRulesTransformSatisfy.contains(where: { (satisfy, _, _) in
+        if violateRulesTransformSatisfy.contains(where: { (satisfy, _, _, _) in
             satisfy
         }) {
             allCurrentFrameWarnings = []
@@ -647,11 +647,11 @@ class Sporter: Identifiable {
 
 //        计分逻辑 状态未切换时判断
    
-        let scoreRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int) in
+        let scoreRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int, Int) in
             
-            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to), transform.from == currentStateTime.sportState.id {
+            if let toState = sport.findFirstStateByStateId(stateId: transform.to), transform.from == currentStateTime.sportState.id {
                 nextState = toState
-                let satisfy = toState.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
                 if satisfy.0  {
                     if !inCheckingStatesTimer.keys.contains(toState.name) {
                         inCheckingStatesTimer[toState.name] = checkStateTimer(state: toState, currentTime: currentTime, withTimeInterval: toState.checkCycle!)
@@ -668,7 +668,7 @@ class Sporter: Identifiable {
                 
                 return satisfy
             }
-            return (false, [], 0)
+            return (false, [], 0, 0)
             
         }
         
@@ -683,7 +683,7 @@ class Sporter: Identifiable {
             }
         }
         
-        if scoreRulesTransformSatisfy.contains(where: { (satisfy, _, _) in
+        if scoreRulesTransformSatisfy.contains(where: { (satisfy, _, _, _) in
             satisfy
         }) {
             allCurrentFrameWarnings = []
@@ -734,13 +734,13 @@ class Sporter: Identifiable {
         
         let transforms = sport.stateTransForm.filter { currentStateTime.sportState.id == $0.from }
         
-        let violateRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int) in
+        let violateRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int, Int) in
 
-            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to) {
-                let satisfy = toState.complexRulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            if let toState = sport.findFirstStateByStateId(stateId: transform.to) {
+                let satisfy = toState.rulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
                 return satisfy
             }
-            return (false, [], 0)
+            return (false, [], 0, 0)
             
         }
         // 违规逻辑 1.如果只有一个转换 则直接给提醒 2.如果有多个转换, 提示符合条多的那一个
@@ -757,7 +757,7 @@ class Sporter: Identifiable {
             }
         }
         
-        if violateRulesTransformSatisfy.contains(where: { (satisfy, _, _) in
+        if violateRulesTransformSatisfy.contains(where: { (satisfy, _, _, _) in
             satisfy
         }) {
             allCurrentFrameWarnings = []
@@ -765,19 +765,19 @@ class Sporter: Identifiable {
 
 //        计分逻辑 状态未切换时判断
         
-        let scoreRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int) in
+        let scoreRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int, Int) in
             
-            if let toState = sport.findFirstSportStateByUUID(editedStateUUID: transform.to), transform.from == currentStateTime.sportState.id {
+            if let toState = sport.findFirstStateByStateId(stateId: transform.to), transform.from == currentStateTime.sportState.id {
                 
                 nextState = toState
                 
-                let satisfy = toState.complexRulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
                 if satisfy.0  {
                     currentStateTime = StateTime(sportState: toState, time: currentTime, poseMap: poseMap)
                 }
                 return satisfy
             }
-            return (false, [], 0)
+            return (false, [], 0, 0)
             
         }
         
@@ -792,7 +792,7 @@ class Sporter: Identifiable {
             }
         }
         
-        if scoreRulesTransformSatisfy.contains(where: { (satisfy, _, _) in
+        if scoreRulesTransformSatisfy.contains(where: { (satisfy, _, _, _) in
             satisfy
         }) {
             allCurrentFrameWarnings = []

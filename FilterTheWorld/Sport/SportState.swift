@@ -9,18 +9,18 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   var description:String = ""
   var image: PngImage?
   var landmarkSegments :[LandmarkSegment] = []
-  var humanPose: HumanPose? 
+  var humanPose: HumanPose?
   var objects: [Observation] = []
   
   // MARK: TO DELETE
   // TODO: 状态对应的规则 时间限制 一定时间内没有切换状态
   var transFormTimeLimit: Double? 
   // 计分规则 关节点对应的规则
-  var complexScoreRules:[ComplexRules] = []
+  var scoreRules:[Rules] = []
   // 违规规则 用于提示
-  var complexViolateRules:[ComplexRules] = []
+  var violateRules:[Rules] = []
     
-//    基于时间的检查周期及通过率
+    // 基于时间的检查周期及通过率
     var checkCycle:Double?
     var passingRate:Double?
     var keepTime:Double?
@@ -51,118 +51,106 @@ extension SportState {
     }
   
   
-  func firstIndexOfComplexRules(editedRulesId: UUID, ruleType: RuleType) -> Int? {
+    func firstIndexOfRules(editedRulesId: UUID, ruleType: RuleType) -> Int? {
     switch ruleType {
     case .SCORE:
-      return complexScoreRules.firstIndex(where: { rules in
+      return scoreRules.firstIndex(where: { rules in
         editedRulesId == rules.id
       })
     case .VIOLATE:
-      return complexViolateRules.firstIndex(where: { rules in
+      return violateRules.firstIndex(where: { rules in
         editedRulesId == rules.id
       })
     }
   }
   
-  func findComplexRulesList(ruleType: RuleType) -> [ComplexRules] {
+  func findRulesList(ruleType: RuleType) -> [Rules] {
     switch ruleType {
     case .SCORE:
-      return complexScoreRules
+      return scoreRules
     case .VIOLATE:
-      return complexViolateRules
+      return violateRules
     }
   }
   
-  func findComplexRules(ruleType: RuleType, currentSportStateRulesId: UUID) -> ComplexRules? {
-    findComplexRulesList(ruleType: ruleType)
+  func findRules(ruleType: RuleType, currentSportStateRulesId: UUID) -> Rules? {
+    findRulesList(ruleType: ruleType)
       .first(where: { rules in
         currentSportStateRulesId == rules.id
       })
   }
   
-  func firstComplexRulesById(editedRulesId: UUID, ruleType: RuleType) -> ComplexRules? {
+  func firstComplexRulesById(editedRulesId: UUID, ruleType: RuleType) -> Rules? {
     switch ruleType {
     case .SCORE:
-      return complexScoreRules.first(where: { rules in
+      return scoreRules.first(where: { rules in
         editedRulesId == rules.id
       })
     case .VIOLATE:
-      return complexViolateRules.first(where: { rules in
+      return violateRules.first(where: { rules in
         editedRulesId == rules.id
       })
     }
   }
   
-  mutating func updateSportStateRule(editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
-      if let rulesIndex = firstIndexOfComplexRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
+    mutating func updateRule(editedSportStateRulesId: UUID, editedRule: Ruler, ruleType: RuleType, ruleClass: RuleClass) {
+      if let rulesIndex = firstIndexOfRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
         switch ruleType {
           case .SCORE:
-            complexScoreRules[rulesIndex].updateSportStateRule(editedRule: editedRule)
+            scoreRules[rulesIndex].updateRule(editedRule: editedRule, ruleClass: ruleClass)
 
           case .VIOLATE:
-            complexViolateRules[rulesIndex].updateSportStateRule(editedRule: editedRule)
+            violateRules[rulesIndex].updateRule(editedRule: editedRule, ruleClass: ruleClass)
           }
     }
     
   }
     
-mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRule: ComplexRule) {
-    switch ruleType {
-      case .SCORE:
-        complexScoreRules[rulesIndex].updateSportStateRule(editedRule: editedRule)
 
-      case .VIOLATE:
-        complexViolateRules[rulesIndex].updateSportStateRule(editedRule: editedRule)
-      }
-      
-    }
-  
-  mutating func dropInvalidRules(editedSportStateRulesId: UUID, ruleType: RuleType) {
-      if let rulesIndex = firstIndexOfComplexRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
-        switch ruleType {
-          case .SCORE:
-            complexScoreRules[rulesIndex].dropInvalidRules()
-
-          case .VIOLATE:
-            complexViolateRules[rulesIndex].dropInvalidRules()
-          }
-    }
-    
-  }
   
   
-  
-  mutating func deleteSportStateRules(rulesId: UUID, ruleType: RuleType) {
-    if let index = firstIndexOfComplexRules(editedRulesId: rulesId, ruleType: ruleType) {
+  mutating func deleteRules(rulesId: UUID, ruleType: RuleType) {
+    if let index = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
       switch ruleType {
       case .SCORE:
-        complexScoreRules.remove(at: index)
+        scoreRules.remove(at: index)
       case .VIOLATE:
-        complexViolateRules.remove(at: index)
+        violateRules.remove(at: index)
       }
     }
   }
     
-    mutating func deleteSportStateRule(rulesId: UUID, ruleType: RuleType, ruleId:String) {
-      if let index = firstIndexOfComplexRules(editedRulesId: rulesId, ruleType: ruleType) {
+    mutating func deleteRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+      if let index = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
         switch ruleType {
         case .SCORE:
-            complexScoreRules[index].rules.removeAll{ rule in
-                rule.id == ruleId
-            }
+            scoreRules[index].deleteRule(ruleId: ruleId, ruleClass: ruleClass)
         case .VIOLATE:
-          complexViolateRules[index].rules.removeAll{ rule in
-              rule.id == ruleId
-          }
+          violateRules[index].deleteRule(ruleId: ruleId, ruleClass: ruleClass)
         }
       }
     }
+    
+
   
   func firstIndexOfLandmarkSegment(editedSportStateRuleId: String?) -> Int? {
-    landmarkSegments.firstIndex(where: { landmarkSegment in
+      humanPose?.landmarkSegments.firstIndex(where: { landmarkSegment in
       landmarkSegment.landmarkSegmentType.id == editedSportStateRuleId
     })
   }
+    
+    func firstIndexOfLandmark(editedSportStateRuleId: String?) -> Int? {
+        humanPose?.landmarks.firstIndex(where: { landmark in
+        landmark.id == editedSportStateRuleId
+      })
+    }
+    
+    func firstIndexOfObservation(editedSportStateRuleId: String?) -> Int? {
+        
+        objects.firstIndex(where: { observation in
+            observation.label == editedSportStateRuleId
+        })
+    }
   
   func findselectedSegment(editedSportStateRuleId: String?) -> LandmarkSegment? {
     if let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId) {
@@ -177,58 +165,76 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
         return nil
     }
   
-  mutating func setSegmentToSelected(editedSportStateRuleId: String?) {
-    let range = 0..<landmarkSegments.count
-    range.forEach{ index in
-      landmarkSegments[index].selected = false
-    }
-    if let editedSportStateRuleId = editedSportStateRuleId,
-        let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId){
-        landmarkSegments[index].selected = true
-      print("editedSportStateRuleId \(landmarkSegments[index].selected)")
-    }else{
-        landmarkSegments.indices.forEach{ index in
-            landmarkSegments[index].selected = false
+    mutating func setSegmentToSelected(editedSportStateRuleId: String?, ruleClass: RuleClass) {
+        humanPose?.landmarkSegments.indices.forEach{ index in
+            self.humanPose?.landmarkSegments[index].selected = false
         }
-    }
+        
+        humanPose?.landmarks.indices.forEach { index in
+            self.humanPose?.landmarks[index].selected = false
+        }
+        
+        objects.indices.forEach { index in
+            objects[index].selected = false
+        }
+        
+        switch ruleClass {
+        case .LandmarkSegment:
+            if let editedSportStateRuleId = editedSportStateRuleId,
+                let index = firstIndexOfLandmarkSegment(editedSportStateRuleId: editedSportStateRuleId){
+                humanPose?.landmarkSegments[index].selected = true
+            }
+        case .Landmark:
+            if let editedSportStateRuleId = editedSportStateRuleId,
+                let index = firstIndexOfLandmark(editedSportStateRuleId: editedSportStateRuleId) {
+                humanPose?.landmarks[index].selected = true
+            }
+            
+        case .Observation:
+            if let editedSportStateRuleId = editedSportStateRuleId,
+                let index = firstIndexOfObservation(editedSportStateRuleId: editedSportStateRuleId) {
+                objects[index].selected = true
+            }
+            
+        }
+        
+        
   }
   
-  
-  mutating func setupLandmarkArea(editedSportStateRulesId: UUID, editedSportStateRule: ComplexRule, ruleType: RuleType, landmarkinArea: LandmarkInArea?) {
-    
-    if let rulesIndex = firstIndexOfComplexRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
-      switch ruleType {
-        case .SCORE:
-        complexScoreRules[rulesIndex].setupLandmarkArea(editedSportStateRule: editedSportStateRule, landmarkinArea: landmarkinArea)
 
-        case .VIOLATE:
-        complexViolateRules[rulesIndex].setupLandmarkArea(editedSportStateRule: editedSportStateRule, landmarkinArea: landmarkinArea)
-      }
-    
-    }
-  }
   
-    func complexRulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int) {
+    func rulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
     
-    var rules : [ComplexRules] = []
+    var rules : [Rules] = []
     switch ruleType {
       case .SCORE:
-        rules = complexScoreRules
+        rules = scoreRules
       case .VIOLATE:
-        rules = complexViolateRules
+        rules = violateRules
     }
     // 只要有一组条件满足
-    return rules.reduce((false, Set<Warning>(), 0), { result, complexRules in
+    return rules.reduce((false, Set<Warning>(), 0, 0), { result, next in
         // 每一组条件全部满足
-  //      (!complexRules.rules.isEmpty) &&
-      let rulesSatisfy = complexRules.rules.reduce((true, Set<Warning>(), 0), { satisfy, complexRule in
-        let ruleSatisfy = complexRule.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
-//        print("rule satisfy ... \(ruleSatisfy) - \(satisfy.0 && ruleSatisfy.0)")
-          return (satisfy.0 && ruleSatisfy.0, satisfy.1.union(ruleSatisfy.1), ruleSatisfy.0 ? (satisfy.2 + 1) : satisfy.2)
-      })
-//    print("rules satisfy ... \(rulesSatisfy.0) - \(result.0 || rulesSatisfy.0)")
-        return (result.0 || rulesSatisfy.0, result.1.union(rulesSatisfy.1), max(result.2, rulesSatisfy.2))
-      
+
+        let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+        // 返回满足率最大的那一组数目
+        
+        if result.3 == 0 && satisfy.3 == 0 {
+            return (false, result.1, 0, 0)
+        } else if result.3 == 0 && satisfy.3 != 0 {
+            return (result.0 || satisfy.0, satisfy.1, satisfy.2, satisfy.3)
+        } else if result.3 != 0 && satisfy.3 == 0 {
+            return (false, result.1, result.2, result.3)
+        } else {
+            let lastSatisfyPercent = Double(result.2) / Double(result.3)
+            let currentSatisfyPercent = Double(satisfy.2) / Double(satisfy.3)
+            
+            if currentSatisfyPercent >= lastSatisfyPercent {
+                return (result.0 || satisfy.0, satisfy.1, satisfy.2, satisfy.3)
+            }else {
+                return (result.0 || satisfy.0, result.1, result.2, result.3)
+            }
+        }
     })
   }
   
@@ -237,5 +243,152 @@ mutating func updateSportStateRule(ruleType: RuleType, rulesIndex: Int, editedRu
       landmarkSegment.id == id
     }!
   }
+    
+    
+//    MARK: RULE
+    
+    mutating func addRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].addRule(ruleId: ruleId, ruleClass: ruleClass)
+            case .VIOLATE:
+                violateRules[rulesIndex].addRule(ruleId: ruleId, ruleClass: ruleClass)
+            }
+        }
+    }
+    
+    mutating func addRuleLandmarkSegmentAngle(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].addRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+            case .VIOLATE:
+                violateRules[rulesIndex].addRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+            }
+        }
+    }
+    
+    func getRuleLandmarkSegmentAngles(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [AngleRange] {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                return scoreRules[rulesIndex].getRuleLandmarkSegmentAngles(ruleId: ruleId, ruleClass: ruleClass)
+            case .VIOLATE:
+                return violateRules[rulesIndex].getRuleLandmarkSegmentAngles(ruleId: ruleId, ruleClass: ruleClass)
+            }
+        }
+        
+        return []
+    }
+    
+    func getRuleLandmarkSegmentAngle(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> AngleRange {
+        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+        switch ruleType {
+        case .SCORE:
+            return scoreRules[rulesIndex].getRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        case .VIOLATE:
+            return violateRules[rulesIndex].getRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        }
+    }
+    
+    mutating func removeRuleLandmarkSegmentAngle(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+        switch ruleType {
+        case .SCORE:
+            scoreRules[rulesIndex].removeRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        case .VIOLATE:
+            violateRules[rulesIndex].removeRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        }
+    }
+    
+    
+    
+    mutating func updateRuleLandmarkSegmentAngle(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, id: UUID) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].updateRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass,
+                                                                      warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: id)
+            case .VIOLATE:
+                violateRules[rulesIndex].updateRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass,
+                                                                        warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: id)
+            }
+        }
+    }
+    
+//    ----------------
+    
+    func getRuleAngleToLandmarkSegments(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [AngleToLandmarkSegment] {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                return scoreRules[rulesIndex].getRuleAngleToLandmarkSegments(ruleId: ruleId, ruleClass: ruleClass)
+            case .VIOLATE:
+                return violateRules[rulesIndex].getRuleAngleToLandmarkSegments(ruleId: ruleId, ruleClass: ruleClass)
+            }
+        }
+        
+        return []
+    }
+    
+    
+    func getRuleAngleToLandmarkSegment(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> AngleToLandmarkSegment {
+        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+        switch ruleType {
+        case .SCORE:
+            return scoreRules[rulesIndex].getRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        case .VIOLATE:
+            return violateRules[rulesIndex].getRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        }
+    }
+    
+    
+    mutating func addRuleAngleToLandmarkSegment(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].addRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+            case .VIOLATE:
+                violateRules[rulesIndex].addRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+            }
+        }
+    }
+    
+    mutating func removeRuleAngleToLandmarkSegment(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+        switch ruleType {
+        case .SCORE:
+            scoreRules[rulesIndex].removeRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        case .VIOLATE:
+            violateRules[rulesIndex].removeRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        }
+    }
+    
+    mutating func updateRuleAngleToLandmarkSegment(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].updateRuleAngleToLandmarkSegment(ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments)
+            case .VIOLATE:
+                violateRules[rulesIndex].updateRuleAngleToLandmarkSegment(ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments)
+            }
+        }
+    }
+    
+//    -------------------
+    mutating func transferRuleTo(ruleType:RuleType, rulesIndex:Int, rule: Ruler) {
+        
+        switch ruleType {
+        case .SCORE:
+            scoreRules[rulesIndex].transferRuleTo(rule: rule)
+        case .VIOLATE:
+            violateRules[rulesIndex].transferRuleTo(rule: rule)
+        }
+
+        
+    }
+    
+    
   
 }

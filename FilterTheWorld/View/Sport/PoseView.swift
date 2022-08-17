@@ -61,26 +61,11 @@ struct LandmarkSegmentAngleView:View {
 }
 
 struct LandmarkViewForSetupRule: View {
-    var landmarkSegments: [LandmarkSegment]
+    var landmarks: [Landmark] 
     var imageSize: CGSize
     var viewSize: CGSize
     
-    var landmarks: [Landmark] {
-        var _landmarks : [Landmark] = []
-        landmarkSegments.forEach { landmarkSegment in
-            if !_landmarks.contains(where: { _landmark in
-                _landmark.id == landmarkSegment.startLandmark.id
-            }) {
-                _landmarks.append(landmarkSegment.startLandmark)
-            }
-            if !_landmarks.contains(where: { _landmark in
-                _landmark.id == landmarkSegment.endLandmark.id
-            }) {
-                _landmarks.append(landmarkSegment.endLandmark)
-            }
-        }
-        return _landmarks
-    }
+
     
     var body: some View {
         
@@ -104,8 +89,8 @@ struct PoseViewForSetupRule: View {
     var imageSize: CGSize
     var viewSize: CGSize
     
-    func colorOf(selected: Bool?, segment: LandmarkSegment) -> Color {
-        selected ?? false ? Color.yellow : segment.color
+    func colorOf(segment: LandmarkSegment) -> Color {
+        segment.selected  ? Color.yellow : segment.color
     }
     
     var body: some View {
@@ -113,13 +98,13 @@ struct PoseViewForSetupRule: View {
             Group {
                 LandmarkSegmentView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
                     .stroke(
-                        colorOf(selected: sportManager.segmentSelected(segment: landmarkSegment), segment: landmarkSegment), lineWidth: 2)
+                        colorOf(segment: landmarkSegment), lineWidth: 2)
                 LandmarkSegmentAngleView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
                     .foregroundColor(
-                        colorOf(selected: sportManager.segmentSelected(segment: landmarkSegment), segment: landmarkSegment))
+                        colorOf(segment: landmarkSegment))
             }.onTapGesture {
                 // 选择关节或关节点
-                sportManager.setCurrentSportStateRule(landmarkSegmentType: landmarkSegment.landmarkSegmentType)
+                sportManager.setCurrentSportStateRule(landmarkSegmentType: landmarkSegment.landmarkSegmentType, ruleClass: .LandmarkSegment)
                 
             }
             
@@ -136,13 +121,13 @@ struct PoseViewForSetupRule: View {
 struct PosesViewForSetupRule: View {
     @EnvironmentObject var sportManager: SportsManager
     @EnvironmentObject var imageAnalysis:ImageAnalysis
-    var landmarkSegments: [LandmarkSegment]
     var imageSize: CGSize
     var viewSize: CGSize
     var body: some View {
         ZStack {
-            PoseViewForSetupRule(landmarkSegments: landmarkSegments, imageSize: imageSize, viewSize: viewSize)
-            LandmarkViewForSetupRule(landmarkSegments: landmarkSegments, imageSize: imageSize, viewSize: viewSize)
+            let humanPose = sportManager.findFirstState()!.humanPose!
+            PoseViewForSetupRule(landmarkSegments: humanPose.landmarkSegments, imageSize: imageSize, viewSize: viewSize)
+            LandmarkViewForSetupRule(landmarks: humanPose.landmarks, imageSize: imageSize, viewSize: viewSize)
         }
         
     }

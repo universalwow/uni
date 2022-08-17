@@ -35,6 +35,8 @@
 		951FB3342839EB1500A62931 /* FramesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951FB3332839EB1500A62931 /* FramesView.swift */; };
 		9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */; };
 		95435E582845ABD0007139A6 /* VideoAnalysorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95435E572845ABD0007139A6 /* VideoAnalysorView.swift */; };
+		954385AD28A35DBF0067AB31 /* LandmarkSegmentRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954385AC28A35DBF0067AB31 /* LandmarkSegmentRule.swift */; };
+		954385AF28A36BB10067AB31 /* LandmarkRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954385AE28A36BB10067AB31 /* LandmarkRule.swift */; };
 		9545750527BB846100129153 /* ObjectRecoginzerYOLO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */; };
 		9545750F27BBA98A00129153 /* Observation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545750E27BBA98A00129153 /* Observation.swift */; };
 		9545751327BD1B1600129153 /* StandAndJump.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9545751227BD1B1500129153 /* StandAndJump.swift */; };
@@ -52,6 +54,9 @@
 		954B7A442843657400904A36 /* VideoAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B7A432843657400904A36 /* VideoAnalysisView.swift */; };
 		954B7A4A2843876900904A36 /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B7A492843876900904A36 /* VideoView.swift */; };
 		954B7A4C2843882300904A36 /* Utility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954B7A4B2843882300904A36 /* Utility.swift */; };
+		9554A31E28A39A6F00BFFCE6 /* ObservationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554A31D28A39A6E00BFFCE6 /* ObservationRule.swift */; };
+		9554A32028A3A01B00BFFCE6 /* Rules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554A31F28A3A01B00BFFCE6 /* Rules.swift */; };
+		9554A32228A3B9D900BFFCE6 /* Ruler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554A32128A3B9D900BFFCE6 /* Ruler.swift */; };
 		9554E8622840F468002D8345 /* SportsGroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8612840F468002D8345 /* SportsGroundView.swift */; };
 		9554E8642841B6FB002D8345 /* ObjectToObjectRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8632841B6FB002D8345 /* ObjectToObjectRuleView.swift */; };
 		9554E8662841C717002D8345 /* LineDrawerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9554E8652841C717002D8345 /* LineDrawerView.swift */; };
@@ -155,6 +160,8 @@
 		951FB3332839EB1500A62931 /* FramesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FramesView.swift; sourceTree = "<group>"; };
 		9532A74B27C16A2A0071AF82 /* YOLOv3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv3.mlmodel; sourceTree = "<group>"; };
 		95435E572845ABD0007139A6 /* VideoAnalysorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAnalysorView.swift; sourceTree = "<group>"; };
+		954385AC28A35DBF0067AB31 /* LandmarkSegmentRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkSegmentRule.swift; sourceTree = "<group>"; };
+		954385AE28A36BB10067AB31 /* LandmarkRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkRule.swift; sourceTree = "<group>"; };
 		9545750427BB846100129153 /* ObjectRecoginzerYOLO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectRecoginzerYOLO.swift; sourceTree = "<group>"; };
 		9545750E27BBA98A00129153 /* Observation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Observation.swift; sourceTree = "<group>"; };
 		9545751227BD1B1500129153 /* StandAndJump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandAndJump.swift; sourceTree = "<group>"; };
@@ -173,6 +180,9 @@
 		954B7A432843657400904A36 /* VideoAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAnalysisView.swift; sourceTree = "<group>"; };
 		954B7A492843876900904A36 /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
 		954B7A4B2843882300904A36 /* Utility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utility.swift; sourceTree = "<group>"; };
+		9554A31D28A39A6E00BFFCE6 /* ObservationRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationRule.swift; sourceTree = "<group>"; };
+		9554A31F28A3A01B00BFFCE6 /* Rules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rules.swift; sourceTree = "<group>"; };
+		9554A32128A3B9D900BFFCE6 /* Ruler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ruler.swift; sourceTree = "<group>"; };
 		9554E8612840F468002D8345 /* SportsGroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportsGroundView.swift; sourceTree = "<group>"; };
 		9554E8632841B6FB002D8345 /* ObjectToObjectRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectToObjectRuleView.swift; sourceTree = "<group>"; };
 		9554E8652841C717002D8345 /* LineDrawerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineDrawerView.swift; sourceTree = "<group>"; };
@@ -499,6 +509,11 @@
 				95E79DEB27A13AEB00AC36E1 /* Sport.swift */,
 				95E79DEF27A13AEC00AC36E1 /* SportState.swift */,
 				9545751227BD1B1500129153 /* StandAndJump.swift */,
+				954385AC28A35DBF0067AB31 /* LandmarkSegmentRule.swift */,
+				954385AE28A36BB10067AB31 /* LandmarkRule.swift */,
+				9554A31D28A39A6E00BFFCE6 /* ObservationRule.swift */,
+				9554A31F28A3A01B00BFFCE6 /* Rules.swift */,
+				9554A32128A3B9D900BFFCE6 /* Ruler.swift */,
 			);
 			path = Sport;
 			sourceTree = "<group>";
@@ -740,6 +755,7 @@
 				954B7A4C2843882300904A36 /* Utility.swift in Sources */,
 				95A99220283CE0A200F79FB1 /* Constants.swift in Sources */,
 				95E79DF827A13AEC00AC36E1 /* CancellableDelayedTask.swift in Sources */,
+				954385AD28A35DBF0067AB31 /* LandmarkSegmentRule.swift in Sources */,
 				95B7BFE4283668740037EC55 /* ContentView.swift in Sources */,
 				95E79E0527A13C3000AC36E1 /* Landmark.swift in Sources */,
 				9554E8642841B6FB002D8345 /* ObjectToObjectRuleView.swift in Sources */,
@@ -757,11 +773,13 @@
 				9503DF3B289E069200595514 /* ChildViewSizeReader.swift in Sources */,
 				95E79E0D27A13C9700AC36E1 /* UIUtilities.swift in Sources */,
 				95A9921D283CDFF200F79FB1 /* LandmarkSegmentRelativeLengthRuleView.swift in Sources */,
+				9554A31E28A39A6F00BFFCE6 /* ObservationRule.swift in Sources */,
 				95E79E1627A13CBE00AC36E1 /* Vector3D.swift in Sources */,
 				95E79E1027A13C9700AC36E1 /* RectangleRecoginzer.swift in Sources */,
 				9545750527BB846100129153 /* ObjectRecoginzerYOLO.swift in Sources */,
 				9545750F27BBA98A00129153 /* Observation.swift in Sources */,
 				9554E8622840F468002D8345 /* SportsGroundView.swift in Sources */,
+				9554A32028A3A01B00BFFCE6 /* Rules.swift in Sources */,
 				95E79E0727A13C3000AC36E1 /* BlackWhiteFilter.swift in Sources */,
 				9532A74C27C16A2A0071AF82 /* YOLOv3.mlmodel in Sources */,
 				954AA30C289BBAEB001BEAAF /* SporterView.swift in Sources */,
@@ -813,10 +831,12 @@
 				95E79E2327A13CED00AC36E1 /* String+Extension.swift in Sources */,
 				95E79E3327A13D0600AC36E1 /* ImageAnalysis.swift in Sources */,
 				95E79E1527A13CBE00AC36E1 /* Vector2D.swift in Sources */,
+				954385AF28A36BB10067AB31 /* LandmarkRule.swift in Sources */,
 				951FB329283892F700A62931 /* SportsManagerView.swift in Sources */,
 				951ABE48283A6A01009AB8F6 /* ObjectsView.swift in Sources */,
 				951ABE46283A5526009AB8F6 /* PoseView.swift in Sources */,
 				954AA33B289BC207001BEAAF /* UIScreen+Extension.swift in Sources */,
+				9554A32228A3B9D900BFFCE6 /* Ruler.swift in Sources */,
 				95A9921B283C81AB00F79FB1 /* BackgroundClearView.swift in Sources */,
 				95A3E60427E2DDEC0005E364 /* Warning.swift in Sources */,
 				95878ED327DF277600F31A9B /* UIView+Extension.swift in Sources */,

@@ -11,7 +11,7 @@ struct AngleDescriptionView: View {
     var angle: AngleRange
     var body: some View {
         HStack {
-            Text("角度:\(angle.warning.content)")
+            Text("角度:\(angle.warning.content)/\(angle.warning.delayTime.roundedString(number: 2))/\(angle.warning.triggeredWhenRuleMet.description)")
             Spacer()
             Text("\(angle.lowerBound.roundedString)/\(angle.upperBound.roundedString)")
             Spacer()
@@ -119,75 +119,70 @@ struct LandmarkToSelfDescriptionView: View {
 }
 
 struct RuleDescriptionView: View {
-    @Binding var rule:ComplexRule
+    @Binding var rule:LandmarkSegmentRule
     var body : some View {
         VStack {
             
-            VStack {
-                if let angle = rule.angle {
-                    VStack {
-                        AngleDescriptionView(angle: angle)
-                        Divider()
-                    }
-                }
+            ForEach(rule.angle, content: { _angle in
+                AngleDescriptionView(angle: _angle)
+                Divider()
                 
-                if let angleToLandmarkSegment = rule.angleToLandmarkSegment {
-                    VStack {
-                        AngleToLandmarkDescriptionView(angleToLandmarkSegment: angleToLandmarkSegment)
-                        Divider()
-                    }
-                }
-            }
-            
-            
-            if let length = rule.length {
-                VStack{
-                    LengthDescriptionView(length: length)
-                    Divider()
-                }
-            }
-            
-            if let objectToLandmark = rule.objectPositionToLandmark {
-                VStack{
-                    ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
-                    Divider()
-                }
-            }
-            
-            if let objectToOBject = rule.objectPositionToObjectPosition {
-                ObjectToObjectDescriptionView(objectToObject: objectToOBject)
+            })
 
-            }
+            ForEach(rule.angleToLandmarkSegment, content: { _angleToLandmarkSegment in
+                AngleToLandmarkDescriptionView(angleToLandmarkSegment: _angleToLandmarkSegment)
+                Divider()
+                
+            })
             
-            //                                    关节点在区域
-            if let area = rule.landmarkInArea {
-                VStack{
-                    LandmarkInAreaDescriptionView(area: area)
-                    Divider()
-                }
-            }
+            ForEach(rule.length, content: { _length in
+                LengthDescriptionView(length: _length)
+                Divider()
+                
+            })
+
             
-            
-            if let length = rule.lengthToState {
-                VStack{
-                    LengthToStateDescriptionView(length: length)
-                    Divider()
-                }
-            }
-            
-            if let objectToSelf = rule.objectToSelf {
-                VStack{
-                    ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
-                    Divider()
-                }
-            }
-            
-            if let landmarkToSelf = rule.landmarkToSelf {
-                VStack{
-                    LandmarkToSelfDescriptionView(landmarkToSelf: landmarkToSelf)
-                    Divider()
-                }
-            }
+//            if let objectToLandmark = rule.objectPositionToLandmark {
+//                VStack{
+//                    ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
+//                    Divider()
+//                }
+//            }
+//
+//            if let objectToOBject = rule.objectPositionToObjectPosition {
+//                ObjectToObjectDescriptionView(objectToObject: objectToOBject)
+//
+//            }
+//
+//            //                                    关节点在区域
+//            if let area = rule.landmarkInArea {
+//                VStack{
+//                    LandmarkInAreaDescriptionView(area: area)
+//                    Divider()
+//                }
+//            }
+//
+//
+//            if let length = rule.lengthToState {
+//                VStack{
+//                    LengthToStateDescriptionView(length: length)
+//                    Divider()
+//                }
+//            }
+//
+//            if let objectToSelf = rule.objectToSelf {
+//                VStack{
+//                    ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
+//                    Divider()
+//                }
+//            }
+//
+//            if let landmarkToSelf = rule.landmarkToSelf {
+//                VStack{
+//                    LandmarkToSelfDescriptionView(landmarkToSelf: landmarkToSelf)
+//                    Divider()
+//                }
+//            }
             
             
             

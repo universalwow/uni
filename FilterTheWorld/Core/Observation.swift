@@ -48,7 +48,7 @@ extension CGRect {
 
 
 
-enum ObjectLabel: String {
+enum ObjectLabel: String, Codable {
     case ROPE = "rope"
     case POSE = "person"
     case BASKETBALL = "basketball"

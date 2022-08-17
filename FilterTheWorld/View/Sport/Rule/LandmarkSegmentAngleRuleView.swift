@@ -7,6 +7,7 @@ import SwiftUI
 
 
 struct LandmarkSegmentAngleRuleView: View {
+    var angle: AngleRange
     @EnvironmentObject var sportManager:SportsManager
     
     struct ImageButton: View {
@@ -20,7 +21,6 @@ struct LandmarkSegmentAngleRuleView: View {
                     .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                     .foregroundColor(.white)
                     
-                
             }.frame(width: StaticValue.angleImageSize*2, height: StaticValue.angleImageSize)
             
         }
@@ -31,60 +31,29 @@ struct LandmarkSegmentAngleRuleView: View {
         static let angleImageSize: CGFloat = 35
     }
     
-    @State var minAngle = 0.0
-    @State var maxAngle = 0.0
+    @State var lowerBound = 0.0
+    @State var upperBound = 0.0
     
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
-
-    @State var toggle = false
-    
-    
-    
-    
-    func toggleOff() {
-        minAngle = 0.0
-        maxAngle = 0.0
-        warningContent = ""
-        triggeredWhenRuleMet = false
-        delayTime = 2.0
-    }
-    
-    func setInitData() {
-        if toggle {
-            let landmarkSegment = sportManager.findSelectedSegment()!
-            sportManager.setRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
-        }
-    }
-    
-    func resetInitData() {
-        if toggle {
-            let landmarkSegment = sportManager.findSelectedSegment()!
-            
-            sportManager.updateRuleLandmarkSegmentAngle(landmarkSegment: landmarkSegment, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
-        }
-    }
     
     
     func updateLocalData() {
-        let angle = sportManager.getRuleLandmarkSegmentAngle()!
-        minAngle = angle.lowerBound
-        maxAngle = angle.upperBound
+        let angle = sportManager.getRuleLandmarkSegmentAngle(id: angle.id)
+        lowerBound = angle.lowerBound
+        upperBound = angle.upperBound
     }
     
     func updateRemoteData() {
-        if toggle {
-            sportManager.updateRuleLandmarkSegmentAngle(lowerBound: minAngle, upperBound: maxAngle)
-        }
-        
+        sportManager.updateRuleLandmarkSegmentAngle(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: angle.id)
     }
     
     //角度
     var minAngleslider: some View {
         HStack {
             Slider(
-                value: $minAngle,
+                value: $lowerBound,
                 in: 0...360,
                 step: 1,
                 label: {
@@ -95,7 +64,7 @@ struct LandmarkSegmentAngleRuleView: View {
 //                        .resizable()
 //                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
-                            self.minAngle = max(0, self.minAngle - 1)
+                            self.lowerBound = max(0, self.lowerBound - 1)
                             updateRemoteData()
                             
                         }
@@ -106,7 +75,7 @@ struct LandmarkSegmentAngleRuleView: View {
 //                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
                             
-                            self.minAngle = min(360, self.minAngle + 1)
+                            self.lowerBound = min(360, self.lowerBound + 1)
                             updateRemoteData()
                         }
                 },
@@ -115,12 +84,10 @@ struct LandmarkSegmentAngleRuleView: View {
                     if !flag {
                         updateRemoteData()
                     }
-                    
-                    
                 }).background(content: {
-                    Text("\(self.minAngle.roundedString(number: 0))")
+                    Text("\(self.lowerBound.roundedString(number: 0))")
                         .offset(y: StaticValue.angleTextOffsetY)
-                        .foregroundColor(self.maxAngle > self.minAngle ? .black : .red)
+                        .foregroundColor(self.upperBound > self.lowerBound ? .black : .red)
                     
                 })
         }
@@ -130,7 +97,7 @@ struct LandmarkSegmentAngleRuleView: View {
     var maxAngleslider: some View {
         HStack {
             Slider(
-                value: $maxAngle,
+                value: $upperBound,
                 in: 0...360,
                 step: 1,
                 label: {
@@ -141,7 +108,7 @@ struct LandmarkSegmentAngleRuleView: View {
 //                        .resizable()
 //                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
-                            self.maxAngle = max(0, self.maxAngle - 1)
+                            self.upperBound = max(0, self.upperBound - 1)
                             updateRemoteData()
                             
                         }
@@ -151,7 +118,7 @@ struct LandmarkSegmentAngleRuleView: View {
 //                        .resizable()
 //                        .frame(width: StaticValue.angleImageSize, height: StaticValue.angleImageSize)
                         .onTapGesture {
-                            self.maxAngle = min(360, self.maxAngle + 1)
+                            self.upperBound = min(360, self.upperBound + 1)
                             updateRemoteData()
                             
                         }
@@ -161,9 +128,9 @@ struct LandmarkSegmentAngleRuleView: View {
                         updateRemoteData()
                     }
                 }).background(content: {
-                    Text("\(self.maxAngle.roundedString(number: 0))")
+                    Text("\(self.upperBound.roundedString(number: 0))")
                         .offset(y: StaticValue.angleTextOffsetY)
-                        .foregroundColor(self.maxAngle > self.minAngle ? .black : .red)
+                        .foregroundColor(self.upperBound > self.lowerBound ? .black : .red)
                     
                 })
         }
@@ -173,23 +140,25 @@ struct LandmarkSegmentAngleRuleView: View {
     
     var body: some View {
         VStack {
-            Toggle("角度", isOn: $toggle.didSet{ isOn in
-                if isOn {
-                    setInitData()
-                    updateLocalData()
-                    
-                }else{
-                    sportManager.setRuleLandmarkSegmentAngle(angle: nil)
-                    toggleOff()
-                }
-                
-            })
+            
+            HStack {
+                Text("关节对角度")
+                Spacer()
+                Button(action: {
+                    sportManager.removeRuleLandmarkSegmentAngle(id: angle.id)
+                    print("-------------关节对角度\(index)")
+
+                }) {
+                    Text("删除")
+                }.padding()
+            }
+
             VStack {
                 HStack {
                     Text("提醒:")
                     TextField("提醒...", text: $warningContent) { flag in
                         if !flag {
-                            resetInitData()
+                            updateRemoteData()
                         }
                         
                     }
@@ -197,7 +166,7 @@ struct LandmarkSegmentAngleRuleView: View {
                     Text("延迟(s):")
                     TextField("延迟时长", value: $delayTime, formatter: formatter,onEditingChanged: { flag in
                         if !flag {
-                            resetInitData()
+                            updateRemoteData()
                         }
                         
                     })
@@ -205,14 +174,14 @@ struct LandmarkSegmentAngleRuleView: View {
                     .keyboardType(.decimalPad)
                     
                     Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
-                        resetInitData()
+                        updateRemoteData()
                     })
                     
                 }
                 HStack {
                     Text("最小角度")
                         .onTapGesture {
-                            self.minAngle = max(0, self.minAngle - 1)
+                            self.lowerBound = max(0, self.lowerBound - 1)
                             
                         }
                     minAngleslider
@@ -220,25 +189,22 @@ struct LandmarkSegmentAngleRuleView: View {
                 HStack {
                     Text("最大角度")
                         .onTapGesture {
-                            self.maxAngle = max(0, self.maxAngle - 1)
+                            self.upperBound = max(0, self.upperBound - 1)
                             
                         }
                     maxAngleslider
                 }
-            }.disabled(!toggle)
+            }
             
         }
         
         .onAppear(perform: {
-            if let angle = sportManager.getRuleLandmarkSegmentAngle() {
-                self.minAngle = angle.lowerBound
-                self.maxAngle = angle.upperBound
-                self.warningContent = angle.warning.content
-                self.triggeredWhenRuleMet = angle.warning.triggeredWhenRuleMet
-                self.delayTime = angle.warning.delayTime
-                
-                self.toggle = true
-            }
+            let angle = sportManager.getRuleLandmarkSegmentAngle(id: angle.id)
+            self.lowerBound = angle.lowerBound
+            self.upperBound = angle.upperBound
+            self.warningContent = angle.warning.content
+            self.triggeredWhenRuleMet = angle.warning.triggeredWhenRuleMet
+            self.delayTime = angle.warning.delayTime
         })
     }
 }

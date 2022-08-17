@@ -16,8 +16,8 @@ typealias PoseMap = [LandmarkType: Point3D]
 struct HumanPose:Identifiable, Equatable, Codable  {
   var id: Int
   //关节点
-  private(set) var landmarks:[Landmark] = []
-  private(set) var landmarkSegments :[LandmarkSegment] = []
+  var landmarks:[Landmark] = []
+  var landmarkSegments :[LandmarkSegment] = []
   
   mutating func upsertLandmark(landmark:Landmark) {
     if let index = firstIndexOf(landmark: landmark) {

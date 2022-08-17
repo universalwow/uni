@@ -176,8 +176,8 @@ extension Sport {
     })
   }
   
-  func findFirstSportStateByUUID(editedStateUUID: Int) -> SportState? {
-    if let index = firstStateIndexByStateID(editedStateUUID: editedStateUUID) {
+  func findFirstStateByStateId(stateId: Int) -> SportState? {
+    if let index = firstStateIndexByStateID(editedStateUUID: stateId) {
       return allStates[index]
     }
     return nil
@@ -346,9 +346,9 @@ extension Sport {
     if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
       switch ruleType {
       case .SCORE:
-        states[index].complexScoreRules.append(ComplexRules(rules: [], description: "计分规则集"))
+        states[index].scoreRules.append(Rules(description: "计分规则集"))
       case .VIOLATE:
-        states[index].complexViolateRules.append(ComplexRules(rules: [], description: "违规规则集"))
+        states[index].violateRules.append(Rules(description: "违规规则集"))
       }
     }
   }
@@ -361,68 +361,117 @@ extension Sport {
       }
     }
   
-  mutating func addSportStateRule(editedSportStateUUID: Int, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
-    if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
-      states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
-    }
-  }
-  
-  mutating func updateSportStateRule(editedSportStateUUID: Int, editedSportStateRulesId: UUID, editedRule: ComplexRule, ruleType: RuleType) {
-    if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
-      states[stateIndex].updateSportStateRule(editedSportStateRulesId: editedSportStateRulesId, editedRule: editedRule, ruleType: ruleType)
-    }
-  }
-    
-    mutating func updateSportStateRule(editedSportStateUUID: Int, ruleType: RuleType, editedRulesIndex: Int, editedRule: ComplexRule) {
-      if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
-        states[stateIndex].updateSportStateRule(ruleType: ruleType, rulesIndex: editedRulesIndex, editedRule: editedRule)
-      }
-    }
-  
-  
-  
-  
-  mutating func dropInvalidComplexRule(editedSportStateUUID: Int, editedSportStateRulesId: UUID, ruleType: RuleType) {
-    if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID){
-      states[stateIndex].dropInvalidRules(editedSportStateRulesId: editedSportStateRulesId, ruleType: ruleType)
-    }
-  }
   
 
   
-  mutating func deleteSportStateRules(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType) {
+  mutating func deleteRules(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType) {
     if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
-      states[index].deleteSportStateRules(rulesId: editedRulesId, ruleType: ruleType)
+      states[index].deleteRules(rulesId: editedRulesId, ruleType: ruleType)
     }
   }
-    mutating func deleteSportStateRule(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType, ruleId:String) {
+    
+    mutating func deleteRule(editedSportState: SportState, editedRulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
       if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
-          states[index].deleteSportStateRule(rulesId: editedRulesId, ruleType: ruleType, ruleId: ruleId)
+          states[index].deleteRule(rulesId: editedRulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
       }
     }
-  
+
 
   
   // 每个状态都设置了相应的规则 则已经被设置
   var ruleHasSetuped: Bool {
     states.count ==  states.reduce(0, {(result, state) in
-        (!state.complexScoreRules.isEmpty ? 1 : 0) + result
+        (!state.scoreRules.isEmpty ? 1 : 0) + result
     })
   }
   
   // 规则完整度
   var ruleIntegrity:Double {
     Double(states.reduce(0, {(result, state) in
-      (!state.complexScoreRules.isEmpty ? 1 : 0) + result
+      (!state.scoreRules.isEmpty ? 1 : 0) + result
     }))/Double(states.count)
   }
 
   
-  mutating func setSegmentToSelected(editedSportStateUUID: Int, editedSportStateRuleId: String?) {
+    mutating func setSegmentToSelected(editedSportStateUUID: Int, editedSportStateRuleId: String?, ruleClass: RuleClass) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
-      states[stateIndex].setSegmentToSelected(editedSportStateRuleId: editedSportStateRuleId)
+      states[stateIndex].setSegmentToSelected(editedSportStateRuleId: editedSportStateRuleId, ruleClass: ruleClass)
     }
   }
+    
+    
+    mutating func addRule(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRule(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+    
+    mutating func addRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+    
+    func getRuleLandmarkSegmentAngles(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [AngleRange] {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkSegmentAngles(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+    }
+    
+    func getRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> AngleRange {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func removeRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        states[stateIndex].removeRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func updateRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, id: UUID) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].updateRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: id)
+
+        }
+    }
+    
+    
+//    ----------------------------
+    
+    func getRuleAngleToLandmarkSegments(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [AngleToLandmarkSegment] {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleAngleToLandmarkSegments(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+    }
+    
+    func getRuleAngleToLandmarkSegment(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> AngleToLandmarkSegment {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleAngleToLandmarkSegment(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func addRuleAngleToLandmarkSegment(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRuleAngleToLandmarkSegment(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+    
+    mutating func removeRuleAngleToLandmarkSegment(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        states[stateIndex].removeRuleAngleToLandmarkSegment(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    
+    mutating func updateRuleAngleToLandmarkSegment(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].updateRuleAngleToLandmarkSegment(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+
+        }
+    }
+    
+//    -----------
+    mutating func transferRuleTo(stateId:Int, ruleType:RuleType, rulesIndex:Int, rule: Ruler) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+            states[stateIndex].transferRuleTo(ruleType: ruleType, rulesIndex: rulesIndex, rule: rule)
+        }
+    }
   
 
 }

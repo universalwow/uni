@@ -25,42 +25,41 @@ struct ObjectView: View {
     }
 }
 
-struct RectView: View {
-    
-    @EnvironmentObject var sportManager:SportsManager
-    
-    var viewSize:CGSize
-    var body: some View {
-        if let state = sportManager.findFirstSportState(),
-            let rule = sportManager.findCurrentSportStateRule(),
-           let landmarkInArea = rule.landmarkInArea,
-           !landmarkInArea.area.isEmpty {
-            let imageSize = state.image!.imageSize
-            let rect = landmarkInArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
-            
-            Rectangle()
-                .stroke(.pink, lineWidth: 2)
-                .frame(width: rect.width, height: rect.height)
-                .position(rect.center)
-                .overlay(content: {
-                    Text("\(landmarkInArea.landmarkType.rawValue)")
-                        .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
-                        .foregroundColor(.pink)
-                })
-
-        }
-        
-    }
-}
+//struct RectView: View {
+//    
+//    @EnvironmentObject var sportManager:SportsManager
+//    
+//    var viewSize:CGSize
+//    var body: some View {
+//        if let state = sportManager.findFirstSportState(),
+//            let rule = sportManager.findRule(),
+//           let landmarkInArea = rule.landmarkInArea, !landmarkInArea.area.isEmpty {
+//            let imageSize = state.image!.imageSize
+//            let rect = landmarkInArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
+//            
+//            Rectangle()
+//                .stroke(.pink, lineWidth: 2)
+//                .frame(width: rect.width, height: rect.height)
+//                .position(rect.center)
+//                .overlay(content: {
+//                    Text("\(landmarkInArea.landmarkType.rawValue)")
+//                        .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
+//                        .foregroundColor(.pink)
+//                })
+//
+//        }
+//        
+//    }
+//}
 
 
 struct ObjectsViewForSetupRule: View {
     @EnvironmentObject var sportManager: SportsManager
     @EnvironmentObject var imageAnalysis:ImageAnalysis
-    var objects:[Observation]
     var imageSize:CGSize
     var viewSize:CGSize
     var body: some View {
+        let objects = sportManager.findSelectedObjects()
         ForEach(objects) { object in
             ObjectView(object: object, imageSize: imageSize, viewSize: viewSize)
                 .onTapGesture {

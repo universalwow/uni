@@ -24,6 +24,16 @@ enum RuleType: String, Identifiable, CaseIterable {
     case SCORE, VIOLATE
 }
 
+enum RuleClass: String, Identifiable, CaseIterable, Codable {
+    var id: String {
+        self.rawValue
+    }
+    case LandmarkSegment, Landmark, Observation
+}
+
+
+
+
 struct LandmarkSegmentToAxis: Codable {
     var landmarkSegment: LandmarkSegment
     var axis:CoordinateAxis
@@ -103,7 +113,7 @@ struct LandmarkToAxisAndState: Codable {
     }
     
     
-    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
         
         if stateTimeHistory.isEmpty || stateTimeHistory.contains(where: { stateTime in
             stateTime.sportState.id == SportState.startState.id
@@ -619,7 +629,8 @@ struct ObjectToLandmark: Codable {
 }
 
 
-struct RelativeLandmarkSegmentsToAxis: Codable {
+struct RelativeLandmarkSegmentsToAxis: Identifiable, Codable {
+    var id = UUID()
     
     var lowerBound:Double = 0
     var upperBound:Double = 0
@@ -656,7 +667,7 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
     }
     
     
-    func satisfy(poseMap: PoseMap) -> Bool? {
+    func satisfy(poseMap: PoseMap) -> Bool {
         
         let fromSegment = self.from.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         let toSegment = self.to.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
@@ -715,8 +726,9 @@ struct RelativeLandmarkSegmentsToAxis: Codable {
     
 }
 
-struct AngleToLandmarkSegment: Codable {
+struct AngleToLandmarkSegment: Identifiable, Codable {
     
+    var id = UUID()
     var lowerBound:Double = 0
     var upperBound:Double = 0
     
@@ -765,7 +777,8 @@ struct AngleToLandmarkSegment: Codable {
     }
 }
 
-struct AngleRange: Codable {
+struct AngleRange: Identifiable, Codable {
+    var id = UUID()
     var lowerBound = 0.0
     var upperBound = 0.0
     var landmarkSegment: LandmarkSegment {
@@ -839,24 +852,10 @@ struct LandmarkInArea: Codable {
         self.area = [Point2D.zero,Point2D.zero,Point2D.zero,Point2D.zero]
     }
     
-    func satisfy(landmarkSegmentType: LandmarkTypeSegment, poseMap: PoseMap, frameSize: Point2D) -> Bool? {
-        
-        let landmarkSegment = landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+    func satisfy(poseMap: PoseMap, frameSize: Point2D) -> Bool {
+        let landmarkPoint = poseMap[landmarkType]!
         let path = self.path(frameSize: frameSize)
-        if landmarkType == landmarkSegment.startLandmark.landmarkType {
-            return path.contains(landmarkSegment.startLandmark.position.vector2d.toCGPoint)
-        }else if landmarkType == landmarkSegment.endLandmark.landmarkType {
-            let satisfy = path.contains(landmarkSegment.endLandmark.position.vector2d.toCGPoint)
-            if satisfy {
-                print("----------")
-            }
-            return satisfy
-            
-        }
-        
-        
-        
-        return nil
+        return path.contains(landmarkPoint.vector2d.toCGPoint)
     }
 }
 
@@ -864,6 +863,7 @@ struct LandmarkInArea: Codable {
 
 struct ComplexRules: Identifiable, Hashable, Codable {
     var id = UUID()
+    // 关系与
     var rules:[ComplexRule] = []
     
     var description:String = ""
@@ -924,15 +924,15 @@ struct ComplexRules: Identifiable, Hashable, Codable {
         }
     }
     
-    mutating func updateSportStateRule(editedRule: ComplexRule) {
-        
-        if let index = firstIndexOfRule(editedRule: editedRule) {
-            rules[index] = editedRule
-        }else{
-            rules.append(editedRule)
-        }
-        
-    }
+//    mutating func updateSportStateRule(editedRule: Ruler, ruleClass: Rule) {
+//
+//        if let index = firstIndexOfRule(editedRule: editedRule) {
+//            rules[index] = editedRule
+//        }else{
+//            rules.append(editedRule)
+//        }
+//
+//    }
     
     mutating func setupLandmarkArea(editedSportStateRule: ComplexRule, landmarkinArea: LandmarkInArea?) {
         if let index = firstIndexOfRule(editedRule: editedSportStateRule) {
@@ -949,7 +949,7 @@ struct ComplexRules: Identifiable, Hashable, Codable {
 /**
  基于单帧的规则
  */
-func ruleIdToLandmarkTypes(ruleId: String) -> LandmarkTypeSegment {
+func ruleIdToLandmarkSegmentType(ruleId: String) -> LandmarkTypeSegment {
     let landmarkTypes = ruleId
         .split(separator: "-")
         .compactMap{ landmarkTypeString in
@@ -957,6 +957,7 @@ func ruleIdToLandmarkTypes(ruleId: String) -> LandmarkTypeSegment {
         }
     return LandmarkTypeSegment(startLandmarkType: landmarkTypes.first!, endLandmarkType: landmarkTypes.last!)
 }
+
 
 struct ComplexRule: Identifiable, Hashable, Codable {
     static func == (lhs: ComplexRule, rhs: ComplexRule) -> Bool {
@@ -977,7 +978,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     
     init(ruleId: String) {
         self.id = ruleId
-        self.landmarkSegmentType = ruleIdToLandmarkTypes(ruleId: ruleId)
+        self.landmarkSegmentType = ruleIdToLandmarkSegmentType(ruleId: ruleId)
     }
     
     // ---------------基于单帧的规则--------------
@@ -1027,7 +1028,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     }
     
     func landmarkInAreaSatisfy(landmarkInArea: LandmarkInArea, poseMap: PoseMap, frameSize: Point2D) -> Bool? {
-        return landmarkInArea.satisfy(landmarkSegmentType: landmarkSegmentType, poseMap: poseMap, frameSize: frameSize)
+        return landmarkInArea.satisfy(poseMap: poseMap, frameSize: frameSize)
     }
     
     func lengthToStateSatisfy(relativeDistance: LandmarkToAxisAndState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {

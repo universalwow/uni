@@ -20,6 +20,9 @@ class SportsManager: ObservableObject {
     
     
     var currentSportStateRuleType:RuleType?
+    
+    var currentSportStateRuleClass:RuleClass?
+    
     var dispather = Dispatcher()
     
 
@@ -43,11 +46,11 @@ extension SportsManager {
     
     //MARK: sport
     
-    func setCurrentSport(editedSport : Sport) {
+    func setSport(editedSport : Sport) {
         currentSportId = editedSport.id
     }
     
-    private func firstIndex() -> Int? {
+    private func firstIndexOfSport() -> Int? {
         if let currentSportId = currentSportId {
             return sports.firstIndex(where: { sport in
                 sport.id == currentSportId
@@ -57,7 +60,7 @@ extension SportsManager {
     }
     
     
-    private func firstIndex(editedSportId: UUID) -> Int? {
+    private func firstIndexOfSport(editedSportId: UUID) -> Int? {
         return sports.firstIndex(where: { sport in
             sport.id == editedSportId
         })
@@ -65,7 +68,7 @@ extension SportsManager {
     
     
     func findFirstSport() -> Sport? {
-        if let sportIndex = firstIndex() {
+        if let sportIndex = firstIndexOfSport() {
             return sports[sportIndex]
         }else {
             return nil
@@ -73,7 +76,7 @@ extension SportsManager {
     }
     
     func findFirstSport(sportId: UUID) -> Sport? {
-        if let sportIndex = firstIndex(editedSportId: sportId) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sportId) {
             return sports[sportIndex]
         }else {
             return nil
@@ -105,18 +108,7 @@ extension SportsManager {
         Storage.store(editedSport, to: .documents, as: editedSport.sportFileName)
     }
     
-    func uploadSport(editedSport: Sport) {
-//        ServiceManager.uploadDocument(editedSport, filename: "upload_file", handler: { response in
-//            print(response)
-//        })
-//                serviceManager.uploadData(sport: editedSport)
-    }
-    
-    func downloadSport() {
 
-//        serviceManager.downloadDocument(path: "https://\(ServiceManager.StaticValue.IP ):4001/sports/2EB67040-965E-403E-ABAE-001B1E665038.json")
-    
-    }
     
     func saveSports() {
         print("saveSports \(self.sports.count)")
@@ -125,15 +117,10 @@ extension SportsManager {
         }
     }
     
-    func uploadSports() {
-        self.sports.forEach { sport in
-//            Storage.store(sport, to: .documents, as: sport.sportFileName)
-        }
-    }
+
     
     private func updateSport(sport: Sport) {
-        if let index = firstIndex(editedSportId: sport.id) {
-            print("\(sport.description)")
+        if let index = firstIndexOfSport(editedSportId: sport.id) {
             sports[index] = sport
         }
     }
@@ -146,9 +133,6 @@ extension SportsManager {
             newSport.sportClass = sportClass
             newSport.sportPeriod = sportPeriod
             newSport.noStateWarning = noStateWarning
-            
-            print("\(newSport.name) - \(newSport.description)")
-            
             updateSport(sport: newSport)
         }
     }
@@ -164,17 +148,15 @@ extension SportsManager {
     
     func updateSport(editedSport:Sport, state: SportState, checkCycle: Double, passingRate:Double, keepTime: Double) {
         
-        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
             sports[sportIndex].updateSportState(editedSportState: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
             
         }
     }
     
     
-    
-    
     func deleteSport(editedSport: Sport) {
-        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
             sports.remove(at: sportIndex)
             Storage.delete(as: editedSport.sportFileName)
         }
@@ -182,31 +164,30 @@ extension SportsManager {
     
     //MARK: sport state
     
-    func setCurrentSportState(editedSport : Sport, editedSportState: SportState) {
+    func setState(editedSport : Sport, editedSportState: SportState) {
         currentSportId = editedSport.id
         currentStateId = editedSportState.id
     }
     
-    func findFirstSportState() -> SportState? {
-        findFirstSport()?.findFirstSportStateByUUID(editedStateUUID: currentStateId!)
+    func findFirstState() -> SportState? {
+        findFirstSport()?.findFirstStateByStateId(stateId: currentStateId!)
+    }
+    
+
+    
+    func findFirstState(sportId: UUID, stateId: Int) -> SportState? {
+        return findFirstSport(sportId: sportId)?.findFirstStateByStateId(stateId: stateId)
     }
     
     
-    
-    
-    private func findFirstSportState(editedSportId: UUID, sportStateUUID: Int) -> SportState? {
-        findFirstSport(sportId: editedSportId)?.findFirstSportStateByUUID(editedStateUUID: sportStateUUID)
-    }
-    
-    
-    func findFirstSportState(editedSport: Sport, sportStateUUID: Int) -> SportState? {
-        return findFirstSportState(editedSportId: editedSport.id, sportStateUUID: sportStateUUID)
+    func findState(editedSport: Sport, sportStateUUID: Int) -> SportState? {
+        return findFirstState(sportId: editedSport.id, stateId: sportStateUUID)
         
     }
     
     
     func addSportState(editedSport: Sport, stateName: String, stateDescription: String) {
-        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
             sports[sportIndex].updateState(stateName: stateName, stateDescription: stateDescription)
         }
     }
@@ -219,20 +200,20 @@ extension SportsManager {
             return
         }
         
-        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
             sports[sportIndex].deleteState(state: editedSportState)
         }
     }
     
     
     private func updateSportState(state: SportState) {
-        if let sportIndex = firstIndex() {
+        if let sportIndex = firstIndexOfSport() {
             sports[sportIndex].updateSport(state: state)
         }
     }
         
     func updateSportState(image: UIImage, humanPose: HumanPose?) {
-        if let state = findFirstSportState() {
+        if let state = findFirstState() {
             var newState = state
             newState.image = PngImage(photo: image.pngData()!, width: Int(image.size.width), height: Int(image.size.height))
             
@@ -244,17 +225,16 @@ extension SportsManager {
     }
     
     func updateSportState(image: UIImage, objects: [Observation]) {
-        if let state = findFirstSportState() {
+        if let state = findFirstState() {
             var newState = state
             newState.image = PngImage(photo: image.pngData()!, width: Int(image.size.width), height: Int(image.size.height))
             newState.objects = objects
             self.updateSportState(state: newState)
-            
         }
     }
     
     func keyFrameSetted(sport: Sport, state: SportState) -> Bool {
-        if let state = findFirstSportState(editedSport: sport, sportStateUUID: state.id) {
+        if let state = findState(editedSport: sport, sportStateUUID: state.id) {
             return state.image != nil
         }
         return false
@@ -264,13 +244,13 @@ extension SportsManager {
     func addSportStatetransform(sport: Sport, fromSportState: SportState, toSportState: SportState) {
         
         
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].addStateTransform(fromSportState: fromSportState, toSportState: toSportState)
         }
     }
     
     func deleteSportStateTransForm(sport:Sport, fromSportState: SportState, toSportState: SportState) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].deleteStateTransForm(fromSportState: fromSportState, toSportState: toSportState)
         }
     }
@@ -282,31 +262,31 @@ extension SportsManager {
 
     
     func addSportStateScoreSequence(sport:Sport, index: Int, scoreState: SportState) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].addSportStateScoreSequence(index: index, scoreState: scoreState)
         }
     }
     
     func addSportStateViolateSequence(sport:Sport, index: Int, violateState: SportState, warning: String) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].addSportStateViolateSequence(index: index, violateState: violateState, warning: warning)
         }
     }
     
     func addSportStateScoreSequence(sport:Sport) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].addSportStateScoreSequence()
         }
     }
     
     func addSportStateViolateSequence(sport:Sport) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].addSportStateViolateSequence()
         }
     }
     
     func deleteSportStateScoreSequence() {
-        if let sportIndex = firstIndex() {
+        if let sportIndex = firstIndexOfSport() {
             sports[sportIndex].deleteSportStateScoreSequence()
         }
     }
@@ -314,13 +294,13 @@ extension SportsManager {
 
     
     func deleteSportStateFromScoreSequence(sport:Sport, sequenceIndex: Int, stateIndex:Int) {
-        if let sportIndex = firstIndex(editedSportId: sport.id){
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id){
             sports[sportIndex].deleteSportStateFromScoreSequence(sequenceIndex: sequenceIndex, stateIndex: stateIndex)
         }
     }
     
     func deleteSportStateFromViolateSequence(sport:Sport, sequenceIndex: Int, stateIndex:Int) {
-        if let sportIndex = firstIndex(editedSportId: sport.id){
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id){
             sports[sportIndex].deleteSportStateFromViolateSequence(sequenceIndex: sequenceIndex, stateIndex: stateIndex)
         }
     }
@@ -330,37 +310,36 @@ extension SportsManager {
     }
     
     func updateSport(sport: Sport, landmarkType: LandmarkType) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].updateSport(landmarkType: landmarkType)
         }
     }
     
     func deleteSport(sport: Sport, landmarkType: LandmarkType) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].deleteSport(landmarkType: landmarkType)
         }
     }
     
     func updateSport(sport: Sport, objectId: String) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].updateSport(objectId: objectId)
         }
     }
     
     func deleteSport(sport: Sport, objectId: String) {
-        if let sportIndex = firstIndex(editedSportId: sport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].deleteSport(objectId: objectId)
         }
     }
 
     
-    
     func findSelectedSegments() -> [LandmarkSegment] {
-        findFirstSportState()!.landmarkSegments
+        findFirstState()!.landmarkSegments
     }
     
     func findSelectedObjects() -> [Observation] {
-        findFirstSportState()!.objects
+        findFirstState()!.objects
 
     }
     
@@ -370,701 +349,75 @@ extension SportsManager {
         })?.objects
     }
     
-    
-    
-    
-    
     // MARK: state rule
-    func setCurrentSportStateRule(editedSport: Sport, editedSportState: SportState, editedSportStateRules: ComplexRules, editedSportStateRule: ComplexRule?, ruleType: RuleType) {
+    func setRule(editedSport: Sport, editedSportState: SportState, editedSportStateRules: Rules, editedSportStateRule: Ruler?, ruleType: RuleType, ruleClass: RuleClass?) {
         currentSportId = editedSport.id
         currentStateId = editedSportState.id
         currentSportStateRulesId  = editedSportStateRules.id
         currentSportStateRuleType = ruleType
         self.currentSportStateRuleId = editedSportStateRule?.id
-        
+        self.currentSportStateRuleClass = ruleClass
         
         print(currentSportStateRuleType)
     }
     
     
-    func setCurrentSportStateRule(landmarkSegmentType: LandmarkTypeSegment) {
+    func setCurrentSportStateRule(landmarkSegmentType: LandmarkTypeSegment, ruleClass: RuleClass) {
         currentSportStateRuleId = landmarkSegmentType.id
+        currentSportStateRuleClass = ruleClass
         setSegmentToSelected()
+    }
+    
+    func setCurrentSportStateRule(landmarkType: LandmarkType, ruleClass: RuleClass) {
+        currentSportStateRuleId = landmarkType.id
+        currentSportStateRuleClass = ruleClass
+        setSegmentToSelected()
+    }
+    
+    func setCurrentSportStateRule(objectLabel: String, ruleClass: RuleClass) {
+        currentSportStateRuleId = objectLabel
+        currentSportStateRuleClass = ruleClass
+        setSegmentToSelected()
+    }
+    
 
-    }
-    
-    
-    private func addStateRule() {
-        let rule = ComplexRule(ruleId: self.currentSportStateRuleId!)
-        self.upsertCurrentRule(rule: rule)
-    }
-    
-    func setStateRule() {
+    func setRule() {
         if currentSportStateRuleId != nil {
-            if let _ = self.findCurrentSportStateRule() {
+            if let _ = self.findRule() {
                 print("修改规则。。。。。。。。")
             }else{
-
-                self.addStateRule()
+                
+                if let sportIndex = firstIndexOfSport() {
+                    sports[sportIndex].addRule(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+                }
+                
                 print("添加新规则。。。。。。。。")
             }
-            print("setSegmentToSelected \(currentSportStateRuleId)")
         }
     }
     
-    
-    
-    
-    
-    private func upsertCurrentRule(rule: ComplexRule) {
-        if let sportIndex = firstIndex() {
-            sports[sportIndex].updateSportStateRule(editedSportStateUUID: self.currentStateId!, editedSportStateRulesId: currentSportStateRulesId!, editedRule: rule, ruleType: currentSportStateRuleType!)
-        }
-    }
-    
-    private func findComplexRulesList(sportId: UUID, editedStateId: Int, ruleType: RuleType) -> [ComplexRules] {
-        let sportState = findFirstSportState(editedSportId: sportId, sportStateUUID: editedStateId)!
+
+    private func findRulesList(sportId: UUID, editedStateId: Int, ruleType: RuleType) -> [Rules] {
+        let sportState = findFirstState(sportId: sportId, stateId: editedStateId)!
         
-        return sportState.findComplexRulesList(ruleType: ruleType)
+        return sportState.findRulesList(ruleType: ruleType)
         
     }
     
-    func findComplexRulesList(sport: Sport, editedState: SportState, ruleType: RuleType) -> [ComplexRules] {
-        findComplexRulesList(sportId: sport.id, editedStateId: editedState.id, ruleType: ruleType)
+    func findRulesList(sport: Sport, editedState: SportState, ruleType: RuleType) -> [Rules] {
+        findRulesList(sportId: sport.id, editedStateId: editedState.id, ruleType: ruleType)
     }
     
-    func findComplexRulex() -> ComplexRules? {
-        let sportState = findFirstSportState()
-        return sportState?.findComplexRules(ruleType: currentSportStateRuleType!, currentSportStateRulesId: currentSportStateRulesId!)
+    func findRules() -> Rules? {
+        let sportState = findFirstState()
+        return sportState?.findRules(ruleType: currentSportStateRuleType!, currentSportStateRulesId: currentSportStateRulesId!)
     }
     
-    
-    func findCurrentSportStateRule() -> ComplexRule? {
+    func findRule() -> Ruler? {
         
-        // ComplexRulex
-        let complexRulex = findComplexRulex()
-        return complexRulex?.findFirstComplexRule(ruleId: currentSportStateRuleId)
-        
-    }
-    
-    func findCurrentSportStateRule(sport:Sport, state:SportState,rules:ComplexRules, rule: ComplexRule, ruleType: RuleType) -> ComplexRule? {
-        if let state = findFirstSportState(editedSport: sport, sportStateUUID: state.id), let rules = state.firstComplexRulesById(editedRulesId: rules.id, ruleType: ruleType), let rule = rules.findFirstComplexRule(ruleId: rule.id) {
-            return rule
-        }
-        return nil
-    }
-    
-    
-    
-    func dropInvalidComplexRule() {
-        if let sportIndex = firstIndex() {
-            sports[sportIndex].dropInvalidComplexRule(editedSportStateUUID: self.currentStateId!, editedSportStateRulesId: currentSportStateRulesId!, ruleType: currentSportStateRuleType!)
-        }
-    }
-    
-
-    func setRuleLandmarkInArea(landmarkinArea: LandmarkInArea?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.landmarkInArea = landmarkinArea
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleLandmarkInArea(landmarkType: LandmarkType, imageSize: Point2D,  warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.landmarkInArea = LandmarkInArea(landmarkType: landmarkType, imageSize: imageSize, warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
-            )
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func updateRuleLandmarkInArea(landmarkType: LandmarkType, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.landmarkInArea!.landmarkType = landmarkType
-            newRule.landmarkInArea!.warning.content = warningContent
-            newRule.landmarkInArea!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.landmarkInArea!.warning.delayTime = delayTime
-
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func updateRuleLandmarkInArea(area: [Point2D]) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.landmarkInArea!.area = area
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    
-    
-    func getRuleLandmarkInArea() -> LandmarkInArea? {
-        let rule = findCurrentSportStateRule()
-        return rule?.landmarkInArea
-    }
-    
-    
-    func updateRuleToStateLandmark(stateId: Int, fromAxis: CoordinateAxis, landmarkType: LandmarkType,  landmarkSegment: LandmarkSegment, toAxis: CoordinateAxis,
-                                   warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let  rule = findCurrentSportStateRule() {
-            let fromStateLandmark = findFirstSportState()!
-                .findLandmarkSegment(id: rule.id)
-                .startAndEndSegment.first{ landmark in
-                    landmark.landmarkType == landmarkType
-                }!
-            var newRule = rule
-
-            newRule.lengthToState!.fromLandmarkToAxis.landmark = fromStateLandmark
-            newRule.lengthToState!.fromLandmarkToAxis.axis = fromAxis
-            let toStateLandmark =
-            findFirstSportState(editedSportId: currentSportId!, sportStateUUID: stateId)!
-                .findLandmarkSegment(id: rule.id)
-                .startAndEndSegment.first{ landmark in
-                    landmark.landmarkType == landmarkType
-                }!
-            newRule.lengthToState!.toLandmarkToAxis.landmark = toStateLandmark
-            newRule.lengthToState!.toLandmarkToAxis.axis = fromAxis
-            
-            newRule.lengthToState!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-            newRule.lengthToState!.toLandmarkSegmentToAxis.axis = toAxis
-            newRule.lengthToState!.toStateId = stateId
-            
-            newRule.lengthToState!.warning.content = warningContent
-            newRule.lengthToState!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.lengthToState!.warning.delayTime = delayTime
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    
-    
-    
-    func updateRuleObjectToLandmark(
-        fromAxis: CoordinateAxis,
-        landmarkType: LandmarkType,
-        objectId: String,
-        objectPosition: ObjectPosition,
-        landmarkSegment: LandmarkSegment,
-        toAxis: CoordinateAxis,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double
-    ) {
-        if let rule = findCurrentSportStateRule() {
-            
-            let state = findFirstSportState()!
-            
-            let landmark = state
-                .findLandmarkSegment(id: rule.id)
-                .startAndEndSegment.first{ landmark in
-                    landmark.landmarkType == landmarkType
-                }!
-            
-            let selectedObject = state.objects.first{ object in
-                object.label == objectId
-            }!
-            
-            var newRule = rule
-            newRule.objectPositionToLandmark!.fromAxis = fromAxis
-            newRule.objectPositionToLandmark!.toLandmark = landmark
-            newRule.objectPositionToLandmark!.fromPosition.id = objectId
-            newRule.objectPositionToLandmark!.fromPosition.position = objectPosition
-            newRule.objectPositionToLandmark!.fromPosition.point =  selectedObject.rect.pointOf(
-                position: objectPosition).point2d
-            newRule.objectPositionToLandmark!.toLandmarkSegmentToAxis.axis = toAxis
-            newRule.objectPositionToLandmark!.toLandmarkSegmentToAxis.landmarkSegment = landmarkSegment
-            newRule.objectPositionToLandmark!.warning.content = warningContent
-            newRule.objectPositionToLandmark!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.objectPositionToLandmark!.warning.delayTime = delayTime
-
-            
-            self.upsertCurrentRule(rule: newRule)
-            
-        }
-        
-    }
-    
-    func setRuleObjectToLandmark(
-        fromAxis: CoordinateAxis,
-        landmarkType: LandmarkType,
-        objectId: String,
-        objectPosition: ObjectPosition,
-        landmarkSegment: LandmarkSegment,
-        toAxis: CoordinateAxis,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            
-            let state = findFirstSportState()!
-            
-            let landmark = state
-                .findLandmarkSegment(id: rule.id)
-                .startAndEndSegment.first{ landmark in
-                    landmark.landmarkType == landmarkType
-                }!
-            
-            let selectedObject = state.objects.first{ object in
-                object.label == objectId
-            }!
-            
-            var newRule = rule
-            newRule.objectPositionToLandmark = ObjectToLandmark(fromAxis: fromAxis,
-                                                                fromPosition: ObjectPositionPoint(
-                                                                    id: objectId,
-                                                                    position: objectPosition, point: selectedObject.rect.pointOf(
-                                                                        position: objectPosition).point2d), toLandmark: landmark, toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: landmarkSegment, axis: toAxis), warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime))
-            self.upsertCurrentRule(rule: newRule)
-            
-        }
-        
-    }
-    
-    
-    
-    func getRuleLandmarkSegmentLength() -> RelativeLandmarkSegmentsToAxis? {
-        let rule = findCurrentSportStateRule()!
-
-        return rule.length
-    }
-    
-    func getRuleAngleToLandmarkSegment() -> AngleToLandmarkSegment? {
-        let rule = findCurrentSportStateRule()!
-
-        return rule.angleToLandmarkSegment
-    }
-    
-    func getRuleToStateLandmark() -> LandmarkToAxisAndState? {
-        let rule = findCurrentSportStateRule()!
-        return rule.lengthToState
-    }
-    
-    
-    func getRuleObjectToLandmark() -> ObjectToLandmark? {
-        let rule = findCurrentSportStateRule()!
-        return rule.objectPositionToLandmark
-    }
-    
-    func getRuleObjectToObject() -> ObjectToObject? {
-        let rule = findCurrentSportStateRule()!
-        return rule.objectPositionToObjectPosition
-    }
-    
-    func updateRuleLandmarkSegmentLength(lowerBound: Double, upperBound: Double) {
-        if let rule = self.findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.length!.lowerBound = lowerBound
-            newRule.length!.upperBound = upperBound
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-    func updateRuleAngleToLandmarkSegment(lowerBound: Double, upperBound: Double) {
-        if let rule = self.findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.angleToLandmarkSegment!.lowerBound = lowerBound
-            newRule.angleToLandmarkSegment!.upperBound = upperBound
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-    func updateRuleObjectToLandmark(lowerBound: Double, upperBound: Double) {
-        if let rule = self.findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.objectPositionToLandmark!.lowerBound = lowerBound
-            newRule.objectPositionToLandmark!.upperBound = upperBound
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-    func updateRuleToStateLandmark(lowerBound: Double, upperBound: Double) {
-        if let rule = self.findCurrentSportStateRule() {
-            var newRule = rule
-                newRule.lengthToState!.lowerBound = lowerBound
-                newRule.lengthToState!.upperBound = upperBound
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-
-    
-    func setRuleToStateLandmark(toStateId: Int, fromAxis: CoordinateAxis, relativeSegment: LandmarkSegment, toAxis: CoordinateAxis,
-                                warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            let length = LandmarkToAxisAndState(
-                toStateId: toStateId,
-                fromLandmarkToAxis:
-                    LandmarkToAxis(
-                        landmark: self.findSelectedSegment()!.startLandmark,
-                        axis: fromAxis),
-                
-                toLandmarkToAxis: LandmarkToAxis(
-                    landmark: self.findSelectedSegment()!.startLandmark,
-                    axis: fromAxis),
-                toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis),
-                warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime))
-
-            newRule.lengthToState = length
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
- 
-
-    
-
-    func updateRuleObjectToObject(lowerBound: Double, upperBound: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.objectPositionToObjectPosition!.lowerBound = lowerBound
-            newRule.objectPositionToObjectPosition!.upperBound = upperBound
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    func updateRuleObjectToObject(
-                                                
-        fromAxis: CoordinateAxis, fromObjectId: String, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, relativeSegment: LandmarkSegment, toAxis: CoordinateAxis,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            
-            let fromObject = findFirstSportState()!.objects.first{ _object in
-                _object.label == fromObjectId
-            }!
-            
-            let toObject = findFirstSportState()!.objects.first{ _object in
-                _object.label == toObjectId
-            }!
-            
-            newRule.objectPositionToObjectPosition!.fromPosition = ObjectPositionPoint(
-                id: fromObjectId,
-                position: fromObjectPosition,
-                point: fromObject.rect.pointOf(position: fromObjectPosition).point2d)
-            newRule.objectPositionToObjectPosition!.toPosition = ObjectPositionPoint(
-                id: toObjectId,
-                position: toObjectPosition,
-                point: toObject.rect.pointOf(position: toObjectPosition).point2d)
-            newRule.objectPositionToObjectPosition!.fromAxis = fromAxis
-            newRule.objectPositionToObjectPosition!.toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis)
-            newRule.objectPositionToObjectPosition!.warning.content = warningContent
-            newRule.objectPositionToObjectPosition!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.objectPositionToObjectPosition!.warning.delayTime = delayTime
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleObjectToObject(
-                                                
-        fromAxis: CoordinateAxis, fromObjectId: String, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, relativeSegment: LandmarkSegment, toAxis: CoordinateAxis, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            
-            let fromObject = findFirstSportState()!.objects.first{ _object in
-                _object.label == fromObjectId
-            }!
-            
-            let toObject = findFirstSportState()!.objects.first{ _object in
-                _object.label == toObjectId
-            }!
-            
-            newRule.objectPositionToObjectPosition = ObjectToObject(
-                fromPosition:  ObjectPositionPoint(
-                id: fromObjectId,
-                position: fromObjectPosition,
-                point: fromObject.rect.pointOf(position: fromObjectPosition).point2d), toPosition: ObjectPositionPoint(
-                    id: toObjectId,
-                    position: toObjectPosition,
-                    point: toObject.rect.pointOf(position: toObjectPosition).point2d),
-                fromAxis: fromAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis), warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
-            )
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleObjectToObject(objectToObject: ObjectToObject?){
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.objectPositionToObjectPosition = objectToObject
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleLandmarkSegmentLength(fromAxis: CoordinateAxis, relativeSegment: LandmarkSegment, toAxis: CoordinateAxis, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            let length = RelativeLandmarkSegmentsToAxis(
-                from: LandmarkSegmentToAxis(landmarkSegment: self.findSelectedSegment()!, axis: fromAxis),
-                to: LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis),
-                warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime)
-            )
-                newRule.length = length
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleAngleToLandmarkSegment(relativeSegment: LandmarkSegment, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            let angleToLandmarkSegment = AngleToLandmarkSegment(from: self.findSelectedSegment()!, to: relativeSegment, warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime))
-        
-                newRule.angleToLandmarkSegment = angleToLandmarkSegment
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-        
-    }
-    
-    func updateRuleLandmarkSegmentLength(fromAxis: CoordinateAxis, relativeSegment: LandmarkSegment, toAxis: CoordinateAxis, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            
-            newRule.length!.from = LandmarkSegmentToAxis(landmarkSegment: self.findSelectedSegment()!, axis: fromAxis)
-            newRule.length!.to = LandmarkSegmentToAxis(landmarkSegment: relativeSegment, axis: toAxis)
-            newRule.length!.warning.content = warningContent
-            newRule.length!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.length!.warning.delayTime = delayTime
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-        
-    }
-    
-    func updateRuleAngleToLandmarkSegment(relativeSegment: LandmarkSegment, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            
-            newRule.angleToLandmarkSegment!.from = self.findSelectedSegment()!
-            newRule.angleToLandmarkSegment!.to = relativeSegment
-            newRule.angleToLandmarkSegment!.warning.content = warningContent
-            newRule.angleToLandmarkSegment!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.angleToLandmarkSegment!.warning.delayTime = delayTime
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-        
-    }
-    
-    func setRuleLandmarkSegmentLength(length: RelativeLandmarkSegmentsToAxis?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.length = length
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-    func setRuleAngleToLandmarkSegment(angleToLandmarkSegment: AngleToLandmarkSegment?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.angleToLandmarkSegment = angleToLandmarkSegment
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-    func setRuleToStateLandmark(toStateLandmark: LandmarkToAxisAndState?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-
-                newRule.lengthToState = toStateLandmark
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    
-    func setRuleObjectToLandmark(objectToLandmark: ObjectToLandmark?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-                newRule.objectPositionToLandmark = objectToLandmark
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-    func setRuleLandmarkToSelf(landmarkToSelf: LandmarkToSelf?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-                newRule.landmarkToSelf = landmarkToSelf
-            self.upsertCurrentRule(rule: newRule)
-        }
-        
-    }
-    
-    
-    func getRuleObjectToSelf() -> ObjectToSelf? {
-        let rule = findCurrentSportStateRule()
-        return rule?.objectToSelf
-    }
-    
-    func getRuleLandmarkToSelf() -> LandmarkToSelf? {
-        let rule = findCurrentSportStateRule()
-        return rule?.landmarkToSelf
-    }
-    
-    func setRuleObjectToSelf(objectToSelf: ObjectToSelf?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-
-            newRule.objectToSelf = objectToSelf
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleObjectToSelf(objectId:String, direction: Direction, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-
-            newRule.objectToSelf = ObjectToSelf(objectId: objectId, toDirection: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime))
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleLandmarkToSelf(landmarkType:LandmarkType, direction: Direction, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-
-            newRule.landmarkToSelf = LandmarkToSelf(
-                landmarkType: landmarkType,
-                toDirection: direction,
-                toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis),
-                xLowerBound: xLowerBound,
-                yLowerBound: yLowerBound,
-                warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime))
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func updateRuleObjectToSelf(objectId:String, direction: Direction, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-
-            newRule.objectToSelf!.objectId = objectId
-            newRule.objectToSelf!.toDirection = direction
-            newRule.objectToSelf!.xLowerBound = xLowerBound
-            newRule.objectToSelf!.yLowerBound = yLowerBound
-
-            newRule.objectToSelf!.warning.content = warningContent
-            newRule.objectToSelf!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.objectToSelf!.warning.delayTime = delayTime
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    
-    func updateRuleLandmarkToSelf(landmarkType:LandmarkType, direction: Direction, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, xLowerBound: Double, yLowerBound: Double,
-                                  warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-
-            newRule.landmarkToSelf!.landmarkType = landmarkType
-            newRule.landmarkToSelf!.toDirection = direction
-            
-            newRule.landmarkToSelf!.toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
-            
-            newRule.landmarkToSelf!.xLowerBound = xLowerBound
-            newRule.landmarkToSelf!.yLowerBound = yLowerBound
-
-            newRule.landmarkToSelf!.warning.content = warningContent
-            newRule.landmarkToSelf!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.landmarkToSelf!.warning.delayTime = delayTime
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func updateRuleObjectToSelf(xLowerBound: Double, yLowerBound: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.objectToSelf!.xLowerBound = xLowerBound
-            newRule.objectToSelf!.yLowerBound = yLowerBound
-            
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func updateRuleLandmarkToSelf(xLowerBound: Double, yLowerBound: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.landmarkToSelf!.xLowerBound = xLowerBound
-            newRule.landmarkToSelf!.yLowerBound = yLowerBound
-            
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-
-    
-    
-    func upsertRule(
-        sportId: UUID,
-        stateId:Int,
-        ruleType: RuleType,
-        rulesIndex:Int,
-        rule: ComplexRule
-    ) {
-        if let sportIndex = firstIndex(editedSportId: sportId) {
-            sports[sportIndex].updateSportStateRule(editedSportStateUUID: stateId, ruleType: ruleType, editedRulesIndex: rulesIndex, editedRule: rule)
-        }
-    }
-    
-    
-    
-    func setRuleLandmarkSegmentAngle(landmarkSegment: LandmarkSegment, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.angle  = AngleRange(landmarkSegment: landmarkSegment,
-                                        warning: Warning(content: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime))
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func setRuleLandmarkSegmentAngle(angle: AngleRange?) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.angle  = nil
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func updateRuleLandmarkSegmentAngle(landmarkSegment: LandmarkSegment, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.angle!.landmarkSegment  = landmarkSegment
-            newRule.angle!.warning.content = warningContent
-            newRule.angle!.warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            newRule.angle!.warning.delayTime = delayTime
-
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func updateRuleLandmarkSegmentAngle(lowerBound: Double, upperBound: Double) {
-        if let rule = findCurrentSportStateRule() {
-            var newRule = rule
-            newRule.angle!.lowerBound = lowerBound
-            newRule.angle!.upperBound = upperBound
-            self.upsertCurrentRule(rule: newRule)
-        }
-    }
-    
-    func getRuleLandmarkSegmentAngle() -> AngleRange? {
-        if let rule = findCurrentSportStateRule() {
-            return rule.angle
-        }
-        return nil
+        // Rules
+        let rules = findRules()
+        return rules?.findFirstRule(ruleId: currentSportStateRuleId!, ruleClass: currentSportStateRuleClass!)
     }
     
     func addNewRules(editedSport: Sport, editedSportState: SportState, ruleType: RuleType) {
@@ -1072,37 +425,36 @@ extension SportsManager {
         self.currentStateId = editedSportState.id
         self.currentSportStateRuleType = ruleType
         
-        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
             sports[sportIndex].addNewSportStateRules(editedSportState: editedSportState, ruleType: ruleType)
         }
         
     }
     
-    func deleteRules(editedSport: Sport, editedSportState: SportState, editedRules: ComplexRules, ruleType: RuleType) {
-        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
-            sports[sportIndex].deleteSportStateRules(editedSportState: editedSportState, editedRulesId: editedRules.id, ruleType: ruleType)
+    func deleteRules(editedSport: Sport, editedSportState: SportState, editedRules: Rules, ruleType: RuleType) {
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
+            sports[sportIndex].deleteRules(editedSportState: editedSportState, editedRulesId: editedRules.id, ruleType: ruleType)
         }
     }
     
-    func deleteRule(editedSport: Sport, editedSportState: SportState, editedRules: ComplexRules, ruleType: RuleType, ruleId: String) {
-        if let sportIndex = firstIndex(editedSportId: editedSport.id) {
-            sports[sportIndex].deleteSportStateRule(editedSportState: editedSportState, editedRulesId: editedRules.id, ruleType: ruleType, ruleId: ruleId)
+    func deleteRule(editedSport: Sport, editedSportState: SportState, editedRules: Rules, ruleId:String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
+            sports[sportIndex].deleteRule(editedSportState: editedSportState, editedRulesId: editedRules.id, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
         }
     }
-    
-    
+
     func setSegmentToSelected() {
-        if let sportIndex = firstIndex() {
-            sports[sportIndex].setSegmentToSelected(editedSportStateUUID: currentStateId!, editedSportStateRuleId: currentSportStateRuleId)
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].setSegmentToSelected(editedSportStateUUID: currentStateId!, editedSportStateRuleId: currentSportStateRuleId, ruleClass: currentSportStateRuleClass!)
         }
     }
     
     func findSelectedSegment() -> LandmarkSegment? {
-        findFirstSportState()?.findselectedSegment(editedSportStateRuleId: currentSportStateRuleId)
+        findFirstState()?.findselectedSegment(editedSportStateRuleId: currentSportStateRuleId)
     }
     
     func segmentSelected(segment: LandmarkSegment) -> Bool? {
-        findFirstSportState()?.segmentSelected(segment: segment)
+        findFirstState()?.segmentSelected(segment: segment)
     }
     
     func findLandmarkSegment(landmarkTypeSegment: LandmarkTypeSegment) -> LandmarkSegment {
@@ -1110,6 +462,79 @@ extension SportsManager {
             segment.id == landmarkTypeSegment.id
         }!
     }
+    
+    
+    func addRuleLandmarkSegmentAngle() {
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].addRuleLandmarkSegmentAngle(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+        }
+    }
+
+    
+    func getRuleLandmarkSegmentAngles() -> [AngleRange] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleLandmarkSegmentAngles(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+    }
+    
+    func getRuleLandmarkSegmentAngle(id: UUID) -> AngleRange {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleLandmarkSegmentAngle(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    func removeRuleLandmarkSegmentAngle(id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].removeRuleLandmarkSegmentAngle(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    func updateRuleLandmarkSegmentAngle(warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateRuleLandmarkSegmentAngle(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!,
+                                                          warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: id)
+    }
+    
+    
+//    ------------------------
+    
+    func getRuleAngleToLandmarkSegments() -> [AngleToLandmarkSegment] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleAngleToLandmarkSegments(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+    }
+    
+    func getRuleAngleToLandmarkSegment(id: UUID) -> AngleToLandmarkSegment {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleAngleToLandmarkSegment(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    func addRuleAngleToLandmarkSegment() {
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].addRuleAngleToLandmarkSegment(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+        }
+    }
+    
+    func removeRuleAngleToLandmarkSegment(id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].removeRuleAngleToLandmarkSegment(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+
+    func updateRuleAngleToLandmarkSegment(tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateRuleAngleToLandmarkSegment(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+    }
+    
+    
+//    ---------------------------------
+    
+    func transferRuleTo(sportId: UUID, stateId:Int, ruleType:RuleType, rulesIndex:Int, rule: Ruler
+    ) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sportId) {
+            sports[sportIndex].transferRuleTo(stateId: stateId, ruleType: ruleType, rulesIndex: rulesIndex, rule: rule)
+        }
+    }
+    
+    
+    
+
     
     
 }
