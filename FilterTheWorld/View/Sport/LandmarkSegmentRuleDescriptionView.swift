@@ -8,7 +8,7 @@ struct StaticValue {
 
 struct AngleDescriptionView: View {
     @EnvironmentObject var sportManager: SportsManager
-    var angle: AngleRange
+    var angle: LandmarkSegmentAngle
     var body: some View {
         HStack {
             Text("角度:\(angle.warning.content)/\(angle.warning.delayTime.roundedString(number: 2))/\(angle.warning.triggeredWhenRuleMet.description)")
@@ -22,7 +22,7 @@ struct AngleDescriptionView: View {
 
 
 struct LengthDescriptionView: View {
-    var length: RelativeLandmarkSegmentsToAxis
+    var length: LandmarkSegmentLength
     var body:some View {
         HStack {
             Text("关节对\(length.from.landmarkSegment.id)/\(length.from.axis.rawValue)相对 \(length.to.landmarkSegment.id)/\(length.to.axis.rawValue)长度:\(length.warning.content)")
@@ -48,7 +48,7 @@ struct AngleToLandmarkDescriptionView: View {
 }
 
 struct LengthToStateDescriptionView: View {
-    var length:LandmarkToAxisAndState
+    var length:LandmarkToState
     var body:some View {
         HStack {
             Text("同状态\(length.toStateId)关节\(length.fromLandmarkToAxis.landmark.id)/\(length.fromLandmarkToAxis.axis.rawValue)相对\(length.toLandmarkSegmentToAxis.landmarkSegment.id)/\(length.toLandmarkSegmentToAxis.axis.rawValue)位移:\(length.warning.content)")
@@ -64,7 +64,7 @@ struct LandmarkInAreaDescriptionView: View {
     var area:LandmarkInArea
     var body:some View {
         HStack {
-            Text("关节\(area.landmarkType.id)在区域:\(area.warning.content)")
+            Text("关节\(area.landmark.id)在区域:\(area.warning.content)")
             Spacer()
             Text(area.areaString)
             Spacer()
@@ -118,7 +118,7 @@ struct LandmarkToSelfDescriptionView: View {
     }
 }
 
-struct RuleDescriptionView: View {
+struct LandmarkSegmentRuleDescriptionView: View {
     @Binding var rule:LandmarkSegmentRule
     var body : some View {
         VStack {
@@ -137,6 +137,38 @@ struct RuleDescriptionView: View {
             
             ForEach(rule.length, content: { _length in
                 LengthDescriptionView(length: _length)
+                Divider()
+                
+            })
+
+
+            
+            
+            
+        }
+    }
+}
+
+
+struct LandmarkRuleDescriptionView: View {
+    @Binding var rule:LandmarkRule
+    var body : some View {
+        VStack {
+            
+            ForEach(rule.landmarkToSelf, content: { landmarkToSelf in
+                LandmarkToSelfDescriptionView(landmarkToSelf: landmarkToSelf)
+                Divider()
+                
+            })
+
+            ForEach(rule.landmarkToState, content: { lengthToState in
+                LengthToStateDescriptionView(length: lengthToState)
+                Divider()
+                
+            })
+            
+            ForEach(rule.landmarkInArea, content: { landmarkInArea in
+                LandmarkInAreaDescriptionView(area: landmarkInArea)
                 Divider()
                 
             })

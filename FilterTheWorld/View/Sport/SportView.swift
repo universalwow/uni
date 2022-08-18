@@ -149,7 +149,9 @@ struct SportView: View {
     
     @State var keyFrameFlag = false
     @State var editRuleFlag = false
-    @State var selectedLandmarkSegment = LandmarkSegment.initValue()
+    @State var showSetupRule = false
+    @State var ruleClass = RuleClass.LandmarkSegment
+
     
     
     @State var scoreTimeLimit = 1.0
@@ -427,14 +429,15 @@ struct SportView: View {
                                         
                                         Button(action: {
                                             sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .LandmarkSegment)
+                                            ruleClass = .LandmarkSegment
+                                            self.showSetupRule = true
                                             
-                                            selectedLandmarkSegment = LandmarkSegment.init(startLandmark: Landmark.init(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.startLandmarkType), endLandmark: Landmark(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.endLandmarkType))
-                                            self.editRuleFlag = true
                                         }) {
                                             Text("修改")
                                         }
                                         Button(action: {
                                             sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .LandmarkSegment)
+                                            
                                         }) {
                                             Text("删除")
                                         }
@@ -443,7 +446,37 @@ struct SportView: View {
                                     }.padding([.top], StaticValue.padding)
                                        
                                     TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    RuleDescriptionView(rule: Binding.constant(rule))
+                                    LandmarkSegmentRuleDescriptionView(rule: Binding.constant(rule))
+                                }.background(Color.yellow)
+                            }
+                            
+                            ForEach(scoreRules.landmarkRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则: \(rule.id)")
+                                        Spacer()
+                                        
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Landmark)
+                                            ruleClass = .Landmark
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Landmark)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    LandmarkRuleDescriptionView(rule: Binding.constant(rule))
                                 }.background(Color.yellow)
                             }
                         }
@@ -482,7 +515,6 @@ struct SportView: View {
                                         Button(action: {
                                             sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
 
-                                            selectedLandmarkSegment = LandmarkSegment.init(startLandmark: Landmark.init(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.startLandmarkType), endLandmark: Landmark(position: Point3D.zero, landmarkType: rule.landmarkSegmentType.endLandmarkType))
                                             self.editRuleFlag = true
                                         }) {
                                             Text("修改")
@@ -498,7 +530,7 @@ struct SportView: View {
                                     }.padding([.top], StaticValue.padding)
 
                                     TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    RuleDescriptionView(rule: Binding.constant(rule))
+                                    LandmarkSegmentRuleDescriptionView(rule: Binding.constant(rule))
 
 
                                 }.background(Color.gray)
@@ -694,8 +726,24 @@ struct SportView: View {
         .sheet(isPresented: $editRuleFlag, onDismiss: {
             
         }) {
-            RuleView(selectedLandmarkSegmentType: selectedLandmarkSegment.landmarkSegmentType)
+            RuleView()
         }
+        .sheet(isPresented: self.$showSetupRule) {
+            
+            switch ruleClass {
+            case .LandmarkSegment:
+                SetupLandmarkSegmentRuleView()
+                
+            case .Landmark:
+                SetupLandmarkRuleView()
+            case .Observation:
+//                SetupObservationRuleView()
+                EmptyView()
+            }
+            
+            
+        }
+        
         .sheet(isPresented: $keyFrameFlag, onDismiss: {
             
         }) {

@@ -50,12 +50,20 @@ struct SetupLandmarkSegmentRuleView: View {
                     }
 
                     
+                    HStack{
+                        Spacer()
+                        Button(action: {
+                            sportManager.addRuleLandmarkSegmentLength()
+                        }) {
+                            Text("添加关节对长度规则")
+                        }
+                    }.padding()
                     
-                
-//
-//                    AngleToLandmarkSegmentRuleView()
-//                    Divider()
-//                    LandmarkSegmentRelativeLengthRuleView()
+                    ForEach(sportManager.getRuleLandmarkSegmentLengths()) { length in
+                        LandmarkSegmentLengthRuleView(landmarkSegmentLength: length)
+                        Divider()
+                    }
+
                 }
                 Spacer()
             }
@@ -84,17 +92,53 @@ struct SetupLandmarkRuleView: View {
                 }
             }
             
-//            ScrollView(showsIndicators: false) {
-//                VStack {
-//                    LandmarkInAreaRuleView()
-//                    Divider()
-//                    ToStateLandmarkRuleView()
-//                    Divider()
-//                    LandmarkToSelfRuleView()
-//                }
-//                
-//                Spacer()
-//            }
+            ScrollView(showsIndicators: false) {
+                VStack {
+                    HStack{
+                        Spacer()
+                        Button(action: {
+                            sportManager.addRuleLandmarkToSelf()
+                        }) {
+                            Text("添加关节相对自身位移规则")
+                        }
+                    }.padding()
+                    
+                    ForEach(sportManager.getRuleLandmarkToSelfs()) { landmarkToSelf in
+                        LandmarkToSelfRuleView(landmarkToSelf: landmarkToSelf)
+                        Divider()
+                    }
+                    
+                    HStack{
+                        Spacer()
+                        Button(action: {
+                            sportManager.addRuleLandmarkToState()
+                        }) {
+                            Text("添加关节自身(相对状态)位移规则")
+                        }
+                    }.padding()
+                    
+                    ForEach(sportManager.getRuleLandmarkToStates()) { landmarkToState in
+                        LandmarkToStateRuleView(landmarkToState: landmarkToState)
+                        Divider()
+                    }
+                    
+                    HStack{
+                        Spacer()
+                        Button(action: {
+                            sportManager.addRuleLandmarkInArea()
+                        }) {
+                            Text("添加关节在区域内规则")
+                        }
+                    }.padding()
+                    
+                    ForEach(sportManager.getRuleLandmarkInAreas()) { landmarkInArea in
+                        LandmarkInAreaRuleView(landmarkInArea: landmarkInArea)
+                        Divider()
+                    }
+                }
+                
+                Spacer()
+            }
             
             
             

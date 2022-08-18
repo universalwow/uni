@@ -31,16 +31,108 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
     var landmarkInArea: [LandmarkInArea] = []
     // 关节相对自身位移
 //    相关状态转换时收集的关节点 不更新
-    var lengthToState: [LandmarkToAxisAndState] = []
+    var landmarkToState: [LandmarkToState] = []
     // 关节相对自身最大位移
     var landmarkToSelf: [LandmarkToSelf] = []
+    
+    
+    func firstLandmarkToSelfIndexById(id: UUID) -> Int? {
+        landmarkToSelf.firstIndex(where: { _landmarkToSelf in
+            _landmarkToSelf.id == id
+            
+        })
+    }
+    
+    
+    
+    
+    mutating func updateRuleLandmarkToSelf(direction: Direction, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        if let landmarkToSelfIndex = self.firstLandmarkToSelfIndexById(id: id) {
+            
+            landmarkToSelf[landmarkToSelfIndex].warning.content = warningContent
+            landmarkToSelf[landmarkToSelfIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            landmarkToSelf[landmarkToSelfIndex].warning.delayTime = delayTime
+            
+            landmarkToSelf[landmarkToSelfIndex].xLowerBound = xLowerBound
+            landmarkToSelf[landmarkToSelfIndex].yLowerBound = yLowerBound
+            
+            
+            landmarkToSelf[landmarkToSelfIndex].toDirection = direction
+            landmarkToSelf[landmarkToSelfIndex].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+
+        }
+        
+    }
+    
+    
+    func firstLandmarkToStateIndexById(id: UUID) -> Int? {
+        landmarkToState.firstIndex(where: { _landmarkToState in
+            _landmarkToState.id == id
+            
+        })
+    }
+    
+    mutating func updateRuleLandmarkToState(fromAxis: CoordinateAxis,
+                                            fromLandmark: Landmark,
+                                            toStateId: Int,
+                                            toStateLandmark: Landmark,
+                                            toLandmarkSegment: LandmarkSegment,
+                                            toAxis: CoordinateAxis,
+                                            lowerBound: Double, upperBound: Double,
+                                            warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        if let landmarkToStateIndex = self.firstLandmarkToStateIndexById(id: id) {
+            
+            landmarkToState[landmarkToStateIndex].warning.content = warningContent
+            landmarkToState[landmarkToStateIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            landmarkToState[landmarkToStateIndex].warning.delayTime = delayTime
+            
+            landmarkToState[landmarkToStateIndex].lowerBound = lowerBound
+            landmarkToState[landmarkToStateIndex].upperBound = upperBound
+            
+            
+            
+            landmarkToState[landmarkToStateIndex].fromLandmarkToAxis =  LandmarkToAxis(landmark: fromLandmark, axis: fromAxis)
+            landmarkToState[landmarkToStateIndex].toLandmarkToAxis =  LandmarkToAxis(landmark: toStateLandmark, axis: fromAxis)
+            landmarkToState[landmarkToStateIndex].toStateId = toStateId
+
+            landmarkToState[landmarkToStateIndex].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+
+        }
+        
+    }
+    
+    
+    func firstLandmarkInAreaIndexById(id: UUID) -> Int? {
+        landmarkInArea.firstIndex(where: { _landmarkInArea in
+            _landmarkInArea.id == id
+            
+        })
+    }
+    
+    mutating func updateRuleLandmarkInArea(
+        area: [Point2D],imageSize: Point2D, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        if let landmarkInAreaIndex = self.firstLandmarkInAreaIndexById(id: id) {
+            
+            landmarkInArea[landmarkInAreaIndex].warning.content = warningContent
+            landmarkInArea[landmarkInAreaIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            landmarkInArea[landmarkInAreaIndex].warning.delayTime = delayTime
+            
+            landmarkInArea[landmarkInAreaIndex].area = area
+            landmarkInArea[landmarkInAreaIndex].imageSize = imageSize
+            
+
+
+
+        }
+        
+    }
     
     
     func landmarkInAreaSatisfy(landmarkInArea: LandmarkInArea, poseMap: PoseMap, frameSize: Point2D) -> Bool {
         return landmarkInArea.satisfy(poseMap: poseMap, frameSize: frameSize)
     }
     
-    func lengthToStateSatisfy(relativeDistance: LandmarkToAxisAndState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
+    func lengthToStateSatisfy(relativeDistance: LandmarkToState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
         return relativeDistance.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
     }
     
@@ -71,7 +163,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         
 
         
-        let lengthToStateSatisfys = lengthToState.reduce((true, Set<Warning>(), 0, 0), {result, next in
+        let lengthToStateSatisfys = landmarkToState.reduce((true, Set<Warning>(), 0, 0), {result, next in
             let satisfy = self.lengthToStateSatisfy(relativeDistance: next, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
 
             var newWarnings = result.1

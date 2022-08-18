@@ -46,6 +46,10 @@ extension Point2D {
   var point3D: Point3D {
     Point3D(x: x, y: y, z: 0)
   }
+    
+    var cgSize: CGSize {
+        CGSize(width: x, height: y)
+    }
 
     var width: Double {
         self.x

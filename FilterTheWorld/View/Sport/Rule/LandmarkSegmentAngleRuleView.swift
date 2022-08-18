@@ -7,7 +7,7 @@ import SwiftUI
 
 
 struct LandmarkSegmentAngleRuleView: View {
-    var angle: AngleRange
+    var angle: LandmarkSegmentAngle
     @EnvironmentObject var sportManager:SportsManager
     
     struct ImageButton: View {

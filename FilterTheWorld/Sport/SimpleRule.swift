@@ -59,11 +59,19 @@ struct LandmarkToDirection: Codable{
     var direction:Direction
 }
 
-struct LandmarkToAxisAndState: Codable {
+struct LandmarkToState: Identifiable, Codable {
+    var id = UUID()
     var lowerBound:Double = 0
     var upperBound:Double = 0
     
-    var toStateId:Int
+    var toStateId:Int {
+        didSet {
+            if toStateId != oldValue {
+                initBound()
+            }
+            
+        }
+    }
     //相对
     var fromLandmarkToAxis: LandmarkToAxis {
         didSet {
@@ -192,7 +200,8 @@ struct LandmarkToAxisAndState: Codable {
 
 // 关节点相对自身位移
 
-struct LandmarkToSelf: Codable {
+struct LandmarkToSelf: Identifiable, Codable {
+    var id = UUID()
     
     var landmarkType: LandmarkType
     var xLowerBound:Double = 0
@@ -629,7 +638,7 @@ struct ObjectToLandmark: Codable {
 }
 
 
-struct RelativeLandmarkSegmentsToAxis: Identifiable, Codable {
+struct LandmarkSegmentLength: Identifiable, Codable {
     var id = UUID()
     
     var lowerBound:Double = 0
@@ -777,7 +786,7 @@ struct AngleToLandmarkSegment: Identifiable, Codable {
     }
 }
 
-struct AngleRange: Identifiable, Codable {
+struct LandmarkSegmentAngle: Identifiable, Codable {
     var id = UUID()
     var lowerBound = 0.0
     var upperBound = 0.0
@@ -836,8 +845,9 @@ extension LandmarkInArea {
 
 // 过滤有效人
 // MARK: 当前只考虑单区域
-struct LandmarkInArea: Codable {
-    var landmarkType: LandmarkType
+struct LandmarkInArea: Identifiable, Codable {
+    var id = UUID()
+    var landmark: Landmark
     var imageSize:Point2D
     
     //  左上角 顺时针
@@ -845,17 +855,27 @@ struct LandmarkInArea: Codable {
     
     var warning:Warning
     
-    init(landmarkType: LandmarkType, imageSize: Point2D, warning: Warning) {
-        self.landmarkType = landmarkType
+    init(landmark: Landmark, imageSize: Point2D, warning: Warning) {
+        self.landmark = landmark
         self.imageSize = imageSize
         self.warning = warning
-        self.area = [Point2D.zero,Point2D.zero,Point2D.zero,Point2D.zero]
+        self.area = [
+            Point2D(x: 0.4*self.imageSize.width, y: 0.6*self.imageSize.height),
+            Point2D(x: 0.6*self.imageSize.width, y: 0.6*self.imageSize.height),
+            Point2D(x: 0.6*self.imageSize.width, y: 0.8*self.imageSize.height),
+            Point2D(x: 0.4*self.imageSize.width, y: 0.8*self.imageSize.height)
+                    ]
     }
     
     func satisfy(poseMap: PoseMap, frameSize: Point2D) -> Bool {
-        let landmarkPoint = poseMap[landmarkType]!
+        let landmarkPoint = poseMap[landmark.landmarkType]!
         let path = self.path(frameSize: frameSize)
         return path.contains(landmarkPoint.vector2d.toCGPoint)
+    }
+    
+    var satisfy: Bool {
+        let path = self.path(frameSize: imageSize)
+        return path.contains(landmark.position.vector2d.toCGPoint)
     }
 }
 
@@ -985,9 +1005,9 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     // 10 - 30 340-380
     // 角度
     
-    var angle:AngleRange?
+    var angle:LandmarkSegmentAngle?
     // 相对长度
-    var length: RelativeLandmarkSegmentsToAxis?
+    var length: LandmarkSegmentLength?
     
     var angleToLandmarkSegment: AngleToLandmarkSegment?
     
@@ -1004,7 +1024,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     
     // 关节相对自身位移
 //    相关状态转换时收集的关节点 不更新
-    var lengthToState:LandmarkToAxisAndState?
+    var lengthToState:LandmarkToState?
     
     // 物体相对于自身最大位移
     var objectToSelf: ObjectToSelf?
@@ -1013,7 +1033,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
     var landmarkToSelf: LandmarkToSelf?
     
     
-    func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
+    func angleSatisfy(angleRange: LandmarkSegmentAngle, poseMap: PoseMap) -> Bool {
         
         return angleRange.satisfy(poseMap: poseMap)
     }
@@ -1023,7 +1043,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         return angleToLandmarkSegment.satisfy(poseMap: poseMap)
     }
     
-    func lengthSatisfy(relativeDistance: RelativeLandmarkSegmentsToAxis, poseMap: PoseMap) -> Bool? {
+    func lengthSatisfy(relativeDistance: LandmarkSegmentLength, poseMap: PoseMap) -> Bool? {
         return relativeDistance.satisfy(poseMap: poseMap)
     }
     
@@ -1031,7 +1051,7 @@ struct ComplexRule: Identifiable, Hashable, Codable {
         return landmarkInArea.satisfy(poseMap: poseMap, frameSize: frameSize)
     }
     
-    func lengthToStateSatisfy(relativeDistance: LandmarkToAxisAndState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {
+    func lengthToStateSatisfy(relativeDistance: LandmarkToState, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool? {
         return relativeDistance.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
     }
     

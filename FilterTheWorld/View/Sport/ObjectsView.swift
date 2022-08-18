@@ -25,32 +25,32 @@ struct ObjectView: View {
     }
 }
 
-//struct RectView: View {
-//    
-//    @EnvironmentObject var sportManager:SportsManager
-//    
-//    var viewSize:CGSize
-//    var body: some View {
-//        if let state = sportManager.findFirstSportState(),
-//            let rule = sportManager.findRule(),
-//           let landmarkInArea = rule.landmarkInArea, !landmarkInArea.area.isEmpty {
-//            let imageSize = state.image!.imageSize
-//            let rect = landmarkInArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
-//            
-//            Rectangle()
-//                .stroke(.pink, lineWidth: 2)
-//                .frame(width: rect.width, height: rect.height)
-//                .position(rect.center)
-//                .overlay(content: {
-//                    Text("\(landmarkInArea.landmarkType.rawValue)")
-//                        .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
-//                        .foregroundColor(.pink)
-//                })
-//
-//        }
-//        
-//    }
-//}
+struct RectView: View {
+    
+    @EnvironmentObject var sportManager:SportsManager
+    
+    var viewSize:CGSize
+    
+    var body: some View {
+        let landmarkInAreas = sportManager.getRuleLandmarkInAreasForShowArea()
+
+        ZStack {
+            ForEach(landmarkInAreas, content: { landmarkInArea in
+                let rect = landmarkInArea.areaToRect.rectToFit(imageSize: landmarkInArea.imageSize.cgSize, viewSize: viewSize)
+                Rectangle()
+                    .stroke(landmarkInArea.satisfy ? .gray : .red, lineWidth: 2)
+                    .frame(width: rect.width, height: rect.height)
+                    .position(rect.center)
+                    .overlay(content: {
+                        Text("\(landmarkInArea.landmark.id)")
+                            .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
+                            .foregroundColor(landmarkInArea.satisfy ? .gray : .red)
+                    })
+                
+            })
+        }
+    }
+}
 
 
 struct ObjectsViewForSetupRule: View {

@@ -35,9 +35,9 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
     // 10 - 30 340-380
     // 角度
     
-    var angle:[AngleRange] = []
+    var angle:[LandmarkSegmentAngle] = []
     // 相对长度
-    var length: [RelativeLandmarkSegmentsToAxis] = []
+    var length: [LandmarkSegmentLength] = []
     
     var angleToLandmarkSegment: [AngleToLandmarkSegment] = []
     
@@ -50,6 +50,12 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
     func firstAngleToLandmarkSegmentIndexById(id: UUID) -> Int? {
         angleToLandmarkSegment.firstIndex(where: { _angle in
             _angle.id == id
+        })
+    }
+    
+    func firstLandmarkSegmentLengthIndexById(id: UUID) -> Int? {
+        length.firstIndex(where: { _length in
+            _length.id == id
         })
     }
     
@@ -80,9 +86,25 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         
     }
     
+    mutating func updateRuleLandmarkSegmentLength(fromLandmarkSegment: LandmarkSegment, fromAxis: CoordinateAxis, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+        if let lengthIndex = self.firstLandmarkSegmentLengthIndexById(id: id) {
+            
+            length[lengthIndex].warning.content = warningContent
+            length[lengthIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            length[lengthIndex].warning.delayTime = delayTime
+            
+            length[lengthIndex].lowerBound = lowerBound
+            length[lengthIndex].upperBound = upperBound
+            
+            length[lengthIndex].from = LandmarkSegmentToAxis(landmarkSegment: fromLandmarkSegment, axis: fromAxis)
+            length[lengthIndex].to = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+        }
+        
+    }
     
     
-    func angleSatisfy(angleRange: AngleRange, poseMap: PoseMap) -> Bool {
+    
+    func angleSatisfy(angleRange: LandmarkSegmentAngle, poseMap: PoseMap) -> Bool {
         return angleRange.satisfy(poseMap: poseMap)
     }
     
@@ -91,7 +113,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         return angleToLandmarkSegment.satisfy(poseMap: poseMap)
     }
     
-    func lengthSatisfy(relativeDistance: RelativeLandmarkSegmentsToAxis, poseMap: PoseMap) -> Bool {
+    func lengthSatisfy(relativeDistance: LandmarkSegmentLength, poseMap: PoseMap) -> Bool {
         return relativeDistance.satisfy(poseMap: poseMap)
     }
     

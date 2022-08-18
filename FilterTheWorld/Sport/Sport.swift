@@ -393,7 +393,7 @@ extension Sport {
   }
 
   
-    mutating func setSegmentToSelected(editedSportStateUUID: Int, editedSportStateRuleId: String?, ruleClass: RuleClass) {
+    mutating func setSegmentToSelected(editedSportStateUUID: Int, editedSportStateRuleId: String?, ruleClass: RuleClass?) {
     if let stateIndex = firstStateIndexByStateID(editedStateUUID: editedSportStateUUID) {
       states[stateIndex].setSegmentToSelected(editedSportStateRuleId: editedSportStateRuleId, ruleClass: ruleClass)
     }
@@ -412,12 +412,12 @@ extension Sport {
         }
     }
     
-    func getRuleLandmarkSegmentAngles(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [AngleRange] {
+    func getRuleLandmarkSegmentAngles(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkSegmentAngle] {
         let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
         return states[stateIndex].getRuleLandmarkSegmentAngles(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
     }
     
-    func getRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> AngleRange {
+    func getRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkSegmentAngle {
         let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
         return states[stateIndex].getRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
     }
@@ -462,6 +462,156 @@ extension Sport {
     mutating func updateRuleAngleToLandmarkSegment(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
           states[stateIndex].updateRuleAngleToLandmarkSegment(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+
+        }
+    }
+//    -------------------------
+    
+    func getRuleLandmarkSegmentLengths(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkSegmentLength] {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkSegmentLengths(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+    }
+    
+    func getRuleLandmarkSegmentLength(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkSegmentLength {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkSegmentLength(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func addRuleLandmarkSegmentLength(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRuleLandmarkSegmentLength(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+    
+    mutating func removeRuleLandmarkSegmentLength(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        states[stateIndex].removeRuleLandmarkSegmentLength(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func updateRuleLandmarkSegmentLength(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis,tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].updateRuleLandmarkSegmentLength(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+
+        }
+    }
+    
+//    ----------
+    
+    func getRuleLandmarkToSelfs(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkToSelf] {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkToSelfs(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+    }
+    
+    func getRuleLandmarkToSelf(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkToSelf {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkToSelf(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func addRuleLandmarkToSelf(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRuleLandmarkToSelf(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+    
+    mutating func removeRuleLandmarkToSelf(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        states[stateIndex].removeRuleLandmarkToSelf(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func updateRuleLandmarkToSelf(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, direction: Direction, toLandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID)  {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].updateRuleLandmarkToSelf(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, direction: direction, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+
+        }
+    }
+//    -----------
+    
+    
+    func getRuleLandmarkToStates(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkToState] {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkToStates(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+    }
+    
+    func getRuleLandmarkToState(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkToState {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkToState(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func addRuleLandmarkToState(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRuleLandmarkToState(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+    
+    
+    mutating func removeRuleLandmarkToState(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        states[stateIndex].removeRuleLandmarkToState(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    
+    mutating func updateRuleLandmarkToState(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
+                                            fromAxis: CoordinateAxis,
+                                            toStateId: Int,
+                                            toLandmarkSegmentType: LandmarkTypeSegment,
+                                            toAxis: CoordinateAxis,
+                                            lowerBound: Double, upperBound: Double,
+                                warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        
+        
+        
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+            
+            let toStateLandmark = self.states.first(where: { state in
+                toStateId == state.id
+            })!.humanPose!.landmarks.first(where: { landmark in
+                landmark.id == ruleId
+                
+            })!
+          states[stateIndex].updateRuleLandmarkToState(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
+                                                       fromAxis: fromAxis,
+                                                       toStateId: toStateId,
+                                                       toStateLandmark: toStateLandmark,
+                                                       toLandmarkSegmentType: toLandmarkSegmentType,
+                                                       toAxis: toAxis,
+                                                       lowerBound: lowerBound, upperBound: upperBound,
+                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+
+        }
+    }
+    
+//    -----------
+    
+    func getRuleLandmarkInAreas(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkInArea] {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkInAreas(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+    }
+    
+    func getRuleLandmarkInArea(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkInArea {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkInArea(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func addRuleLandmarkInArea(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRuleLandmarkInArea(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+    
+    
+    mutating func removeRuleLandmarkInArea(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        states[stateIndex].removeRuleLandmarkInArea(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
+    
+    mutating func updateRuleLandmarkInArea(
+        stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
+        area: [Point2D],warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+      
+          states[stateIndex].updateRuleLandmarkInArea(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
+                                                      area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
 
         }
     }

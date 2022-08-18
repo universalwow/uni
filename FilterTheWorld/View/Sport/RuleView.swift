@@ -1,5 +1,6 @@
 
 import SwiftUI
+import AlertToast
 
 
 struct RuleView: View {
@@ -10,7 +11,9 @@ struct RuleView: View {
     @State var selectedObject = ObjectLabel.POSE.rawValue
     @State var ruleClass = RuleClass.LandmarkSegment
     
+    
     @State var showSetupRule = false
+    @State var showToast = false
     
     var body: some View {
         VStack {
@@ -23,7 +26,7 @@ struct RuleView: View {
                         ZStack {
                             PosesViewForSetupRule(imageSize: pngImage.imageSize, viewSize: geometry.size)
                             ObjectsViewForSetupRule(imageSize: pngImage.imageSize, viewSize: geometry.size)
-//                            RectView(viewSize: geometry.size)
+                            RectView(viewSize: geometry.size)
                             
                             
                         }
@@ -56,8 +59,13 @@ struct RuleView: View {
                 
                 
                 Button(action: {
-                    self.showSetupRule = true
-                    sportManager.setRule()
+                    if sportManager.setRule() {
+                        self.showSetupRule = true
+                    } else {
+                        self.showToast = true
+                    }
+                    
+                    
                 }) {
                     Text("设置规则")
                 }
@@ -84,17 +92,24 @@ struct RuleView: View {
                 SetupLandmarkSegmentRuleView()
                 
             case .Landmark:
-//                SetupLandmarkRuleView()
-                EmptyView()
+                SetupLandmarkRuleView()
             case .Observation:
 //                SetupObservationRuleView()
                 EmptyView()
             }
             
             
-        }.onAppear{
-            sportManager.setCurrentSportStateRule(landmarkSegmentType: selectedLandmarkSegmentType, ruleClass: ruleClass)
-        }
+        }.toast(isPresenting: self.$showToast, duration: 2, tapToDismiss: false, offsetY: 0, alert: {
+            AlertToast(displayMode: .alert, type: .error(.red), title: "请选择要设置的规则")
+        })
+     
+//        .alert(isPresented: self.$showToast, content: {
+//            Alert(title: Text("请选择要设置的规则"))
+//        })
+        
+//        .onAppear{
+//            sportManager.setCurrentSportStateRule(landmarkSegmentType: selectedLandmarkSegmentType, ruleClass: ruleClass)
+//        }
     }
 }
 
