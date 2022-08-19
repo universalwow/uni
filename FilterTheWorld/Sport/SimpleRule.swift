@@ -310,8 +310,8 @@ struct LandmarkToSelf: Identifiable, Codable {
 
 
 // 物体相对自身位移
-struct ObjectToSelf: Codable {
-    
+struct ObjectToSelf: Identifiable, Codable {
+    var id = UUID()
     var objectId: String = ""
     var xLowerBound:Double = 0
     var yLowerBound:Double = 0
@@ -399,7 +399,10 @@ struct ObjectPositionPoint: Identifiable, Codable {
     var point: Point2D
 }
 
-struct ObjectToObject: Codable {
+struct ObjectToObject: Identifiable, Codable {
+    
+    var id = UUID()
+    
     var lowerBound = 0.0
     var upperBound = 0.0
     
@@ -517,7 +520,9 @@ struct ObjectToObject: Codable {
     }
 }
 
-struct ObjectToLandmark: Codable {
+struct ObjectToLandmark: Identifiable, Codable {
+    var id = UUID()
+    
     var lowerBound:Double = 0
     var upperBound:Double = 0
     
@@ -526,15 +531,15 @@ struct ObjectToLandmark: Codable {
             if fromAxis.id != oldValue.id {
                 initBound()
             }
-            
         }
     }
     
     var fromPosition: ObjectPositionPoint {
         didSet {
-            
             if fromPosition.id != oldValue.id ||
                 fromPosition.position.id != oldValue.position.id {
+                print("fromPosition \(fromPosition.id) \(fromPosition.position.id) - \(fromPosition.point)")
+                
                 initBound()
             }
         }

@@ -679,6 +679,112 @@ extension SportsManager {
         
     }
     
+//    ---------------------------------
+    
+    func getRuleObjectToLandmarks() -> [ObjectToLandmark] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleObjectToLandmarks(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+    }
+    
+    
+    func getRuleObjectToLandmark(id: UUID) -> ObjectToLandmark {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleObjectToLandmark(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    func addRuleObjectToLandmark() {
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].addRuleObjectToLandmark(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+        }
+    }
+    
+    func removeRuleObjectToLandmark(id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].removeRuleObjectToLandmark(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    
+    func updateRuleObjectToLandmark(objectPosition: ObjectPosition,
+                                            fromAxis: CoordinateAxis,
+                                            toLandmarkType: LandmarkType,
+                                            toLandmarkSegmentType: LandmarkTypeSegment,
+                                            toAxis: CoordinateAxis,
+                                    lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateRuleObjectToLandmark(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!,
+                                                      objectPosition: objectPosition,
+                                                      fromAxis: fromAxis,
+                                                      toLandmarkType: toLandmarkType,
+                                                      toLandmarkSegmentType: toLandmarkSegmentType,
+                                                      toAxis: toAxis,
+                                              lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+        
+        
+    }
+    
+    
+//    ---------------------------------
+    
+    func getRuleObjectToObjects() -> [ObjectToObject] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleObjectToObjects(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+    }
+    
+    
+    func getRuleObjectToObject(id: UUID) -> ObjectToObject {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleObjectToObject(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    
+    func addRuleObjectToObject() {
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].addRuleObjectToObject(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+        }
+    }
+    
+    func removeRuleObjectToObject(id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].removeRuleObjectToObject(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    func updateRuleObjectToObject(fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, toLandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateRuleObjectToObject(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!,
+                                                    fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+    }
+    
+//    ---------------------------------
+    
+    func getRuleObjectToSelfs() -> [ObjectToSelf] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleObjectToSelfs(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+    }
+    
+    
+    func getRuleObjectToSelf(id: UUID) -> ObjectToSelf {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleObjectToSelf(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    
+    func addRuleObjectToSelf() {
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].addRuleObjectToSelf(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!)
+        }
+    }
+    
+    func removeRuleObjectToSelf(id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].removeRuleObjectToSelf(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!, id: id)
+    }
+    
+    func updateRuleObjectToSelf(direction: Direction, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateRuleObjectToSelf(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass!,
+                                                  direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+    }
     
 //    ---------------------------------
     

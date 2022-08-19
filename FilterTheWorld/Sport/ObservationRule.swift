@@ -27,13 +27,111 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
     }
     
     // 物体位置相对于关节点
-    var objectPositionToLandmark: [ObjectToLandmark] = []
+    var objectToLandmark: [ObjectToLandmark] = []
     
     // 物体位置相对于物体位置
-    var objectPositionToObjectPosition: [ObjectToObject] = []
+    var objectToObject: [ObjectToObject] = []
     
     // 物体相对于自身最大位移
     var objectToSelf: [ObjectToSelf] = []
+    
+    func firstObjectToLandmarkIndexById(id: UUID) -> Int? {
+        objectToLandmark.firstIndex(where: { _objectToLandmark in
+            _objectToLandmark.id == id
+            
+        })
+    }
+    
+    mutating func updateRuleObjectToLandmark(objectPosition: ObjectPosition,
+                                             objectPoint: Point2D,
+                                             fromAxis: CoordinateAxis,
+                                             toLandmark: Landmark,
+                                             toLandmarkSegment: LandmarkSegment,
+                                             toAxis: CoordinateAxis,
+     lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        if let index = self.firstObjectToLandmarkIndexById(id: id) {
+            
+            
+            objectToLandmark[index].warning.content = warningContent
+            objectToLandmark[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            objectToLandmark[index].warning.delayTime = delayTime
+            
+            objectToLandmark[index].lowerBound = lowerBound
+            objectToLandmark[index].upperBound = upperBound
+            
+            objectToLandmark[index].fromAxis = fromAxis
+            objectToLandmark[index].fromPosition.point = objectPoint
+            objectToLandmark[index].fromPosition.position = objectPosition
+            
+            
+            objectToLandmark[index].toLandmark = toLandmark
+            objectToLandmark[index].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+            
+
+        }
+        
+    }
+    
+    func firstObjectToObjectIndexById(id: UUID) -> Int? {
+        objectToObject.firstIndex(where: { _objectToObject in
+            _objectToObject.id == id
+            
+        })
+    }
+    
+    
+    mutating func updateRuleObjectToObject(fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, fromObject: Observation, toObject: Observation, toObjectPosition: ObjectPosition, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        if let index = self.firstObjectToObjectIndexById(id: id) {
+            
+            let fromObjectPoint = fromObject.rect.pointOf(position: fromObjectPosition).point2d
+            let toObjectPoint = toObject.rect.pointOf(position: toObjectPosition).point2d
+            
+            objectToObject[index].warning.content = warningContent
+            objectToObject[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            objectToObject[index].warning.delayTime = delayTime
+            
+            objectToObject[index].lowerBound = lowerBound
+            objectToObject[index].upperBound = upperBound
+            
+            objectToObject[index].fromAxis = fromAxis
+            
+            
+            objectToObject[index].fromPosition.point = fromObjectPoint
+            objectToObject[index].fromPosition.position = fromObjectPosition
+            
+            objectToObject[index].toPosition.point = toObjectPoint
+            objectToObject[index].toPosition.id = toObject.label
+            objectToObject[index].toPosition.position = toObjectPosition
+
+            
+            objectToObject[index].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+            
+
+        }
+    }
+    
+    func firstObjectToSelfIndexById(id: UUID) -> Int? {
+        objectToSelf.firstIndex(where: { _objectToSelf in
+            _objectToSelf.id == id
+            
+        })
+    }
+    
+    mutating func updateRuleObjectToSelf(direction: Direction, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        if let index = self.firstObjectToSelfIndexById(id: id) {
+            
+
+            objectToSelf[index].warning.content = warningContent
+            objectToSelf[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            objectToSelf[index].warning.delayTime = delayTime
+            
+            objectToSelf[index].xLowerBound = xLowerBound
+            objectToSelf[index].yLowerBound = yLowerBound
+            
+            objectToSelf[index].toDirection = direction
+        }
+    }
+    
     
     func objectToLandmarkSatisfy(objectToLandmark: ObjectToLandmark, poseMap: PoseMap, object: Observation) -> Bool {
         return objectToLandmark.satisfy(poseMap: poseMap, object: object)
@@ -50,7 +148,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
 
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
-        let objectToLandmarkSatisfys = objectPositionToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
+        let objectToLandmarkSatisfys = objectToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
             if let object = object {
                 satisfy = self.objectToLandmarkSatisfy(objectToLandmark: next, poseMap: poseMap, object: object)
@@ -69,7 +167,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
                     result.2 + 1)
         })
         
-        let objectToObjectSatisfys = objectPositionToObjectPosition.reduce((true, Set<Warning>(), 0, 0), {result, next in
+        let objectToObjectSatisfys = objectToObject.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
             if let object = object, let targetObject = targetObject {
                 satisfy = self.objectToObjectSatisfy(objectToObject: next, poseMap: poseMap, object: object, targetObject: targetObject)

@@ -479,6 +479,36 @@ struct SportView: View {
                                     LandmarkRuleDescriptionView(rule: Binding.constant(rule))
                                 }.background(Color.yellow)
                             }
+                            
+                            ForEach(scoreRules.observationRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则: \(rule.id)")
+                                        Spacer()
+                                        
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Observation)
+                                            ruleClass = .Observation
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Observation)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    ObservationRuleDescriptionView(rule: Binding.constant(rule))
+                                }.background(Color.yellow)
+                            }
                         }
                         
                         
@@ -737,8 +767,7 @@ struct SportView: View {
             case .Landmark:
                 SetupLandmarkRuleView()
             case .Observation:
-//                SetupObservationRuleView()
-                EmptyView()
+                SetupObservationRuleView()
             }
             
             

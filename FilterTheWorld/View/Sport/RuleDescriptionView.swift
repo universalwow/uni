@@ -174,49 +174,32 @@ struct LandmarkRuleDescriptionView: View {
             })
 
             
-//            if let objectToLandmark = rule.objectPositionToLandmark {
-//                VStack{
-//                    ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
-//                    Divider()
-//                }
-//            }
-//
-//            if let objectToOBject = rule.objectPositionToObjectPosition {
-//                ObjectToObjectDescriptionView(objectToObject: objectToOBject)
-//
-//            }
-//
-//            //                                    关节点在区域
-//            if let area = rule.landmarkInArea {
-//                VStack{
-//                    LandmarkInAreaDescriptionView(area: area)
-//                    Divider()
-//                }
-//            }
-//
-//
-//            if let length = rule.lengthToState {
-//                VStack{
-//                    LengthToStateDescriptionView(length: length)
-//                    Divider()
-//                }
-//            }
-//
-//            if let objectToSelf = rule.objectToSelf {
-//                VStack{
-//                    ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
-//                    Divider()
-//                }
-//            }
-//
-//            if let landmarkToSelf = rule.landmarkToSelf {
-//                VStack{
-//                    LandmarkToSelfDescriptionView(landmarkToSelf: landmarkToSelf)
-//                    Divider()
-//                }
-//            }
+        }
+    }
+}
+
+struct ObservationRuleDescriptionView: View {
+    @Binding var rule:ObservationRule
+    var body : some View {
+        VStack {
             
+            ForEach(rule.objectToLandmark, content: { objectToLandmark in
+                ObjectToLandmarkDescriptionView(objectToLandmark: objectToLandmark)
+                Divider()
+                
+            })
             
+            ForEach(rule.objectToObject, content: { objectToObject in
+                ObjectToObjectDescriptionView(objectToObject: objectToObject)
+                Divider()
+                
+            })
+
+            ForEach(rule.objectToSelf, content: { objectToSelf in
+                ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
+                Divider()
+                
+            })
             
         }
     }

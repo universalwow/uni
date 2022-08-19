@@ -165,18 +165,57 @@ struct SetupObservationRuleView: View {
                 }
             }
             
-//            ScrollView(showsIndicators: false) {
-//                VStack {
-//                    ObjectToLandmarkRuleView()
-//                    Divider()
-//                    ObjectToObjectRuleView()
-//                    Divider()
-//                    ObjectToSelfRuleView()
-//                    
-//                }
-//                
-//                Spacer()
-//            }
+            ScrollView(showsIndicators: false) {
+                VStack {
+                    HStack{
+                        Spacer()
+                        Button(action: {
+                            sportManager.addRuleObjectToLandmark()
+                        }) {
+                            Text("添加物体相对关节点位置规则")
+                        }
+                    }.padding()
+                    
+                    ForEach(sportManager.getRuleObjectToLandmarks()) { objectToLandmark in
+                        ObjectToLandmarkRuleView(objectToLandmark: objectToLandmark)
+                        Divider()
+                    }
+                    
+                    HStack{
+                        Spacer()
+                        Button(action: {
+                            sportManager.addRuleObjectToObject()
+                        }) {
+                            Text("添加物体相对物体位置规则")
+                        }
+                    }.padding()
+                    
+                    ForEach(sportManager.getRuleObjectToObjects()) { objectToObject in
+                        ObjectToObjectRuleView(objectToObject: objectToObject)
+                        Divider()
+                    }
+                    
+                    
+                    HStack{
+                        Spacer()
+                        Button(action: {
+                            sportManager.addRuleObjectToSelf()
+                        }) {
+                            Text("添加物体相对自身位移规则")
+                        }
+                    }.padding()
+                    
+                    ForEach(sportManager.getRuleObjectToSelfs()) { objectToSelf in
+                        ObjectToSelfRuleView(objectToSelf: objectToSelf)
+                        Divider()
+                    }
+                    
+                    
+                    
+                }
+                
+                Spacer()
+            }
             
             
             

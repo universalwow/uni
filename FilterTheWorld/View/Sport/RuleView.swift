@@ -94,8 +94,7 @@ struct RuleView: View {
             case .Landmark:
                 SetupLandmarkRuleView()
             case .Observation:
-//                SetupObservationRuleView()
-                EmptyView()
+                SetupObservationRuleView()
             }
             
             
