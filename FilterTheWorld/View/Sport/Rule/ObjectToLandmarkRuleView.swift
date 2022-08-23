@@ -22,6 +22,8 @@ struct ObjectToLandmarkRuleView: View {
     @State var toAxis = CoordinateAxis.X
     @State var toLandmarkSegmentType =  LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
     
+    @State var isRelativeToObject = false
+    
 
 
     
@@ -37,7 +39,7 @@ struct ObjectToLandmarkRuleView: View {
                                                 toLandmarkType: toLandmarkType,
                                                 toLandmarkSegmentType: toLandmarkSegmentType,
                                                 toAxis: toAxis,
-                                                lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToLandmark.id)
+                                                lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToLandmark.id, isRelativeToObject: isRelativeToObject)
 
     }
     
@@ -48,12 +50,20 @@ struct ObjectToLandmarkRuleView: View {
             HStack {
                 Text("物体相对关节位置")
                 Spacer()
+                
+                Toggle(isOn: $isRelativeToObject.didSet { _ in
+                    updateRemoteData()
+                    updateLocalData()
+                    
+                }, label: {
+                    Text("相对当前物体").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 Button(action: {
                     sportManager.removeRuleObjectToLandmark(id: objectToLandmark.id)
 
                 }) {
                     Text("删除")
-                }.padding()
+                }.padding([.vertical, .leading])
             }
             
             VStack {
@@ -82,33 +92,34 @@ struct ObjectToLandmarkRuleView: View {
                 }
 //                MARK: 有多个物体时，迁移规则可能出错 重新选择关键帧也会导致识别到的物体顺序或者多余而出错
                 
-                HStack {
-                    Spacer()
-                    Text("位置")
-                    Picker("位置", selection: $objectPosition.didSet{ _ in
-                        updateRemoteData()
-                        updateLocalData()
-                        
-                    }) {
-                        ForEach(ObjectPosition.allCases) { position in
-                            Text(position.rawValue).tag(position)
-                        }
-                    }
-                    Text("当前轴")
-                    Picker("当前轴", selection: $fromAxis.didSet { _ in
-                        updateRemoteData()
-                        updateLocalData()
-                        
-                    }) {
-                        ForEach(CoordinateAxis.allCases) { axis in
-                            Text(axis.rawValue).tag(axis)
-                        }
-                    }
-                }
+                
                 
                 HStack {
-                    Text("当前关节:")
-                    Picker("当前关节", selection: $toLandmarkType.didSet{ _ in
+                    HStack {
+                        Text("位置")
+                        Picker("位置", selection: $objectPosition.didSet{ _ in
+                            updateRemoteData()
+                            updateLocalData()
+                            
+                        }) {
+                            ForEach(ObjectPosition.allCases) { position in
+                                Text(position.rawValue).tag(position)
+                            }
+                        }
+                        Text("/")
+                        Picker("当前轴", selection: $fromAxis.didSet { _ in
+                            updateRemoteData()
+                            updateLocalData()
+                            
+                        }) {
+                            ForEach(CoordinateAxis.allCases) { axis in
+                                Text(axis.rawValue).tag(axis)
+                            }
+                        }
+                    }
+                    
+                    Text("关节:")
+                    Picker("相对关节", selection: $toLandmarkType.didSet{ _ in
                         updateRemoteData()
                         updateLocalData()
                         
@@ -118,28 +129,30 @@ struct ObjectToLandmarkRuleView: View {
                         }
                     }
                     Spacer()
-
-                    Text("相对关节对")
-                    Picker("相对关节对", selection: $toLandmarkSegmentType.didSet{ _ in
-                        updateRemoteData()
-                        updateLocalData()
+                    HStack {
+                        Text("相对关节对")
+                        Picker("相对关节对", selection: $toLandmarkSegmentType.didSet{ _ in
+                            updateRemoteData()
+                            updateLocalData()
+                            
+                        }) {
+                            ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
+                                Text(landmarkSegmentType.id).tag(landmarkSegmentType)
+                            }
+                        }
                         
-                    }) {
-                        ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
-                            Text(landmarkSegmentType.id).tag(landmarkSegmentType)
+                        
+                        Text("/")
+                        Picker("相对轴", selection: $toAxis.didSet{ _ in
+                            updateRemoteData()
+                            updateLocalData()
+                        }) {
+                            ForEach(CoordinateAxis.allCases) { axis in
+                                Text(axis.rawValue).tag(axis)
+                            }
                         }
-                    }
+                    }.disabled(isRelativeToObject)
                     
-                    
-                    Text("相对轴")
-                    Picker("相对轴", selection: $toAxis.didSet{ _ in
-                        updateRemoteData()
-                        updateLocalData()
-                    }) {
-                        ForEach(CoordinateAxis.allCases) { axis in
-                            Text(axis.rawValue).tag(axis)
-                        }
-                    }
                     
                     
                     
@@ -182,11 +195,12 @@ struct ObjectToLandmarkRuleView: View {
             triggeredWhenRuleMet = objectToLandmark.warning.triggeredWhenRuleMet
             delayTime = objectToLandmark.warning.delayTime
 
-            fromAxis = objectToLandmark.fromAxis
+            fromAxis = objectToLandmark.fromPosition.axis
             objectPosition = objectToLandmark.fromPosition.position
             toLandmarkType = objectToLandmark.toLandmark.landmarkType
             toAxis = objectToLandmark.toLandmarkSegmentToAxis.axis
             toLandmarkSegmentType = objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
+            isRelativeToObject = objectToLandmark.isRelativeToObject
         }
     }
 }

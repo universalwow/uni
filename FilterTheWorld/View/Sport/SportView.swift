@@ -3,8 +3,6 @@
 import SwiftUI
 
 
-
-
 struct TransferToOtherRulesView: View {
     @Binding var sport:Sport
     var rule: Ruler
@@ -158,8 +156,10 @@ struct SportView: View {
     @State var warningDelay = 1.0
     @State var sportClass = SportClass.None
     @State var sportPeriod = SportPeriod.None
+    @State var sportDiscrete = SportPeriod.None
     @State var noStateWarning = ""
     @State var violateSequenceWarning = ""
+    @State var isGestureController = false
     
 
     
@@ -172,30 +172,49 @@ struct SportView: View {
     }
     
     
+    func updateBasicMessage() {
+        sportManager.updateSport(editedSport: sport,
+                                 sportName: sportName,
+                                 sportDescription: sportDescription,
+                                 sportClass: sportClass,
+                                 sportPeriod: sportPeriod,
+                                 sportDiscrete: sportDiscrete,
+                                 noStateWarning: noStateWarning,
+                                 isGestureController: isGestureController)
+    }
+    
+    
     var basicMessage: some View {
         VStack {
             HStack {
                 Text("基础信息")
                 Spacer()
-                Button(action: {
-                    sportManager.updateSport(editedSport: sport,
-                                             sportName: sportName,
-                                             sportDescription: sportDescription,
-                                             sportClass: sportClass,
-                                             sportPeriod: sportPeriod,
-                                             noStateWarning: noStateWarning)
-                    
-                }) {
-                    Text("保存名称/简介")
-                }
+                Toggle(isOn: $isGestureController.didSet { _ in
+                    updateBasicMessage()
+                }, label: {
+                    Text("手势控制项目?").frame(maxWidth: .infinity, alignment: .trailing)
+                })
+                
+               
+                
             }
             
             HStack{
                 Text("名称:")
-                TextField("名称", text: $sportName)
+                TextField("名称", text: $sportName, onEditingChanged: { flag in
+                    if !flag {
+                        updateBasicMessage()
+                    }
+                    
+                })
                 Spacer()
-                Text("无状态提醒:")
-                TextField("无状态提醒", text: $noStateWarning)
+//                Text("无状态提醒:")
+//                TextField("无状态提醒", text: $noStateWarning, onEditingChanged: { flag in
+//                    if !flag {
+//                        updateBasicMessage()
+//                    }
+//
+//                })
                 Text("类型")
                 Picker("运动类型", selection: $sportClass) {
                     ForEach(SportClass.allCases) { _sportClass in
@@ -204,9 +223,21 @@ struct SportView: View {
                 }
                 
                 Text("周期性")
-                Picker("周期性", selection: $sportPeriod) {
-                    ForEach(SportPeriod.filteredCases(sportClass: sportClass)) { _sportPeriod in
+                Picker("周期性", selection: $sportPeriod.didSet({ _ in
+                    updateBasicMessage()
+                    
+                })) {
+                    ForEach(SportPeriod.filteredPeriodCases(sportClass: sportClass)) { _sportPeriod in
                         Text(_sportPeriod.rawValue).tag(_sportPeriod)
+                    }
+                }
+                
+                Text("连续性")
+                Picker("连续性", selection: $sportDiscrete.didSet({ _ in
+                    updateBasicMessage()
+                })) {
+                    ForEach(SportPeriod.filteredDiscreteCases(sportClass: sportClass)) { _sportDiscrete in
+                        Text(_sportDiscrete.rawValue).tag(_sportDiscrete)
                     }
                 }
                 
@@ -214,10 +245,17 @@ struct SportView: View {
             }
             HStack{
                 Text("简介:")
-                TextField("简介", text: $sportDescription)
+                TextField("简介", text: $sportDescription, onEditingChanged: { flag in
+                    if !flag {
+                        updateBasicMessage()
+                    }
+                    
+                })
             }
             
         }.padding()
+   
+
     }
     
     
@@ -457,7 +495,6 @@ struct SportView: View {
                                         Text("规则: \(rule.id)")
                                         Spacer()
                                         
-                                        
                                         Button(action: {
                                             sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Landmark)
                                             ruleClass = .Landmark
@@ -684,6 +721,7 @@ struct SportView: View {
                     Divider()
                     HStack {
                         Text("违规状态序列")
+                        TextField("请输入违规提醒:请先输入提醒再添加状态!", text: $violateSequenceWarning)
                         Spacer()
                         HStack {
                             Text("状态")
@@ -709,7 +747,7 @@ struct SportView: View {
                             Spacer()
 
                             Text("提醒:\(sport.violateStateSequence[sequenceIndex].warning.content)")
-                            TextField("违规提醒", text: $violateSequenceWarning)
+                            
 
                             Button(action: {
                                 sportManager.addSportStateViolateSequence(sport: sport, index: sequenceIndex, violateState: violateState, warning: violateSequenceWarning)
@@ -785,9 +823,11 @@ struct SportView: View {
                 self.sportDescription = sport.description
                 self.sportClass = sport.sportClass
                 self.sportPeriod = sport.sportPeriod
+                self.sportDiscrete = sport.sportDiscrete ?? .None
                 self.scoreTimeLimit = sport.scoreTimeLimit
                 self.warningDelay = sport.warningDelay
                 self.noStateWarning = sport.noStateWarning
+                self.isGestureController = sport.isGestureController
             }
         }
     }

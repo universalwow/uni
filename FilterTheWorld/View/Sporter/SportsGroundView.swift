@@ -15,8 +15,8 @@ struct SportsGroundView: View {
     @State private var currentState = 1
     
 
-    var controlSport: Sport? = SportsGround.allSports.first(where: { sport in
-        sport.name == "控制手势"
+    @State var controlSport: Sport? = SportsGround.allSports.first(where: { sport in
+        sport.isGestureController
     })
     
     var body: some View {
@@ -33,7 +33,7 @@ struct SportsGroundView: View {
                                             .onAppear(perform: {
 //                                                cameraPlaying.startCamera()
                                                 sportGround.addSporter(sport: sport)
-                                                print("start camera.........\(sport.name)- \(sport.scoreTimeLimit ?? 0)")
+                                                print("start camera.........\(sport.name)- \(sport.scoreTimeLimit)")
 
                                             })
                                             .onDisappear {
@@ -50,8 +50,10 @@ struct SportsGroundView: View {
                             ) {
                                 CardView(card: Card(
                                     content: sport.name,
-                                    sportClass: sport.sportClass ?? .None,
-                                    sportPeriod: sport.sportPeriod ?? .None,
+                                    sportClass: sport.sportClass,
+                                    sportPeriod: sport.sportPeriod,
+                                    sportDiscrete: sport.sportDiscrete ?? .None,
+                                    isGestureController: sport.isGestureController,
                                     backColor: .green))
                                 .matchedGeometryEffect(id: sportIndex, in: ns)
                                 
@@ -86,7 +88,11 @@ struct SportsGroundView: View {
                 if !sportGround.sports.isEmpty {
                     self.selection = 0
                 }
+                controlSport = SportsGround.allSports.first(where: { sport in
+                    sport.isGestureController
+                })
                 if let controlSport = controlSport {
+                
                     sportGround.addSporter(sport: controlSport)
 
                 }
@@ -125,15 +131,16 @@ struct SportsGroundView: View {
                     
                     DispatchQueue.main.async {
                         sportGround.play(poseMap: poses.first!.landmarksMaps, object: nil, targetObject: nil, frameSize: imageAnalysis.sportData.frame.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                        self.sportGround.objectWillChange.send()
+
                         
                         let afterPlayScoreTimes = sportGround.sporters[0].scoreTimes
-            
+                        currentState = sportGround.sporters[0].currentStateTime.stateId
 
                         if afterPlayScoreTimes.count > 0 {
                             
                             let stateId = afterPlayScoreTimes.last!.stateId
-                            currentState = stateId
-
+                            
                             let scoreTime = afterPlayScoreTimes.last!.time
                             
                             if scoreTime <= lastScoreTime {

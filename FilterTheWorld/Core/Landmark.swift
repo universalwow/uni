@@ -136,7 +136,7 @@ struct Landmark: Equatable, Identifiable, Hashable, Codable {
     var id: String {
         landmarkType.id
     }
-    let position: Point3D
+    var position: Point3D
     let landmarkType: LandmarkType
     var selected:Bool = false
     var color:Color = .white

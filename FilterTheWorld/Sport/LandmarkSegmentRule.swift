@@ -130,7 +130,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
@@ -146,7 +146,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
@@ -164,7 +164,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             

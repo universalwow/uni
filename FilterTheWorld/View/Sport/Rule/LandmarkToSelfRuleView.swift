@@ -46,7 +46,7 @@ struct LandmarkToSelfRuleView: View {
 
                 }) {
                     Text("删除")
-                }.padding()
+                }.padding([.vertical, .leading])
             }
             
             VStack{
@@ -76,7 +76,6 @@ struct LandmarkToSelfRuleView: View {
                 }
                 VStack {
                     HStack {
-                        
                         Text("方向")
                         Picker("方向", selection: $direction.didSet{ _ in
                             updateRemoteData()
@@ -99,7 +98,7 @@ struct LandmarkToSelfRuleView: View {
                             }
                         }
 
-                        Text("相对轴")
+                        Text("/")
                         Picker("相对轴", selection: $toAxis.didSet{ _ in
                             updateRemoteData()
                             updateLocalData()

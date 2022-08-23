@@ -32,7 +32,12 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
     // 关节相对自身位移
 //    相关状态转换时收集的关节点 不更新
     var landmarkToState: [LandmarkToState] = []
+    
+    var angleToLandmark: [AngleToLandmark] = []
     // 关节相对自身最大位移
+    
+    var landmarkToStateExtreme: [LandmarkToStateExtreme] = []
+    
     var landmarkToSelf: [LandmarkToSelf] = []
     
     
@@ -101,6 +106,65 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         
     }
     
+    func firstAngleToLandmarkIndexById(id: UUID) -> Int? {
+        angleToLandmark.firstIndex(where: { _angleToLandmark in
+            _angleToLandmark.id == id
+        })
+    }
+    
+    mutating func updateRuleAngleToLandmark(warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, toLandmark: Landmark, id: UUID) {
+        if let index = self.firstAngleToLandmarkIndexById(id: id) {
+            angleToLandmark[index].warning.content = warningContent
+            angleToLandmark[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            angleToLandmark[index].warning.delayTime = delayTime
+            angleToLandmark[index].lowerBound = lowerBound
+            angleToLandmark[index].upperBound = upperBound
+            
+            angleToLandmark[index].toLandmark = toLandmark
+        }
+        
+    }
+    
+    
+    func firstLandmarkToStateExtremeIndexById(id: UUID) -> Int? {
+        landmarkToStateExtreme.firstIndex(where: { _landmarkToStateExtreme in
+            _landmarkToStateExtreme.id == id
+            
+        })
+    }
+    
+    mutating func updateRuleLandmarkToStateExtreme(fromAxis: CoordinateAxis,
+                                            fromLandmark: Landmark,
+                                            toStateId: Int,
+                                                   isRelativeToExtremeDirection: Bool,
+                                                   extremeDirection: ExtremeDirection,
+                                            toStateLandmark: Landmark,
+                                            toLandmarkSegment: LandmarkSegment,
+                                            toAxis: CoordinateAxis,
+                                            lowerBound: Double, upperBound: Double,
+                                            warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        if let index = self.firstLandmarkToStateExtremeIndexById(id: id) {
+            
+            landmarkToStateExtreme[index].warning.content = warningContent
+            landmarkToStateExtreme[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            landmarkToStateExtreme[index].warning.delayTime = delayTime
+            
+            landmarkToStateExtreme[index].lowerBound = lowerBound
+            landmarkToStateExtreme[index].upperBound = upperBound
+            
+            
+            
+            landmarkToStateExtreme[index].fromLandmarkToAxis =  LandmarkToAxis(landmark: fromLandmark, axis: fromAxis)
+            landmarkToStateExtreme[index].toLandmarkToAxis =  LandmarkToAxis(landmark: toStateLandmark, axis: fromAxis)
+            landmarkToStateExtreme[index].toStateId = toStateId
+            landmarkToStateExtreme[index].isRelativeToExtremeDirection = isRelativeToExtremeDirection
+            landmarkToStateExtreme[index].extremeDirection = extremeDirection
+            landmarkToStateExtreme[index].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+
+        }
+        
+    }
+    
     
     func firstLandmarkInAreaIndexById(id: UUID) -> Int? {
         landmarkInArea.firstIndex(where: { _landmarkInArea in
@@ -136,6 +200,10 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         return relativeDistance.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
     }
     
+    func lengthToStateExtremeSatisfy(relativeDistance: LandmarkToStateExtreme, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
+        return relativeDistance.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+    }
+    
     
     func landmarkToSelfSatisfy(landmarkToSelf: LandmarkToSelf, stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
         return landmarkToSelf.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
@@ -151,7 +219,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
@@ -170,7 +238,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
@@ -180,6 +248,22 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                     result.2 + 1)
         })
         
+        let lengthToStateExtremeSatisfys = landmarkToStateExtreme.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            let satisfy = self.lengthToStateExtremeSatisfy(relativeDistance: next, stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy,
+                    newWarnings,
+                    satisfy ? result.2 + 1 : result.2,
+                    result.2 + 1)
+        })
         
 
         let landmarkToSelfSatisfys = landmarkToSelf.reduce((true, Set<Warning>(), 0, 0), { result, next in
@@ -189,7 +273,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
@@ -200,10 +284,10 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         })
         
         // 每个规则至少要包含一个条件 且所有条件都必须满足
-        return (landmarkInAreaSatisfys.0 && lengthToStateSatisfys.0 && landmarkToSelfSatisfys.0,
-                landmarkInAreaSatisfys.1.union(lengthToStateSatisfys.1).union(landmarkToSelfSatisfys.1),
-                landmarkInAreaSatisfys.2 + lengthToStateSatisfys.2 + landmarkToSelfSatisfys.2,
-                landmarkInAreaSatisfys.3 + lengthToStateSatisfys.3 + landmarkToSelfSatisfys.3)
+        return (landmarkInAreaSatisfys.0 && lengthToStateSatisfys.0 && lengthToStateExtremeSatisfys.0 && landmarkToSelfSatisfys.0,
+                landmarkInAreaSatisfys.1.union(lengthToStateSatisfys.1).union(lengthToStateExtremeSatisfys.1).union(landmarkToSelfSatisfys.1),
+                landmarkInAreaSatisfys.2 + lengthToStateSatisfys.2 + lengthToStateExtremeSatisfys.2 + landmarkToSelfSatisfys.2,
+                landmarkInAreaSatisfys.3 + lengthToStateSatisfys.3 + lengthToStateExtremeSatisfys.3 + landmarkToSelfSatisfys.3)
     }
     
     

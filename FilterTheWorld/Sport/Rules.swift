@@ -460,6 +460,142 @@ struct Rules: Identifiable, Hashable, Codable {
 
         }
     }
+    
+    
+    //    --------------
+    
+    
+    mutating func addRuleAngleToLandmark(ruleId: String, ruleClass: RuleClass, landmarks: [Landmark]) {
+        if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+            let fromLandmark = landmarks.first(where: { landmark in
+                landmark.id == ruleId
+            })!
+            
+            landmarkRules[ruleIndex].angleToLandmark.append(
+                AngleToLandmark(fromLandmark: fromLandmark , toLandmark: fromLandmark,
+                                warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2))
+            )
+      
+        }
+    }
+    
+    func getRuleAngleToLandmarks(ruleId: String, ruleClass: RuleClass) -> [AngleToLandmark] {
+        if ruleClass == .Landmark, let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+            return landmarkRules[ruleIndex].angleToLandmark
+        }
+        return []
+    }
+    
+    func getRuleAngleToLandmark(ruleId: String, ruleClass: RuleClass, id: UUID) -> AngleToLandmark {
+        let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+        return landmarkRules[ruleIndex].angleToLandmark.first(where: { angle in
+            angle.id == id
+            
+        })!
+    }
+    
+    mutating func removeRuleAngleToLandmark(ruleId: String, ruleClass: RuleClass, id: UUID) {
+        let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+        landmarkRules[ruleIndex].angleToLandmark.removeAll(where: { angle in
+            angle.id == id
+            
+        })
+    }
+    
+    mutating func updateRuleAngleToLandmark(ruleId: String, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, toLandmark: Landmark, id: UUID) {
+        
+        if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
+            landmarkRules[ruleIndex].updateRuleAngleToLandmark(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, toLandmark: toLandmark, id: id)
+        
+
+        }
+    }
+    
+    
+//    ---------------------------
+        
+        func getRuleLandmarkToStateExtremes(ruleId: String, ruleClass: RuleClass) -> [LandmarkToStateExtreme] {
+            if ruleClass == .Landmark, let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+                return landmarkRules[ruleIndex].landmarkToStateExtreme
+            }
+            return []
+        }
+        
+        func getRuleLandmarkToStateExtreme(ruleId: String, ruleClass: RuleClass, id: UUID) -> LandmarkToStateExtreme {
+            let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+            return landmarkRules[ruleIndex].landmarkToStateExtreme.first(where: { landmarkToStateExtreme in
+                landmarkToStateExtreme.id == id
+            })!
+        }
+        
+        mutating func addRuleLandmarkToStateExtreme(ruleId: String, ruleClass: RuleClass, humanPose: HumanPose, stateId: Int) {
+            if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+                let landmark = humanPose.landmarks.first(where: { landmark in
+                    landmark.id == ruleId
+                })!
+                let landmarkSegment = humanPose.landmarkSegments.first(where: { landmarkSegment in
+                    landmarkSegment.id == LandmarkTypeSegment(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder).id
+                })!
+                landmarkRules[ruleIndex].landmarkToStateExtreme.append(
+                    
+                    LandmarkToStateExtreme(toStateId: stateId,
+                                    fromLandmarkToAxis: LandmarkToAxis(landmark: landmark, axis: .X),
+                                    toLandmarkToAxis: LandmarkToAxis(landmark: landmark, axis: .X),
+                                    toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: landmarkSegment, axis: .X),
+                                    warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2)
+                                   )
+                    
+
+                )
+
+            }
+        }
+        
+        mutating func removeRuleLandmarkToStateExtreme(ruleId: String, ruleClass: RuleClass, id: UUID) {
+            let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+            landmarkRules[ruleIndex].landmarkToStateExtreme.removeAll(where: { length in
+                length.id == id
+                
+            })
+        }
+        
+        mutating func updateRuleLandmarkToStateExtreme(ruleId: String,  ruleClass: RuleClass,
+                                                fromAxis: CoordinateAxis,
+                                                toStateId: Int,
+                                                       isRelativeToExtremeDirection: Bool,
+
+                                                       extremeDirection: ExtremeDirection,
+                                                toStateLandmark: Landmark,
+                                                toLandmarkSegmentType: LandmarkTypeSegment,
+                                                toAxis: CoordinateAxis,
+                                                lowerBound: Double, upperBound: Double,
+                                                warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, humanPose: HumanPose)  {
+            let fromLandmark = humanPose.landmarks.first(where: { landmark in
+                landmark.id == ruleId
+            })!
+            
+            
+            let toLandmarkSegment = humanPose.landmarkSegments.first(where: { landmarkSegment in
+                landmarkSegment.id == toLandmarkSegmentType.id
+            })!
+            
+            
+            
+            if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
+                landmarkRules[ruleIndex].updateRuleLandmarkToStateExtreme(fromAxis: fromAxis,
+                                                                   fromLandmark: fromLandmark,
+                                                                  toStateId: toStateId,
+                                                                          isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                                                                   extremeDirection: extremeDirection,
+                                                                   toStateLandmark: toStateLandmark,
+                                                                   toLandmarkSegment: toLandmarkSegment,
+                                                                  toAxis: toAxis,
+                                                                  lowerBound: lowerBound, upperBound: upperBound,
+                                                                  warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+            
+
+            }
+        }
 //    --------------
     
     
@@ -542,10 +678,12 @@ struct Rules: Identifiable, Hashable, Codable {
             })!
             
             observationRules[ruleIndex].objectToLandmark.append(
-                ObjectToLandmark(fromAxis: .Y,
-                                 fromPosition: ObjectPositionPoint(id: ruleId, position: .middle, point: object.rect.center.point2d),
+                ObjectToLandmark(
+                    fromPosition: ObjectPositionPoint(id: ruleId, position: .middle, point: object.rect.center.point2d, axis: .Y),
                                  toLandmark: landmark,
-                                 toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: landmarkSegment, axis: .X), warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2))
+                                 toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: landmarkSegment, axis: .X), warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2),
+                                 object: object
+                                )
             )
         }
     }
@@ -565,7 +703,7 @@ struct Rules: Identifiable, Hashable, Codable {
                                                                                      toLandmarkType: LandmarkType,
                                                                                      toLandmarkSegmentType: LandmarkTypeSegment,
                                                                                      toAxis: CoordinateAxis,
-                                             lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, humanPose: HumanPose, objects: [Observation]) {
+                                             lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, humanPose: HumanPose, objects: [Observation], isRelativeToObject: Bool) {
         
         if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
             let object = objects.first(where: { _object in
@@ -587,7 +725,7 @@ struct Rules: Identifiable, Hashable, Codable {
                                                                    toLandmark: toLandmark,
                                                                    toLandmarkSegment: toLandmarkSegment,
                                                                    toAxis: toAxis,
-                                                                   lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                                   lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, isRelativeToObject: isRelativeToObject)
 
         }
     }
@@ -623,11 +761,10 @@ struct Rules: Identifiable, Hashable, Codable {
             
             observationRules[ruleIndex].objectToObject.append(
                 ObjectToObject(
-                    fromPosition: ObjectPositionPoint(id: ruleId, position: .middle, point: object.rect.center.point2d),
-                    toPosition: ObjectPositionPoint(id: ruleId, position: .middle, point: object.rect.center.point2d),
-                    fromAxis: .Y,
+                    fromPosition: ObjectPositionPoint(id: ruleId, position: .middle, point: object.rect.center.point2d, axis: .Y),
+                    toPosition: ObjectPositionPoint(id: ruleId, position: .middle, point: object.rect.center.point2d, axis: .Y),
                     toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: landmarkSegment, axis: .X),
-                    warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2))
+                    warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2), object: object)
             )
         }
     }
@@ -643,7 +780,7 @@ struct Rules: Identifiable, Hashable, Codable {
     
     mutating func updateRuleObjectToObject(ruleId: String, ruleClass: RuleClass,
                                            fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, toLandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID,
-                                           landmarkSegments: [LandmarkSegment], objects: [Observation]) {
+                                           landmarkSegments: [LandmarkSegment], objects: [Observation], isRelativeToObject: Bool) {
         
         if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
             let fromObject = objects.first(where: { _object in
@@ -661,7 +798,7 @@ struct Rules: Identifiable, Hashable, Codable {
                 landmarkSegment.id == toLandmarkSegmentType.id
             })!
             
-            observationRules[ruleIndex].updateRuleObjectToObject(fromAxis: fromAxis, fromObjectPosition: fromObjectPosition, fromObject: fromObject, toObject: toObject, toObjectPosition: toObjectPosition, toLandmarkSegment: toLandmarkSegment, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+            observationRules[ruleIndex].updateRuleObjectToObject(fromAxis: fromAxis, fromObjectPosition: fromObjectPosition, fromObject: fromObject, toObject: toObject, toObjectPosition: toObjectPosition, toLandmarkSegment: toLandmarkSegment, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, isRelativeToObject: isRelativeToObject)
 
         }
     }
@@ -710,6 +847,98 @@ struct Rules: Identifiable, Hashable, Codable {
             observationRules[ruleIndex].updateRuleObjectToSelf(direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
         }
     }
+
+    //    ---------------------------
+            
+            func getRuleObjectToStateExtremes(ruleId: String, ruleClass: RuleClass) -> [ObjectToStateExtreme] {
+                if ruleClass == .Observation, let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+                    return observationRules[ruleIndex].objectToState
+                }
+                return []
+            }
+            
+            func getRuleObjectToStateExtreme(ruleId: String, ruleClass: RuleClass, id: UUID) -> ObjectToStateExtreme {
+                let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+                return observationRules[ruleIndex].objectToState.first(where: { objectToState in
+                    objectToState.id == id
+                })!
+            }
+            
+            mutating func addRuleObjectToStateExtreme(ruleId: String, ruleClass: RuleClass, landmarkSegments: [LandmarkSegment], stateId: Int, objects: [Observation]) {
+                if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+                    let object = objects.first(where: { object in
+                        object.label == ruleId
+                    })!
+                    
+                    
+                    let landmarkSegment = landmarkSegments.first(where: { landmarkSegment in
+                        landmarkSegment.id == LandmarkTypeSegment(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder).id
+                    })!
+                    observationRules[ruleIndex].objectToState.append(
+                        ObjectToStateExtreme(toStateId: stateId,
+                                             fromPosition: ObjectPositionPoint(
+                                                id: ruleId, position: .middle, point: object.rect.pointOf(position: .middle).point2d, axis: .X),
+                                             toPosition: ObjectPositionPoint(
+                                                id: ruleId, position: .middle, point: object.rect.pointOf(position: .middle).point2d, axis: .X),
+                                             toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: landmarkSegment, axis: .X),
+                                             warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2),                                             object: object)
+                    )
+
+                }
+            }
+            
+            mutating func removeRuleObjectToStateExtreme(ruleId: String, ruleClass: RuleClass, id: UUID) {
+                let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+                observationRules[ruleIndex].objectToState.removeAll(where: { objectToState in
+                    objectToState.id == id
+                    
+                })
+            }
+            
+            mutating func updateRuleObjectToStateExtreme(ruleId: String,  ruleClass: RuleClass,
+                                                         fromAxis: CoordinateAxis,
+                                                         toStateId: Int,
+                                                         fromPosition: ObjectPosition,
+                                                         toObject: Observation,
+                                                        isRelativeToObject: Bool,
+                                                        isRelativeToExtremeDirection: Bool,
+                                                         extremeDirection: ExtremeDirection,
+                                                        toLandmarkSegmentType: LandmarkTypeSegment,
+                                                        toAxis: CoordinateAxis,
+                                                        lowerBound: Double, upperBound: Double,
+                                                         warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,
+                                                         id: UUID, landmarkSegments: [LandmarkSegment], objects: [Observation])   {
+                
+                let fromObject = objects.first(where: { object in
+                    object.label == ruleId
+                })!
+                
+                
+                let toLandmarkSegment = landmarkSegments.first(where: { landmarkSegment in
+                    landmarkSegment.id == toLandmarkSegmentType.id
+                })!
+                
+                
+                
+                if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
+                    observationRules[ruleIndex].updateRuleObjectToStateExtreme(
+                        fromAxis: fromAxis,
+                        toStateId: toStateId,
+                        fromPosition: fromPosition,
+                        fromObject: fromObject,
+                        toObject: toObject,
+                        isRelativeToObject: isRelativeToObject,
+                        isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                        extremeDirection: extremeDirection,
+                        toLandmarkSegment: toLandmarkSegment,
+                        toAxis: toAxis,
+                        lowerBound: lowerBound, upperBound: upperBound,
+                        warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet,
+                        delayTime: delayTime, id: id)
+                
+
+                }
+            }
         
     
     

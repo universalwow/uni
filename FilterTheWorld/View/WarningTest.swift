@@ -116,25 +116,21 @@ struct WarningTest: View {
     @State var third = ""
     @State var fourth = ""
     @State var five = ""
-    let totalCount = 0..<5
 
-    
     @State var timer = Timer.publish(every: 1, on: .main, in: .default).autoconnect()
       
-
     
     var body: some View {
         VStack {
             Spacer()
             VStack(alignment: .leading){
                 HStack {
-                    ZStack {
+                    ZStack(alignment: .leading) {
                         ChildSizeReader(size: $childViewSize) {
                             Text("我想不通")
                                 .padding()
                                 .font(.largeTitle)
                         }.opacity(0)
-                        
                         
                         WarningText(text: $first, childViewSize: $childViewSize)
                         WarningText(text: $second, childViewSize: $childViewSize)
@@ -149,7 +145,6 @@ struct WarningTest: View {
             }
             .font(.largeTitle)
             .frame(height:childViewSize.height*4)
-//            .background(Color.green)
             .clipped()
 
         }

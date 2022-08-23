@@ -24,8 +24,10 @@ struct CardView: View {
           
           VStack(alignment: .trailing, spacing: 10) {
               Text(card.content).font(.largeTitle)
-              Text(card.sportClass.rawValue)
-              Text(card.sportPeriod.rawValue)
+              Text("类型:\(card.sportClass.rawValue)")
+              Text("周期:\(card.sportPeriod.rawValue)")
+              Text("连续性:\(card.sportDiscrete.rawValue)")
+              Text("手势控制:\(card.isGestureController.description)")
           }.foregroundColor(color(sportClass: card.sportClass))
       }.aspectRatio(2/3, contentMode: .fit)
     }

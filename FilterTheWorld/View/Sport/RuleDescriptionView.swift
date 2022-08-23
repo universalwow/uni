@@ -7,7 +7,6 @@ struct StaticValue {
 }
 
 struct AngleDescriptionView: View {
-    @EnvironmentObject var sportManager: SportsManager
     var angle: LandmarkSegmentAngle
     var body: some View {
         HStack {
@@ -34,7 +33,7 @@ struct LengthDescriptionView: View {
     }
 }
 
-struct AngleToLandmarkDescriptionView: View {
+struct AngleToLandmarkSegmentDescriptionView: View {
     var angleToLandmarkSegment: AngleToLandmarkSegment
     var body:some View {
         HStack {
@@ -47,8 +46,36 @@ struct AngleToLandmarkDescriptionView: View {
     }
 }
 
+
+
 struct LengthToStateDescriptionView: View {
     var length:LandmarkToState
+    var body:some View {
+        HStack {
+            Text("同状态\(length.toStateId)关节\(length.fromLandmarkToAxis.landmark.id)/\(length.fromLandmarkToAxis.axis.rawValue)相对\(length.toLandmarkSegmentToAxis.landmarkSegment.id)/\(length.toLandmarkSegmentToAxis.axis.rawValue)位移:\(length.warning.content)")
+            Spacer()
+            Text("\(length.lowerBound.roundedString(number: 4))/\(length.upperBound.roundedString(number: 4))")
+            Spacer()
+        }
+        
+    }
+}
+
+struct AngleToLandmarkDescriptionView: View {
+    var angleToLandmark: AngleToLandmark
+    var body: some View {
+        HStack {
+            Text("相对\(angleToLandmark.toLandmark.id)角度:\(angleToLandmark.warning.content)/\(angleToLandmark.warning.delayTime.roundedString(number: 2))/\(angleToLandmark.warning.triggeredWhenRuleMet.description)")
+            Spacer()
+            Text("\(angleToLandmark.lowerBound.roundedString)/\(angleToLandmark.upperBound.roundedString)")
+            Spacer()
+        }
+        
+    }
+}
+
+struct LengthToStateExtremeDescriptionView: View {
+    var length:LandmarkToStateExtreme
     var body:some View {
         HStack {
             Text("同状态\(length.toStateId)关节\(length.fromLandmarkToAxis.landmark.id)/\(length.fromLandmarkToAxis.axis.rawValue)相对\(length.toLandmarkSegmentToAxis.landmarkSegment.id)/\(length.toLandmarkSegmentToAxis.axis.rawValue)位移:\(length.warning.content)")
@@ -77,7 +104,7 @@ struct ObjectToLandmarkDescriptionView: View {
     var objectToLandmark: ObjectToLandmark
     var body: some View {
         HStack {
-            Text("物体\(objectToLandmark.fromPosition.id)/\(objectToLandmark.fromPosition.position.rawValue)/\(objectToLandmark.fromAxis.rawValue)与关节\(objectToLandmark.toLandmark.landmarkType.rawValue)相对\(objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToLandmark.toLandmarkSegmentToAxis.axis.rawValue)距离:\(objectToLandmark.warning.content)")
+            Text("物体\(objectToLandmark.fromPosition.id)/\(objectToLandmark.fromPosition.position.rawValue)/\(objectToLandmark.fromPosition.axis.rawValue)与关节\(objectToLandmark.toLandmark.landmarkType.rawValue)相对\(objectToLandmark.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToLandmark.toLandmarkSegmentToAxis.axis.rawValue)距离:\(objectToLandmark.warning.content)")
             Spacer()
             Text("\(objectToLandmark.lowerBound.roundedString(number: 4))/\(objectToLandmark.upperBound.roundedString(number: 4))")
             Spacer()
@@ -89,7 +116,7 @@ struct ObjectToObjectDescriptionView: View {
     var objectToObject: ObjectToObject
     var body: some View {
         HStack {
-            Text("物体\(objectToObject.fromPosition.id)/\(objectToObject.fromPosition.position.rawValue)/\(objectToObject.fromAxis.rawValue)与物体\(objectToObject.toPosition.id)/\(objectToObject.toPosition.position.rawValue)相对\(objectToObject.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToObject.toLandmarkSegmentToAxis.axis.rawValue)距离:\(objectToObject.warning.content)")
+            Text("物体\(objectToObject.fromPosition.id)/\(objectToObject.fromPosition.position.rawValue)/\(objectToObject.fromPosition.axis.rawValue)与物体\(objectToObject.toPosition.id)/\(objectToObject.toPosition.position.rawValue)相对\(objectToObject.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToObject.toLandmarkSegmentToAxis.axis.rawValue)距离:\(objectToObject.warning.content)")
             Spacer()
             Text("\(objectToObject.lowerBound.roundedString(number: 4))/\(objectToObject.upperBound.roundedString(number: 4))")
             Spacer()
@@ -103,6 +130,21 @@ struct ObjectToSelfDescriptionView: View {
         HStack {
             Text("物体\(objectToSelf.objectId )相对自身\(objectToSelf.toDirection.rawValue )方向移动\(objectToSelf.xLowerBound.roundedString(number: 4))/\(objectToSelf.yLowerBound.roundedString(number: 4)):\(objectToSelf.warning.content)")
             Spacer()
+            
+        }
+    }
+}
+
+struct ObjectToStateExtremeDescriptionView: View {
+    var objectToState: ObjectToStateExtreme
+    var body: some View {
+        
+        
+        HStack {
+            Text("物体\(objectToState.fromPosition.id)/\(objectToState.fromPosition.position.rawValue)相对\(objectToState.toStateId)/\(objectToState.toLandmarkSegmentToAxis.landmarkSegment.id)/\(objectToState.toLandmarkSegmentToAxis.axis.rawValue)位移:\(objectToState.warning.content)")
+            Spacer()
+            Text("\(objectToState.lowerBound.roundedString(number: 2))/\(objectToState.upperBound.roundedString(number: 2))")
+
         }
     }
 }
@@ -130,7 +172,7 @@ struct LandmarkSegmentRuleDescriptionView: View {
             })
 
             ForEach(rule.angleToLandmarkSegment, content: { _angleToLandmarkSegment in
-                AngleToLandmarkDescriptionView(angleToLandmarkSegment: _angleToLandmarkSegment)
+                AngleToLandmarkSegmentDescriptionView(angleToLandmarkSegment: _angleToLandmarkSegment)
                 Divider()
                 
             })
@@ -155,14 +197,26 @@ struct LandmarkRuleDescriptionView: View {
     var body : some View {
         VStack {
             
-            ForEach(rule.landmarkToSelf, content: { landmarkToSelf in
-                LandmarkToSelfDescriptionView(landmarkToSelf: landmarkToSelf)
+//            ForEach(rule.landmarkToSelf, content: { landmarkToSelf in
+//                LandmarkToSelfDescriptionView(landmarkToSelf: landmarkToSelf)
+//                Divider()
+//
+//            })
+
+//            ForEach(rule.landmarkToState, content: { lengthToState in
+//                LengthToStateDescriptionView(length: lengthToState)
+//                Divider()
+//
+//            })
+            
+            ForEach(rule.angleToLandmark, content: { angleToLandmark in
+                AngleToLandmarkDescriptionView(angleToLandmark: angleToLandmark)
                 Divider()
                 
             })
-
-            ForEach(rule.landmarkToState, content: { lengthToState in
-                LengthToStateDescriptionView(length: lengthToState)
+            
+            ForEach(rule.landmarkToStateExtreme, content: { landmarkToStateExtreme in
+                LengthToStateExtremeDescriptionView(length: landmarkToStateExtreme)
                 Divider()
                 
             })
@@ -195,8 +249,13 @@ struct ObservationRuleDescriptionView: View {
                 
             })
 
-            ForEach(rule.objectToSelf, content: { objectToSelf in
-                ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
+//            ForEach(rule.objectToSelf, content: { objectToSelf in
+//                ObjectToSelfDescriptionView(objectToSelf: objectToSelf)
+//                Divider()
+//
+//            })
+            ForEach(rule.objectToState, content: { objectToState in
+                ObjectToStateExtremeDescriptionView(objectToState: objectToState)
                 Divider()
                 
             })

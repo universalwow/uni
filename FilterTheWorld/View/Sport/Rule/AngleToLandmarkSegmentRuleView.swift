@@ -41,7 +41,7 @@ struct AngleToLandmarkSegmentRuleView : View {
 
                 }) {
                     Text("删除")
-                }.padding()
+                }.padding([.vertical, .leading])
             }
             
             VStack{
@@ -68,10 +68,10 @@ struct AngleToLandmarkSegmentRuleView : View {
                         updateRemoteData()
                     })
                 }
+                Spacer()
                 HStack {
                     Text("相对关节对")
                     Picker("相对关节对", selection: $tolandmarkSegmentType.didSet{ _ in
-                        print("相对关节对")
                         updateRemoteData()
                         updateLocalData()
                         
@@ -80,7 +80,7 @@ struct AngleToLandmarkSegmentRuleView : View {
                             Text(landmarkSegmentType.id).tag(landmarkSegmentType)
                         }
                     }
-                    Spacer()
+        
                     
                     HStack {
                         Text("最小值:")

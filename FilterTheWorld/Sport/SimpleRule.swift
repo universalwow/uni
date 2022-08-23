@@ -16,6 +16,13 @@ enum Direction: String, Identifiable, CaseIterable, Codable {
     case UP, DOWN, LEFT, RIGTH, LEFT_UP, RIGHT_UP, LEFT_DOWN, RIGHT_DOWN
 }
 
+enum ExtremeDirection: String, Identifiable, CaseIterable, Codable {
+    var id: String {
+        self.rawValue
+    }
+    case MinX, MinY, MaxX, MaxY, MinX_MinY, MinX_MaxY, MaxX_MinY, MaxX_MaxY
+}
+
 
 enum RuleType: String, Identifiable, CaseIterable {
     var id: String {
@@ -123,10 +130,8 @@ struct LandmarkToState: Identifiable, Codable {
     
     func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
         
-        if stateTimeHistory.isEmpty || stateTimeHistory.contains(where: { stateTime in
-            stateTime.sportState.id == SportState.startState.id
-        }) && stateTimeHistory.last(where: { stateTime in
-            stateTime.sportState.id == self.toStateId
+        if stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
         }) == nil {
             return true
         }
@@ -136,7 +141,7 @@ struct LandmarkToState: Identifiable, Codable {
         // 依赖历史状态收集
         let toLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(
             poseMap: stateTimeHistory.last{ stateTime in
-                stateTime.sportState.id == self.toStateId
+                stateTime.stateId == self.toStateId
             }!.poseMap
         )
         
@@ -198,6 +203,185 @@ struct LandmarkToState: Identifiable, Codable {
     
 }
 
+
+struct LandmarkToStateExtreme: Identifiable, Codable {
+    var id = UUID()
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+    
+    var toStateId:Int {
+        didSet {
+            if toStateId != oldValue {
+                initBound()
+            }
+            
+        }
+    }
+    //相对
+    var fromLandmarkToAxis: LandmarkToAxis {
+        didSet {
+            if fromLandmarkToAxis.axis.id != oldValue.axis.id ||
+                fromLandmarkToAxis.landmark.id != oldValue.landmark.id {
+                initBound()
+            }
+            
+        }
+    }
+    
+    var toLandmarkToAxis: LandmarkToAxis {
+        didSet {
+            if toLandmarkToAxis.axis.id != oldValue.axis.id ||
+                toLandmarkToAxis.landmark.id != oldValue.landmark.id {
+                initBound()
+            }
+        }
+    }
+    
+    
+    var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
+        didSet {
+            if toLandmarkSegmentToAxis.axis.id != oldValue.axis.id ||
+                toLandmarkSegmentToAxis.landmarkSegment.id != oldValue.landmarkSegment.id {
+                initBound()
+            }
+            
+        }
+    }
+    
+    var warning:Warning
+    
+    var isRelativeToExtremeDirection = false
+    var extremeDirection: ExtremeDirection = .MinX
+    
+    init(toStateId: Int, fromLandmarkToAxis: LandmarkToAxis, toLandmarkToAxis: LandmarkToAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: Warning) {
+        self.toStateId = toStateId
+        self.fromLandmarkToAxis = fromLandmarkToAxis
+        self.toLandmarkToAxis = toLandmarkToAxis
+        self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
+        self.warning = warning
+        
+        initBound()
+    }
+    
+    var range: Range<Double> {
+        lowerBound..<upperBound
+    }
+    
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
+            var toLandmark = Landmark(position: Point3D.zero, landmarkType: fromLandmark.landmarkType)
+            
+            
+            if isRelativeToExtremeDirection {
+                switch extremeDirection {
+                    
+                    case .MinX:
+                    toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minX
+                    case .MinY:
+                    toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minY
+
+                    case .MaxX:
+                    toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxX
+
+                    case .MaxY:
+                        toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxY
+                    
+
+                    case .MinX_MinY:
+                        toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minX.x
+                        toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minY.y
+
+                    case .MinX_MaxY:
+                        toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minX.x
+                        toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxY.y
+
+                    case .MaxX_MinY:
+                    toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxX.x
+                    toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minY.y
+
+                    case .MaxX_MaxY:
+                    toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxX.x
+                    toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxY.y
+
+                    }
+                
+            }else {
+                toLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(
+                    poseMap: toStateTime.poseMap
+                )
+            }
+            
+            
+            let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
+            let toSegment = self.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+            
+            return ComplexRule.satisfyWithDirection(fromAxis: self.fromLandmarkToAxis.axis,
+                                       toAxis: self.toLandmarkSegmentToAxis.axis,
+                                       range: self.range,
+                                       fromSegment: fromSegment,
+                                       toSegment: toSegment)
+
+            
+        }else {
+            return true
+        }
+    }
+    
+    private mutating func initBound() {
+        
+        var length = 0.0
+        var bound = 0.0
+        switch (fromLandmarkToAxis.axis, toLandmarkSegmentToAxis.axis) {
+        case (.X, .X):
+            length = fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            
+        case (.X, .Y):
+            length = fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            
+        case (.X, .XY):
+            length = fromLandmarkToAxis.landmark.position.x - toLandmarkToAxis.landmark.position.x
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            
+        case (.Y, .X):
+            length = fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            
+        case (.Y, .Y):
+            length = fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+        case (.Y, .XY):
+            length = fromLandmarkToAxis.landmark.position.y - toLandmarkToAxis.landmark.position.y
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            
+        case (.XY, .X):
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            
+        case (.XY, .Y):
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            
+        case (.XY, .XY):
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+        }
+        
+        lowerBound = bound
+        upperBound = bound
+        
+        
+    }
+    
+}
+
+
 // 关节点相对自身位移
 
 struct LandmarkToSelf: Identifiable, Codable {
@@ -226,8 +410,8 @@ struct LandmarkToSelf: Identifiable, Codable {
         //相对于当前状态收集到的边界位移
         let toStateTime = stateTimeHistory.last!
         
-        if [SportState.startState.name, SportState.readyState.name].contains(where: { name in
-            name == toStateTime.sportState.name
+        if [SportState.startState.id, SportState.readyState.id].contains(where: { id in
+            id == toStateTime.stateId
             
         }) {
             return true
@@ -304,6 +488,209 @@ struct LandmarkToSelf: Identifiable, Codable {
         return fromXBound >= targetXBound && fromYBound >= targetYBound
     }
 
+}
+
+
+
+struct ObjectToStateExtreme: Identifiable, Codable {
+    var id = UUID()
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+    
+    var toStateId:Int {
+        didSet {
+            if toStateId != oldValue {
+                initBound()
+            }
+            
+        }
+    }
+    
+    var fromPosition: ObjectPositionPoint {
+        didSet {
+            if fromPosition.id != oldValue.id ||
+                fromPosition.position.id != oldValue.position.id || fromPosition.axis != oldValue.axis {
+                initBound()
+            }
+            
+        }
+    }
+    var toPosition: ObjectPositionPoint {
+        didSet {
+            if toPosition.id != oldValue.id ||
+                toPosition.position.id != oldValue.position.id {
+                initBound()
+            }
+        }
+    }
+    
+    
+    var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
+        didSet {
+            if toLandmarkSegmentToAxis.axis.id != oldValue.axis.id ||
+                toLandmarkSegmentToAxis.landmarkSegment.id != oldValue.landmarkSegment.id {
+                initBound()
+            }
+            
+        }
+    }
+    
+    var warning:Warning
+    
+    var isRelativeToExtremeDirection = false
+    var extremeDirection: ExtremeDirection = .MinX
+    
+    var isRelativeToObject: Bool = false {
+        didSet {
+            if isRelativeToObject != oldValue {
+                initBound()
+            }
+        }
+    }
+    
+    var object: Observation
+    
+    init(toStateId: Int, fromPosition: ObjectPositionPoint, toPosition: ObjectPositionPoint, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: Warning, object: Observation) {
+        self.toStateId = toStateId
+        self.fromPosition = fromPosition
+        self.toPosition = toPosition
+        self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
+        self.warning = warning
+        self.object = object
+        
+        initBound()
+    }
+    
+    var range: Range<Double> {
+        lowerBound..<upperBound
+    }
+    
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation) -> Bool {
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromObjectPoint = object.rect.pointOf(position: fromPosition.position).point2d
+            var toObjectPoint = Point2D.zero
+            
+            
+            if isRelativeToExtremeDirection {
+                switch extremeDirection {
+                    
+                    case .MinX:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minX.rect.pointOf(position: fromPosition.position).point2d
+                    case .MinY:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minY.rect.pointOf(position: fromPosition.position).point2d
+                    case .MaxX:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxX.rect.pointOf(position: fromPosition.position).point2d
+                    case .MaxY:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxY.rect.pointOf(position: fromPosition.position).point2d
+
+                    case .MinX_MinY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    case .MinX_MaxY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    case .MaxX_MinY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    case .MaxX_MaxY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    }
+                
+            }else {
+                toObjectPoint = toStateTime.object!.rect.pointOf(position: fromPosition.position).point2d
+            }
+            
+            
+            let fromSegment = LandmarkSegment(startLandmark: Landmark(position: fromObjectPoint.point3D, landmarkType: LandmarkType.None), endLandmark: Landmark(position: toObjectPoint.point3D, landmarkType: LandmarkType.None))
+            
+            let toSegment = toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+            
+            if isRelativeToObject == true {
+                return ComplexRule.satisfyWithDirectionRelativeToObject(fromAxis: self.fromPosition.axis, range: self.range, fromSegment: fromSegment, relativeTo: object.rect.height)
+            }
+
+            return ComplexRule.satisfyWithDirection(fromAxis: self.fromPosition.axis,
+                                       toAxis: self.toLandmarkSegmentToAxis.axis,
+                                       range: self.range,
+                                       fromSegment: fromSegment,
+                                       toSegment: toSegment)
+
+            
+        }else {
+            return true
+        }
+    }
+    
+    private mutating func initBound() {
+        
+        var length = 0.0
+        var relativeTo = 0.0
+        
+        
+        
+        switch (fromPosition.axis, toLandmarkSegmentToAxis.axis) {
+        case (.X, .X):
+            length = fromPosition.point.x - toPosition.point.x
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            
+        case (.X, .Y):
+            length = fromPosition.point.x - toPosition.point.x
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            
+        case (.X, .XY):
+            length = fromPosition.point.x - toPosition.point.x
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
+            
+        case (.Y, .X):
+            length = fromPosition.point.y - toPosition.point.y
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            
+        case (.Y, .Y):
+            length = fromPosition.point.y - toPosition.point.y
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
+        case (.Y, .XY):
+            length = fromPosition.point.y - toPosition.point.y
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
+            
+        case (.XY, .X):
+            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
+
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            
+        case (.XY, .Y):
+            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
+
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            
+        case (.XY, .XY):
+            length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
+        }
+        
+        if isRelativeToObject == true {
+            relativeTo = object.rect.height
+        }
+        let bound = length/relativeTo
+        
+        lowerBound = bound
+        upperBound = bound
+        
+        
+    }
+    
 }
 
 
@@ -397,6 +784,7 @@ struct ObjectPositionPoint: Identifiable, Codable {
     var id: String
     var position: ObjectPosition
     var point: Point2D
+    var axis: CoordinateAxis
 }
 
 struct ObjectToObject: Identifiable, Codable {
@@ -409,7 +797,7 @@ struct ObjectToObject: Identifiable, Codable {
     var fromPosition: ObjectPositionPoint {
         didSet {
             if fromPosition.id != oldValue.id ||
-                fromPosition.position.id != oldValue.position.id {
+                fromPosition.position.id != oldValue.position.id || fromPosition.axis != oldValue.axis {
                 initBound()
             }
             
@@ -423,13 +811,7 @@ struct ObjectToObject: Identifiable, Codable {
             }
         }
     }
-    var fromAxis: CoordinateAxis {
-        didSet {
-            if fromAxis.id != oldValue.id {
-                initBound()
-            }
-        }
-    }
+
     
     var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
         didSet {
@@ -443,13 +825,25 @@ struct ObjectToObject: Identifiable, Codable {
     
     var warning:Warning
     
+    var isRelativeToObject: Bool = false {
+        didSet {
+            if isRelativeToObject != oldValue {
+                initBound()
+            }
+        }
+    }
+    
+    var object: Observation
+    
     init(fromPosition:  ObjectPositionPoint, toPosition: ObjectPositionPoint,
-         fromAxis: CoordinateAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: Warning) {
+         toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: Warning, object: Observation) {
+
         self.fromPosition = fromPosition
         self.toPosition = toPosition
-        self.fromAxis = fromAxis
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
         self.warning = warning
+        self.object = object
+
         initBound()
     }
     
@@ -467,54 +861,63 @@ struct ObjectToObject: Identifiable, Codable {
         
         let toSegment = toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         
-        return ComplexRule.satisfyWithDirection(fromAxis: self.fromAxis, toAxis: self.toLandmarkSegmentToAxis.axis, range: self.range, fromSegment: fromSegment, toSegment: toSegment)
+        if isRelativeToObject == true {
+            return ComplexRule.satisfyWithDirectionRelativeToObject(fromAxis: self.fromPosition.axis, range: self.range, fromSegment: fromSegment, relativeTo: fromObject.rect.height)
+        }
+        
+        return ComplexRule.satisfyWithDirection(fromAxis: self.fromPosition.axis, toAxis: self.toLandmarkSegmentToAxis.axis, range: self.range, fromSegment: fromSegment, toSegment: toSegment)
         
     }
     
     
     private mutating func initBound() {
         var length = 0.0
-        var bound = 0.0
-        print("initBound")
+        var relativeTo = 0.0
         
-        switch (fromAxis, toLandmarkSegmentToAxis.axis) {
+        switch (self.fromPosition.axis, toLandmarkSegmentToAxis.axis) {
         case (.X, .X):
             length = fromPosition.point.x - toPosition.point.x
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
         case (.X, .Y):
             length = fromPosition.point.x - toPosition.point.x
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
             
         case (.X, .XY):
             length = fromPosition.point.x - toPosition.point.x
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
             
         case (.Y, .X):
             length = fromPosition.point.y - toPosition.point.y
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
             
         case (.Y, .Y):
             length = fromPosition.point.y - toPosition.point.y
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
             
         case (.Y, .XY):
             length = fromPosition.point.y - toPosition.point.y
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
             
         case (.XY, .X):
             length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
             
         case (.XY, .Y):
             length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
             
         case (.XY, .XY):
             
             length = fromPosition.point.vector2d.distance(to: toPosition.point.vector2d)
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+            relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
             
         }
+        
+        if isRelativeToObject == true {
+            relativeTo = object.rect.height
+        }
+        let bound = length/relativeTo
+
         lowerBound = bound
         upperBound = bound
     }
@@ -526,18 +929,12 @@ struct ObjectToLandmark: Identifiable, Codable {
     var lowerBound:Double = 0
     var upperBound:Double = 0
     
-    var fromAxis: CoordinateAxis {
-        didSet {
-            if fromAxis.id != oldValue.id {
-                initBound()
-            }
-        }
-    }
+
     
     var fromPosition: ObjectPositionPoint {
         didSet {
             if fromPosition.id != oldValue.id ||
-                fromPosition.position.id != oldValue.position.id {
+                fromPosition.position.id != oldValue.position.id || fromPosition.axis.rawValue != oldValue.axis.rawValue {
                 print("fromPosition \(fromPosition.id) \(fromPosition.position.id) - \(fromPosition.point)")
                 
                 initBound()
@@ -553,7 +950,6 @@ struct ObjectToLandmark: Identifiable, Codable {
         }
     }
     
-    
     var toLandmarkSegmentToAxis: LandmarkSegmentToAxis {
         didSet {
             if toLandmarkSegmentToAxis.axis.id != oldValue.axis.id ||
@@ -564,14 +960,23 @@ struct ObjectToLandmark: Identifiable, Codable {
         }
     }
     
+    var isRelativeToObject: Bool = false {
+        didSet {
+            if isRelativeToObject != oldValue {
+                initBound()
+            }
+        }
+    }
+    var object: Observation?
+    
     var warning: Warning
     
-    init(fromAxis: CoordinateAxis, fromPosition: ObjectPositionPoint, toLandmark: Landmark, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: Warning) {
-        self.fromAxis = fromAxis
+    init(fromPosition: ObjectPositionPoint, toLandmark: Landmark, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: Warning, object: Observation) {
         self.fromPosition = fromPosition
         self.toLandmark = toLandmark
         self.toLandmarkSegmentToAxis = toLandmarkSegmentToAxis
         self.warning = warning
+        self.object = object
         initBound()
     }
     
@@ -582,60 +987,71 @@ struct ObjectToLandmark: Identifiable, Codable {
     
     func satisfy(poseMap: PoseMap, object: Observation) -> Bool {
         
-        let fromObject = object.rect.pointOf(position: self.fromPosition.position)
+        let fromObjectPoint = object.rect.pointOf(position: self.fromPosition.position)
         let toLandmark = self.toLandmark.landmarkType.landmark(poseMap: poseMap)
         
-        let fromSegment = LandmarkSegment(startLandmark: Landmark(position: fromObject.point2d.point3D, landmarkType: LandmarkType.None), endLandmark: toLandmark)
+        let fromSegment = LandmarkSegment(startLandmark: Landmark(position: fromObjectPoint.point2d.point3D, landmarkType: LandmarkType.None), endLandmark: toLandmark)
         
         let toSegment = toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
         
-        return ComplexRule.satisfyWithDirection(fromAxis: self.fromAxis, toAxis: self.toLandmarkSegmentToAxis.axis, range: self.range, fromSegment: fromSegment, toSegment: toSegment)
+        if isRelativeToObject == true {
+            return ComplexRule.satisfyWithDirectionRelativeToObject(fromAxis: self.fromPosition.axis, range: self.range, fromSegment: fromSegment, relativeTo: object.rect.height)
+        }
+        
+        return ComplexRule.satisfyWithDirection(fromAxis: self.fromPosition.axis, toAxis: self.toLandmarkSegmentToAxis.axis, range: self.range, fromSegment: fromSegment, toSegment: toSegment)
+        
         
     }
     
     private mutating func initBound() {
         var length = 0.0
-        var bound = 0.0
+        var relativeTo = 0.0
         
         
-        switch (fromAxis, toLandmarkSegmentToAxis.axis) {
-        case (.X, .X):
-            length = fromPosition.point.x - toLandmark.position.x
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-        case (.X, .Y):
-            length = fromPosition.point.x - toLandmark.position.x
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            
-        case (.X, .XY):
-            length = fromPosition.point.x - toLandmark.position.x
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            
-        case (.Y, .X):
-            length = fromPosition.point.y - toLandmark.position.y
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            
-        case (.Y, .Y):
-            length = fromPosition.point.y - toLandmark.position.y
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            
-        case (.Y, .XY):
-            length = fromPosition.point.y - toLandmark.position.y
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
-            
-        case (.XY, .X):
-            length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
-            
-        case (.XY, .Y):
-            length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
-            
-        case (.XY, .XY):
-            
-            length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
-            bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
+        switch (self.fromPosition.axis, toLandmarkSegmentToAxis.axis) {
+            case (.X, .X):
+                length = fromPosition.point.x - toLandmark.position.x
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
+            case (.X, .Y):
+                length = fromPosition.point.x - toLandmark.position.x
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
+                
+            case (.X, .XY):
+                length = fromPosition.point.x - toLandmark.position.x
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
+                
+            case (.Y, .X):
+                length = fromPosition.point.y - toLandmark.position.y
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
+                
+            case (.Y, .Y):
+                length = fromPosition.point.y - toLandmark.position.y
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
+                
+            case (.Y, .XY):
+                length = fromPosition.point.y - toLandmark.position.y
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
+                
+            case (.XY, .X):
+                length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceX
+                
+            case (.XY, .Y):
+                length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distanceY
+                
+            case (.XY, .XY):
+                length = fromPosition.point.vector2d.distance(to: toLandmark.position.vector2d)
+                relativeTo = toLandmarkSegmentToAxis.landmarkSegment.distance
             
         }
+        
+        
+        if isRelativeToObject == true, let object = object {
+            relativeTo = object.rect.height
+        }
+        let bound = length/relativeTo
+
         lowerBound = bound
         upperBound = bound
     }
@@ -830,6 +1246,55 @@ struct LandmarkSegmentAngle: Identifiable, Codable {
         self.upperBound = angle
     }
 }
+
+
+struct AngleToLandmark: Identifiable, Codable {
+    var id = UUID()
+    var lowerBound = 0.0
+    var upperBound = 0.0
+    var fromLandmark: Landmark
+    var toLandmark: Landmark {
+        didSet {
+            if oldValue.id != toLandmark.id {
+                initBound()
+            }
+        }
+    }
+    
+    var landmarkSegment: LandmarkSegment {
+        LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
+    }
+    var warning:Warning
+
+    init(fromLandmark: Landmark, toLandmark: Landmark, warning: Warning) {
+        
+        self.fromLandmark = fromLandmark
+        self.toLandmark = toLandmark
+        self.warning = warning
+        initBound()
+    }
+    
+    var range: Range<Int> {
+        if lowerBound < upperBound {
+            return lowerBound.toInt..<upperBound.toInt
+        }else {
+            return lowerBound.toInt..<(upperBound + 360).toInt
+        }
+    }
+    
+    func satisfy(poseMap: PoseMap) -> Bool {
+        let landmarkSegment = landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        print("angle range - \(range) - \(Int(landmarkSegment.angle2d))")
+        return range.contains(Int(landmarkSegment.angle2d)) || range.contains(Int(landmarkSegment.angle2d + 360))
+    }
+    
+    mutating func initBound() {
+        let angle = landmarkSegment.angle2d
+        self.lowerBound = angle
+        self.upperBound = angle
+    }
+}
+
 
 
 extension LandmarkInArea {
@@ -1357,6 +1822,32 @@ extension ComplexRule {
             return range.contains(
                 fromSegment.distance/toSegment.distance
             )
+        }
+    }
+    
+    static func satisfyWithDirectionRelativeToObject(fromAxis: CoordinateAxis, range: Range<Double>, fromSegment: LandmarkSegment, relativeTo: Double) -> Bool {
+        switch fromAxis {
+        case .X:
+            return range.contains(
+                fromSegment.distanceXWithDirection/relativeTo
+            )
+
+            
+            // from Y
+            
+        case .Y:
+            return range.contains(
+                fromSegment.distanceYWithDirection/relativeTo
+            )
+  
+            
+            // from XY
+            
+        case .XY:
+            return range.contains(
+                fromSegment.distance/relativeTo
+            )
+ 
         }
     }
     

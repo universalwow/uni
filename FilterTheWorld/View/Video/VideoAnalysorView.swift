@@ -316,6 +316,7 @@ struct VideoAnalysorView: View {
                             DispatchQueue.main.async {
                                 if !self.stopAnalysis {
                                     self.stopAnalysis = true
+                                    sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
                                     self.scrollViewContentOffset = 0
                                 }
                             }
@@ -329,8 +330,10 @@ struct VideoAnalysorView: View {
                 }
                 
                 Button(action: {
-                    self.stopAnalysis = true
-                    sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
+                    if !self.stopAnalysis {
+                        self.stopAnalysis = true
+                        sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
+                    }
                 }) {
                     Text("停止")
                 }

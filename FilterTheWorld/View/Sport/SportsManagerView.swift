@@ -65,8 +65,10 @@ struct SportsManagerView: View {
                         ) {
                             CardView(card:
                                         Card(content: sport.name,
-                                             sportClass: sport.sportClass ?? .None,
-                                             sportPeriod: sport.sportPeriod ?? .None,
+                                             sportClass: sport.sportClass,
+                                             sportPeriod: sport.sportPeriod,
+                                             sportDiscrete: sport.sportDiscrete ?? .None,
+                                             isGestureController: sport.isGestureController,
                                              backColor: .green))
                         }
                         

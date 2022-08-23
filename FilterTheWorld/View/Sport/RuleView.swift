@@ -51,7 +51,10 @@ struct RuleView: View {
                     }
                 }
                 
-                Picker("选择物体", selection: $selectedObject) {
+                Picker("选择物体", selection: $selectedObject.didSet( { _ in
+                    ruleClass = .Observation
+                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedObject, ruleClass: ruleClass)
+                })) {
                     ForEach(sportManager.findSelectedObjects()) { object in
                         Text(object.label).tag(object.label)
                     }
@@ -81,10 +84,9 @@ struct RuleView: View {
             ruleClass = .Landmark
             sportManager.setCurrentSportStateRule(landmarkType: self.selectedLandmarkType, ruleClass: ruleClass)
         }
-        .onChange(of: self.selectedObject) { _ in
-            ruleClass = .Observation
-            sportManager.setCurrentSportStateRule(objectLabel: self.selectedObject, ruleClass: ruleClass)
-        }
+//        .onChange(of: self.selectedObject) { _ in
+//
+//        }
         .sheet(isPresented: self.$showSetupRule) {
             
             switch ruleClass {

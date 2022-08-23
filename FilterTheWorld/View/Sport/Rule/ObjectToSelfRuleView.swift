@@ -6,6 +6,8 @@ import SwiftUI
  * 物体与上一状态相比相对自身位移
  */
 
+
+
 struct ObjectToSelfRuleView: View {
     var objectToSelf: ObjectToSelf
     
@@ -34,6 +36,16 @@ struct ObjectToSelfRuleView: View {
     
     var body: some View {
         VStack {
+            HStack {
+                Text("相对状态位移")
+                Spacer()
+                Button(action: {
+                    sportManager.removeRuleObjectToSelf(id: objectToSelf.id)
+
+                }) {
+                    Text("删除")
+                }.padding([.vertical, .leading])
+            }
             
             VStack{
                 HStack {

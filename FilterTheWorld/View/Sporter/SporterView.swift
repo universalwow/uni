@@ -132,7 +132,7 @@ struct SporterView: View {
                     Text("\(sporter.sport.name):\(sporter.name)").padding()
                         .background(Capsule().fill(Color.green))
                     Spacer()
-                    Text("Current:\(sporter.currentStateTime.sportState.name)")
+                    Text("Current:\(sporter.sport.findFirstStateByStateId(stateId: sporter.currentStateTime.stateId)!.name)")
                         .padding()
                         .background(Capsule().fill(Color.green))
                     if SportClass.TimeCounter == sporter.sport.sportClass ||  SportClass.Counter == sporter.sport.sportClass {
@@ -149,6 +149,7 @@ struct SporterView: View {
             WarningTest()
 //                .background(Color.green)
                 .padding([.bottom], 20)
+                .opacity(0.5)
             
         }.padding()
     }

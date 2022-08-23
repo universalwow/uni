@@ -67,7 +67,7 @@ struct LandmarkInAreaRuleView: View {
 
                 }) {
                     Text("删除")
-                }.padding()
+                }.padding([.vertical, .leading])
             }
 
             

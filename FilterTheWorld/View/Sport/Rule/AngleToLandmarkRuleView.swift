@@ -4,10 +4,9 @@ import SwiftUI
 
 
 
-
-
-struct LandmarkSegmentAngleRuleView: View {
-    var angle: LandmarkSegmentAngle
+struct AngleToLandmarkRuleView: View {
+    var angleToLandmark: AngleToLandmark
+    
     @EnvironmentObject var sportManager:SportsManager
     
     struct ImageButton: View {
@@ -38,15 +37,17 @@ struct LandmarkSegmentAngleRuleView: View {
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
     
+    @State var toLandmarkType = LandmarkType.LeftShoulder
+    
     
     func updateLocalData() {
-        let angle = sportManager.getRuleLandmarkSegmentAngle(id: angle.id)
+        let angle = sportManager.getRuleAngleToLandmark(id: angleToLandmark.id)
         lowerBound = angle.lowerBound
         upperBound = angle.upperBound
     }
     
     func updateRemoteData() {
-        sportManager.updateRuleLandmarkSegmentAngle(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: angle.id)
+        sportManager.updateRuleAngleToLandmark(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, toLandmarkType: toLandmarkType, id: angleToLandmark.id)
     }
     
     //角度
@@ -144,8 +145,21 @@ struct LandmarkSegmentAngleRuleView: View {
             HStack {
                 Text("关节对角度")
                 Spacer()
+                
+                Text("相对关节")
+                Picker("相对关节", selection: $toLandmarkType.didSet{ _ in
+                    updateRemoteData()
+                    updateLocalData()
+                    
+                }) {
+                    ForEach(LandmarkType.allCases) { _landmarkType in
+                        Text(_landmarkType.id).tag(_landmarkType)
+                    }
+                }
+
+                
                 Button(action: {
-                    sportManager.removeRuleLandmarkSegmentAngle(id: angle.id)
+                    sportManager.removeRuleAngleToLandmark(id: angleToLandmark.id)
 
                 }) {
                     Text("删除")
@@ -198,12 +212,15 @@ struct LandmarkSegmentAngleRuleView: View {
         }
         
         .onAppear(perform: {
-            let angle = sportManager.getRuleLandmarkSegmentAngle(id: angle.id)
+            let angle = sportManager.getRuleAngleToLandmark(id: angleToLandmark.id)
             self.lowerBound = angle.lowerBound
             self.upperBound = angle.upperBound
+            
             self.warningContent = angle.warning.content
             self.triggeredWhenRuleMet = angle.warning.triggeredWhenRuleMet
             self.delayTime = angle.warning.delayTime
+            
+            self.toLandmarkType = angle.toLandmark.landmarkType
         })
     }
 }

@@ -18,7 +18,9 @@ class SportsGround: ObservableObject {
     
     func addSporter(sport: Sport) {
         print("add Sporter")
-        let sporter = Sporter(name: "Uni", sport: sport)
+        let sporter = Sporter(name: "Uni", sport: sport, onStateChange: {
+            self.warnings = []
+        })
         sporters = [sporter]
         sportersReport = [SportReport(sporterName: sporter.name, sportName: sport.name, sportClass: sport.sportClass, sportPeriod: sport.sportPeriod, statesDescription: sport.statesDescription)]
         clearWarning()
@@ -32,8 +34,13 @@ class SportsGround: ObservableObject {
             sportersReport[sporterIndex].allStateTimes = sporter.allStateTimeHistory
 
             sportersReport[sporterIndex].warnings = sporter.warningsData
+            sportersReport[sporterIndex].createTime = Date().timeIntervalSince1970
             
-            Storage.store(sportersReport[sporterIndex], to: .documents, secondaryDirectory: "sportsReport", as: sportersReport[sporterIndex].fileName)
+            if sportersReport[sporterIndex].endTime - sportersReport[sporterIndex].startTime > 20 {
+                Storage.store(sportersReport[sporterIndex], to: .documents, secondaryDirectory: "sportsReport", as: sportersReport[sporterIndex].fileName)
+            }
+            
+            
         })
     }
     
@@ -43,11 +50,24 @@ class SportsGround: ObservableObject {
                 sportersReport[sporterIndex].startTime = currentTime
             }
             sporters[sporterIndex].play(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
-            self.sporters[sporterIndex].warnings.forEach({ newWarning in
+            self.sporters[sporterIndex].delayWarnings.forEach({ newWarning in
                 if !self.warnings.contains(newWarning) {
                     self.warnings.append(newWarning)
                 }
             })
+            self.sporters[sporterIndex].noDelayWarnings.forEach({ newWarning in
+                if !self.warnings.contains(newWarning) {
+                    self.warnings.append(newWarning)
+                }
+            })
+//            状态切换清除warning
+            
+            
+            
+            
+            
+            
+            
 
         }
     }

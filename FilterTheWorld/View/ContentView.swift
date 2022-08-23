@@ -58,11 +58,11 @@ struct ContentView: View {
                 Text("Login")
             }
             
-            VStack {
-                WarningTest()
-            }.tabItem{
-                Text("Warnings")
-            }
+//            VStack {
+//                WarningTest()
+//            }.tabItem{
+//                Text("Warnings")
+//            }
         }
     }
 }

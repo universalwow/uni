@@ -42,7 +42,7 @@ struct LandmarkSegmentLengthRuleView: View {
 
                 }) {
                     Text("删除")
-                }.padding()
+                }.padding([.vertical, .leading])
             }
             
             VStack{
@@ -85,7 +85,6 @@ struct LandmarkSegmentLengthRuleView: View {
                     Spacer()
                     Text("相对关节对")
                     Picker("相对关节对", selection: $tolandmarkSegmentType.didSet{ _ in
-                        print("相对关节对")
                         updateRemoteData()
                         updateLocalData()
                         
@@ -95,7 +94,7 @@ struct LandmarkSegmentLengthRuleView: View {
                         }
                     }
                     
-                    Text("相对轴")
+                    Text("/")
                     Picker("相对轴", selection: $toAxis.didSet{ _ in
                         updateRemoteData()
                         updateLocalData()

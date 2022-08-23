@@ -254,6 +254,7 @@ struct SportReportView: View {
                                 HStack {
                                     Text("开始时间:\(SportReport.timeFormater(time: report.startTime))")
                                     Text("结束时间:\(SportReport.timeFormater(time: report.endTime))")
+                                    Text("创建时间:\(SportReport.timeFormater(time: report.createTime ?? 0.0))")
                                     Spacer()
                                 }
                                 
@@ -261,7 +262,18 @@ struct SportReportView: View {
                         }
                         
                     })
+                    .onDelete(perform: { indexSet in
+                        let removedReport = indexSet.map( { index in
+                            sportsReport.reports[index]
+                        })
+                        sportsReport.removeReports(reports: removedReport)
+                        sportsReport.reports.remove(atOffsets: indexSet)
+                        
+                    })
+                    
                     .listRowInsets(EdgeInsets())
+                    
+                    
                 }.navigationBarTitle(Text("运动报告"))
                 .navigationBarTitleDisplayMode(.inline)
             }

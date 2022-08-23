@@ -61,6 +61,8 @@ struct CameraPlayingView: View {
             if !sportGround.sporters.isEmpty && !poses.isEmpty {
                 
                 sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                self.sportGround.objectWillChange.send()
+
             }
             
         }).navigationBarBackButtonHidden(true)

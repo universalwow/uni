@@ -34,6 +34,8 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
     
     // 物体相对于自身最大位移
     var objectToSelf: [ObjectToSelf] = []
+    // 物体相对于自身最大位移
+    var objectToState: [ObjectToStateExtreme] = []
     
     func firstObjectToLandmarkIndexById(id: UUID) -> Int? {
         objectToLandmark.firstIndex(where: { _objectToLandmark in
@@ -48,7 +50,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
                                              toLandmark: Landmark,
                                              toLandmarkSegment: LandmarkSegment,
                                              toAxis: CoordinateAxis,
-     lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                             lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
         if let index = self.firstObjectToLandmarkIndexById(id: id) {
             
             
@@ -59,13 +61,14 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             objectToLandmark[index].lowerBound = lowerBound
             objectToLandmark[index].upperBound = upperBound
             
-            objectToLandmark[index].fromAxis = fromAxis
             objectToLandmark[index].fromPosition.point = objectPoint
+            objectToLandmark[index].fromPosition.axis = fromAxis
             objectToLandmark[index].fromPosition.position = objectPosition
             
             
             objectToLandmark[index].toLandmark = toLandmark
             objectToLandmark[index].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+            objectToLandmark[index].isRelativeToObject = isRelativeToObject
             
 
         }
@@ -80,7 +83,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
     }
     
     
-    mutating func updateRuleObjectToObject(fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, fromObject: Observation, toObject: Observation, toObjectPosition: ObjectPosition, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+    mutating func updateRuleObjectToObject(fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, fromObject: Observation, toObject: Observation, toObjectPosition: ObjectPosition, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
         if let index = self.firstObjectToObjectIndexById(id: id) {
             
             let fromObjectPoint = fromObject.rect.pointOf(position: fromObjectPosition).point2d
@@ -93,18 +96,20 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             objectToObject[index].lowerBound = lowerBound
             objectToObject[index].upperBound = upperBound
             
-            objectToObject[index].fromAxis = fromAxis
-            
-            
+     
             objectToObject[index].fromPosition.point = fromObjectPoint
             objectToObject[index].fromPosition.position = fromObjectPosition
+            objectToObject[index].fromPosition.axis = fromAxis
+
             
             objectToObject[index].toPosition.point = toObjectPoint
             objectToObject[index].toPosition.id = toObject.label
             objectToObject[index].toPosition.position = toObjectPosition
+            objectToObject[index].toPosition.axis = fromAxis
 
-            
+
             objectToObject[index].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+            objectToObject[index].isRelativeToObject = isRelativeToObject
             
 
         }
@@ -132,6 +137,57 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         }
     }
     
+    func firstObjectToStateExtremeIndexById(id: UUID) -> Int? {
+        objectToState.firstIndex(where: { _objectToState in
+            _objectToState.id == id
+            
+        })
+    }
+    
+    
+    mutating func updateRuleObjectToStateExtreme(
+        fromAxis: CoordinateAxis,
+                                                   toStateId: Int,
+                                            fromPosition: ObjectPosition,
+        fromObject: Observation,
+        toObject: Observation,
+                                            isRelativeToObject: Bool,
+                                              isRelativeToExtremeDirection: Bool,
+                                              extremeDirection: ExtremeDirection,
+                                                   toLandmarkSegment: LandmarkSegment,
+                                                   toAxis: CoordinateAxis,
+                                                   lowerBound: Double, upperBound: Double,
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID){
+            if let index = self.firstObjectToStateExtremeIndexById(id: id) {
+                
+                objectToState[index].warning.content = warningContent
+                objectToState[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+                objectToState[index].warning.delayTime = delayTime
+                
+                objectToState[index].lowerBound = lowerBound
+                objectToState[index].upperBound = upperBound
+                
+                objectToState[index].fromPosition.point = fromObject.rect.pointOf(position: fromPosition).point2d
+                objectToState[index].fromPosition.position = fromPosition
+                objectToState[index].fromPosition.axis = fromAxis
+                
+                objectToState[index].toPosition.point = toObject.rect.pointOf(position: fromPosition).point2d
+                objectToState[index].toPosition.position = fromPosition
+                objectToState[index].toPosition.axis = fromAxis
+                
+                objectToState[index].isRelativeToObject = isRelativeToObject
+                objectToState[index].isRelativeToExtremeDirection = isRelativeToExtremeDirection
+                objectToState[index].extremeDirection = extremeDirection
+                objectToState[index].toStateId = toStateId
+                objectToState[index].toLandmarkSegmentToAxis.landmarkSegment = toLandmarkSegment
+                objectToState[index].toLandmarkSegmentToAxis.axis = toAxis
+
+
+                
+            }
+            
+        }
+    
     
     func objectToLandmarkSatisfy(objectToLandmark: ObjectToLandmark, poseMap: PoseMap, object: Observation) -> Bool {
         return objectToLandmark.satisfy(poseMap: poseMap, object: object)
@@ -157,7 +213,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             var newWarnings = result.1
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
@@ -178,7 +234,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             var newWarnings = result.1
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
@@ -199,7 +255,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             var newWarnings = result.1
             if next.warning.triggeredWhenRuleMet && satisfy {
                 newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && satisfy {
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
                 newWarnings.insert(next.warning)
             }
             
