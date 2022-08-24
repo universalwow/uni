@@ -132,17 +132,17 @@ struct SporterView: View {
                     Text("\(sporter.sport.name):\(sporter.name)").padding()
                         .background(Capsule().fill(Color.green))
                     Spacer()
-                    Text("Current:\(sporter.sport.findFirstStateByStateId(stateId: sporter.currentStateTime.stateId)!.name)")
-                        .padding()
-                        .background(Capsule().fill(Color.green))
-                    if SportClass.TimeCounter == sporter.sport.sportClass ||  SportClass.Counter == sporter.sport.sportClass {
-                        Text("Next:\(sporter.nextState.name)")
+                    HStack {
+                        Text("\(sporter.sport.findFirstStateByStateId(stateId: sporter.currentStateTime.stateId)!.name)/\(sporter.nextStatePreview.name)/\(sporter.nextState.name)?")
                             .padding()
-                            .background(Capsule().fill(Color.red))
+                            .background(Capsule().fill(Color.green))
+                        Text("\(sporter.scoreTimes.count)").padding()
+                            .background(Capsule().fill(Color.green))
                     }
                     
-                    Text("Score:\(sporter.scoreTimes.count)").padding()
-                        .background(Capsule().fill(Color.green))
+                    
+                    
+                    
                 }.foregroundColor(.white)
             }
             Spacer()

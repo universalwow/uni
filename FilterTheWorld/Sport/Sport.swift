@@ -62,6 +62,17 @@ struct ViolateSequenceAndWarning: Codable {
     var stateIds: [Int] = []
 }
 
+
+struct SportDescription {
+    var name: String
+    var sportClass: SportClass
+    
+    var sportPeriod: SportPeriod
+    var sportDiscrete: SportPeriod
+    var isController: Bool
+    
+}
+
 struct Sport: Identifiable, Hashable, Codable {
   static func == (lhs: Sport, rhs: Sport) -> Bool {
     lhs.id == rhs.id
@@ -106,6 +117,11 @@ struct Sport: Identifiable, Hashable, Codable {
     var sportDiscrete:SportPeriod?
     var noStateWarning: String = ""
     var isGestureController = false
+    
+    
+    var sportDescription: SportDescription {
+        SportDescription(name: name, sportClass: sportClass, sportPeriod: sportPeriod, sportDiscrete: sportDiscrete ?? .None, isController: isGestureController)
+    }
 }
 
 
@@ -122,6 +138,9 @@ struct StateDescription: Identifiable, Codable {
 extension Sport {
     
   static var newSport: Sport = Sport(name: "New")
+    
+    
+
   
   var sportFileName : String {
       let v:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
@@ -129,7 +148,7 @@ extension Sport {
   }
   
     var sportFullName: String {
-        "\(self.name)-\(self.sportClass.rawValue)-\(self.sportPeriod.rawValue)"
+        "\(self.name)-\(self.sportClass.rawValue)-\(self.sportPeriod.rawValue)-\(self.sportDiscrete?.rawValue ?? "None")"
     }
   
   var allStates: [SportState]  {

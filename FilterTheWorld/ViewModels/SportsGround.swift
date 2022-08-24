@@ -84,6 +84,18 @@ extension SportsGround {
 //        MARK: 此处加载的项目 从服务端加载时去掉图片等大资源。提升存储和网络效率
         Storage.allFiles(.documents).map{ url in
             Storage.retrieve(url: url, as: Sport.self)
+        }.sorted(by: { (first, second) in
+            if first.name <= second.name {
+                return true
+            }else {
+                return first.sportClass.rawValue <= second.sportClass.rawValue
+            }
+        })
+    }
+    
+    var allGrstureControllerSports : [Sport] {
+        sports.filter{ sport in
+            sport.isGestureController
         }
     }
     
@@ -91,9 +103,14 @@ extension SportsGround {
         sports = Storage.allFiles(.documents).map{ url in
             
             let sport = Storage.retrieve(url: url, as: Sport.self)
-            print("start camera update.........\(sport.name) - \(sport.scoreTimeLimit ?? 0)")
             return sport
             
-        }
+        }.sorted(by: { (first, second) in
+            if first.name <= second.name {
+                return true
+            }else {
+                return first.sportClass.rawValue <= second.sportClass.rawValue
+            }
+        })
     }
 }

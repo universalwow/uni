@@ -13,6 +13,8 @@ struct SportsGroundView: View {
     @State private var selectionSubmited: Int?
     @State private var lastScoreTime = 0.0
     @State private var currentState = 1
+    @State private var showControlGestureView = false
+    @State private var cameraIsOn = false
     
 
     @State var controlSport: Sport? = SportsGround.allSports.first(where: { sport in
@@ -31,21 +33,23 @@ struct SportsGroundView: View {
                                             .navigationTitle(Text("\(sport.name)-\(sport.sportClass.rawValue)-\(sport.sportPeriod.rawValue)"))
                                             .navigationBarTitleDisplayMode(.inline)
                                             .onAppear(perform: {
-//                                                cameraPlaying.startCamera()
+                                                if !cameraIsOn {
+                                                    cameraPlaying.startCamera()
+                                                }
                                                 sportGround.addSporter(sport: sport)
                                                 print("start camera.........\(sport.name)- \(sport.scoreTimeLimit)")
 
                                             })
                                             .onDisappear {
-                                                
+                                                if !cameraIsOn {
+                                                    cameraPlaying.stopCamera()
+                                                }
                                                 sportGround.saveSportReport(endTime: Date().timeIntervalSince1970)
                                                 if let controlSport = controlSport {
                                                     sportGround.addSporter(sport: controlSport)
                                                 }
-                                                
-//                                                cameraPlaying.startCamera()
-                                                print("start camera 1.........\(UIScreen.main.bounds.size.width)")
-                                                    },
+                                   
+                                            },
                                 tag: sportIndex, selection: $selectionSubmited
                             ) {
                                 CardView(card: Card(
@@ -65,21 +69,50 @@ struct SportsGroundView: View {
                         Rectangle().stroke(currentState == 3 ? Color.yellow : Color.red , lineWidth: 10)
                             .matchedGeometryEffect(id: selection, in: ns, isSource: false)
                     )
-                    Text("\(sportGround.sporters.first?.scoreTimes.count ?? -1)/\(imageAnalysis.cachedFrames.count)\n\(self.selection)").font(.largeTitle)
+                    Text("成绩数:\(sportGround.sporters.first?.scoreTimes.count ?? -1)/项目索引:\(self.selection)/阻塞帧:\(imageAnalysis.cachedFrames.count)").font(.largeTitle)
                 }.navigationBarTitle("")
-                    .navigationBarHidden(true)
-                Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
-                    .resizable()
-                    .frame(width: 50, height: 50)
-                    .padding()
-                    .foregroundColor(.yellow)
-                    .rotationEffect(self.loading ?  Angle(degrees: 0) : Angle(degrees: 360))
-                    .onTapGesture {
-                        withAnimation(Animation.linear(duration: 1)) {
-                            self.loading.toggle()
+                .navigationBarHidden(true)
+                HStack {
+                    Button(action: {
+                        showControlGestureView = true
+                    }, label: {
+                        Text("控制手势")
+                    }).confirmationDialog("控制手势", isPresented: $showControlGestureView, titleVisibility: .visible) {
+                        Button("\(cameraIsOn ? "关闭" : "打开") 摄像头") {
+                            cameraIsOn.toggle()
                         }
-                        sportGround.updateSports()
+                        
+                        ForEach(sportGround.allGrstureControllerSports, content: {
+                            sport in
+                            
+                            Button(action: {
+                                controlSport = sport
+                                sportGround.addSporter(sport: controlSport!)
+                            }, label: {
+                                Text("\(sport.sportFullName)\(controlSport?.id == sport.id ? ">" : "")")
+                                
+                            })
+                            
+                        })
+                        
+                        Button("取消", role: .cancel) { }
+
                     }
+                    
+                    Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                        .padding()
+                        .foregroundColor(.yellow)
+                        .rotationEffect(self.loading ?  Angle(degrees: 0) : Angle(degrees: 360))
+                        .onTapGesture {
+                            withAnimation(Animation.linear(duration: 1)) {
+                                self.loading.toggle()
+                            }
+                            sportGround.updateSports()
+                        }
+                }
+                
             }
             
             
@@ -88,22 +121,32 @@ struct SportsGroundView: View {
                 if !sportGround.sports.isEmpty {
                     self.selection = 0
                 }
-                controlSport = SportsGround.allSports.first(where: { sport in
-                    sport.isGestureController
-                })
+
                 if let controlSport = controlSport {
-                
                     sportGround.addSporter(sport: controlSport)
-
                 }
-                cameraPlaying.startCamera()
-                print("start camera 0.........")
+                if cameraIsOn {
+                    cameraPlaying.startCamera()
+                    print("start camera 0.........")
+                }
+                
 
+            })
+            .onChange(of: cameraIsOn, perform: { _ in
+                if cameraIsOn {
+                    cameraPlaying.startCamera()
+                }else{
+                    cameraPlaying.stopCamera()
+                }
+                
             })
 
             .onDisappear(perform: {
-                cameraPlaying.stopCamera()
-                print("stop camera 1.........")
+                if cameraIsOn {
+                    cameraPlaying.stopCamera()
+                    print("stop camera 1.........")
+                }
+               
             })
             .onChange(of: cameraPlaying.frame, perform: { frame in
                 if selectionSubmited != nil {

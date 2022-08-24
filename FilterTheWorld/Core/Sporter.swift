@@ -210,9 +210,7 @@ class Sporter: Identifiable {
     
     var allStateTimeHistory :[ScoreTime] = []
     
-    
-    var currentStateChange = false
-    
+    var nextStatePreview = SportState.startState
     var currentStateTime = StateTime(stateId: SportState.startState.id, time: 0, poseMap: [:], object: nil) {
         
         didSet {
@@ -320,53 +318,6 @@ class Sporter: Identifiable {
             if timerScoreTimes.count == state.keepTime!.toInt {
                 currentStateTime = StateTime(stateId: state.id, time: last_1.time, poseMap: last_1.poseMap, object: last_1.object)
             }
-            
-            
-//            if sport.sportClass == .TimeCounter && timerScoreTimes.count > 1, let state = sport.findFirstStateByStateId(stateId: timerScoreTimes.last!.stateId) {
-//                    if sport.sportPeriod == .Continuous {
-//                        // 如果是连续的 则判断和上一个状态一样的时间间隔
-//                        let last_1 = timerScoreTimes.last!
-//                        let last_2 = timerScoreTimes[timerScoreTimes.count - 2]
-//
-//                        if last_2.stateId == last_1.stateId && last_1.time - last_2.time > state.checkCycle! + 0.5 {
-//
-//                            while timerScoreTimes.count > 1 && timerScoreTimes[timerScoreTimes.count - 2].stateId == state.id {
-//                                timerScoreTimes.remove(at: timerScoreTimes.count - 2)
-//                            }
-//                        }
-//                    }
-//
-//                    if timerScoreTimes.count == state.keepTime!.toInt {
-//                        if timerScoreTimes[timerScoreTimes.count - state.keepTime!.toInt..<timerScoreTimes.count].allSatisfy({ sportScore in
-//                            sportScore.stateId == state.id
-//                        }) {
-//                            let last_1 = timerScoreTimes.last!
-//                            currentStateTime = StateTime(stateId: state.id, time: last_1.time, poseMap: last_1.poseMap, object: last_1.object)
-//
-//                        }
-//                    }
-//
-//            } else if sport.sportClass == .Timer  && !timerScoreTimes.isEmpty, let state = sport.findFirstStateByStateId(stateId: timerScoreTimes.last!.stateId) {
-//
-//                sport.scoreStateSequence.forEach({ _scoreStateSequence in
-//                    if stateTimeHistory.count >= _scoreStateSequence.count {
-//                        let allStateSatisfy = _scoreStateSequence.indices.allSatisfy{ index in
-//                            _scoreStateSequence[index] == stateTimeHistory[index + stateTimeHistory.count - _scoreStateSequence.count].stateId
-//                        }
-//
-//                        if allStateSatisfy {
-//                            // 检查状态改变后是否满足多帧条件 决定是否计分
-//                            if sport.scoreStateSequence[0].contains(state.id) {
-//                                scoreTimes.append(timerScoreTimes.last!)
-//                            }
-//
-//                        }
-//
-//                    }
-//
-//                })
-//
-//            }
         }
 
     }
@@ -418,6 +369,7 @@ class Sporter: Identifiable {
                         self.timerScoreTimes.append(
                             ScoreTime(stateId: state.id, time: currentTime, vaild: true, poseMap: poseMap, object: object)
                         )
+                        nextStatePreview = state
                     }
                     
                     timer.invalidate()
