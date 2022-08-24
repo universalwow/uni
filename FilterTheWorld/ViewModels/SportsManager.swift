@@ -7,7 +7,7 @@ import SwiftUI
 
 
 class SportsManager: ObservableObject {
-    @Published var sports:[Sport] = SportsManager.allSports
+    @Published var sports:[Sport] = SportsGround.allSports
     
     // 以下属性只能用于查询 不能用作存储
     var currentSportId: UUID?
@@ -39,11 +39,11 @@ class SportsManager: ObservableObject {
 extension SportsManager {
     // MARK: 计算变量
     
-    static var allSports: [Sport] {
-        Storage.allFiles(.documents).map{ url in
-            Storage.retrieve(url: url, as: Sport.self)
-        }
-    }
+//    static var allSports: [Sport] {
+//        Storage.allFiles(.documents).map{ url in
+//            Storage.retrieve(url: url, as: Sport.self)
+//        }
+//    }
     
     static var newSport: Sport {
         Sport(name: "I am Newer")

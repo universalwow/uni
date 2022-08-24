@@ -85,11 +85,11 @@ extension SportsGround {
         Storage.allFiles(.documents).map{ url in
             Storage.retrieve(url: url, as: Sport.self)
         }.sorted(by: { (first, second) in
-            if first.name <= second.name {
-                return true
-            }else {
+            if first.name == second.name {
                 return first.sportClass.rawValue <= second.sportClass.rawValue
             }
+            return first.name < second.name
+            
         })
     }
     
@@ -106,11 +106,13 @@ extension SportsGround {
             return sport
             
         }.sorted(by: { (first, second) in
-            if first.name <= second.name {
-                return true
-            }else {
+            
+            
+            if first.name == second.name {
                 return first.sportClass.rawValue <= second.sportClass.rawValue
             }
+            return first.name < second.name
+            
         })
     }
 }
