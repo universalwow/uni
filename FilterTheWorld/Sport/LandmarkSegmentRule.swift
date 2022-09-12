@@ -35,14 +35,16 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
     // 10 - 30 340-380
     // 角度
     
-    var angle:[LandmarkSegmentAngle] = []
+    var landmarkSegmentAngle:[LandmarkSegmentAngle] = []
     // 相对长度
-    var length: [LandmarkSegmentLength] = []
+    var landmarkSegmentLength: [LandmarkSegmentLength] = []
     
     var angleToLandmarkSegment: [AngleToLandmarkSegment] = []
+    var landmarkSegmentToStateAngle: [LandmarkSegmentToStateAngle] = []
+    var landmarkSegmentToStateDistance: [LandmarkSegmentToStateDistance] = []
     
     func firstAngleIndexById(id: UUID) -> Int? {
-        angle.firstIndex(where: { _angle in
+        landmarkSegmentAngle.firstIndex(where: { _angle in
             _angle.id == id
         })
     }
@@ -53,26 +55,22 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         })
     }
     
-    func firstLandmarkSegmentLengthIndexById(id: UUID) -> Int? {
-        length.firstIndex(where: { _length in
-            _length.id == id
-        })
-    }
+
     
     mutating func updateRuleLandmarkSegmentAngle(warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, id: UUID) {
         if let angleIndex = self.firstAngleIndexById(id: id) {
-            angle[angleIndex].warning.content = warningContent
-            angle[angleIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            angle[angleIndex].warning.delayTime = delayTime
-            angle[angleIndex].lowerBound = lowerBound
-            angle[angleIndex].upperBound = upperBound
+            landmarkSegmentAngle[angleIndex].warning.content = warningContent
+            landmarkSegmentAngle[angleIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            landmarkSegmentAngle[angleIndex].warning.delayTime = delayTime
+            landmarkSegmentAngle[angleIndex].lowerBound = lowerBound
+            landmarkSegmentAngle[angleIndex].upperBound = upperBound
         }
         
     }
     
     mutating func updateRuleAngleToLandmarkSegment(fromLandmarkSegment: LandmarkSegment, toLandmarkSegment: LandmarkSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
         if let angleIndex = self.firstAngleToLandmarkSegmentIndexById(id: id) {
-  
+            
             angleToLandmarkSegment[angleIndex].warning.content = warningContent
             angleToLandmarkSegment[angleIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             angleToLandmarkSegment[angleIndex].warning.delayTime = delayTime
@@ -86,46 +84,111 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         
     }
     
+    func firstLandmarkSegmentLengthIndexById(id: UUID) -> Int? {
+        landmarkSegmentLength.firstIndex(where: { _length in
+            _length.id == id
+        })
+    }
+    
     mutating func updateRuleLandmarkSegmentLength(fromLandmarkSegment: LandmarkSegment, fromAxis: CoordinateAxis, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
         if let lengthIndex = self.firstLandmarkSegmentLengthIndexById(id: id) {
             
-            length[lengthIndex].warning.content = warningContent
-            length[lengthIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            length[lengthIndex].warning.delayTime = delayTime
+            landmarkSegmentLength[lengthIndex].warning.content = warningContent
+            landmarkSegmentLength[lengthIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+            landmarkSegmentLength[lengthIndex].warning.delayTime = delayTime
             
-            length[lengthIndex].lowerBound = lowerBound
-            length[lengthIndex].upperBound = upperBound
+            landmarkSegmentLength[lengthIndex].lowerBound = lowerBound
+            landmarkSegmentLength[lengthIndex].upperBound = upperBound
             
-            length[lengthIndex].from = LandmarkSegmentToAxis(landmarkSegment: fromLandmarkSegment, axis: fromAxis)
-            length[lengthIndex].to = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
+            landmarkSegmentLength[lengthIndex].from = LandmarkSegmentToAxis(landmarkSegment: fromLandmarkSegment, axis: fromAxis)
+            landmarkSegmentLength[lengthIndex].to = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
         }
         
     }
     
-    
-    
-    func angleSatisfy(angleRange: LandmarkSegmentAngle, poseMap: PoseMap) -> Bool {
-        return angleRange.satisfy(poseMap: poseMap)
+    func firstLandmarkSegmentToStateAngleIndexById(id: UUID) -> Int? {
+        landmarkSegmentToStateAngle.firstIndex(where: { _angle in
+            _angle.id == id
+            
+        })
     }
     
-    func angleToLandmarkSatisfy(angleToLandmarkSegment: AngleToLandmarkSegment, poseMap: PoseMap) -> Bool {
-        
-        return angleToLandmarkSegment.satisfy(poseMap: poseMap)
+    mutating func updateRuleLandmarkSegmentToStateAngle(
+        fromLandmarkSegment: LandmarkSegment,
+        toStateId: Int,
+        isRelativeToExtremeDirection: Bool,
+        extremeDirection: ExtremeDirection,
+        toStateLandmarkSegment: LandmarkSegment,
+        lowerBound: Double, upperBound: Double,
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+            if let index = self.firstLandmarkSegmentToStateAngleIndexById(id: id) {
+                
+                landmarkSegmentToStateAngle[index].warning.content = warningContent
+                landmarkSegmentToStateAngle[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+                landmarkSegmentToStateAngle[index].warning.delayTime = delayTime
+                
+                landmarkSegmentToStateAngle[index].lowerBound = lowerBound
+                landmarkSegmentToStateAngle[index].upperBound = upperBound
+                
+                landmarkSegmentToStateAngle[index].fromLandmarkSegment =  fromLandmarkSegment
+                landmarkSegmentToStateAngle[index].toLandmarkSegment =  toStateLandmarkSegment
+                landmarkSegmentToStateAngle[index].toStateId = toStateId
+                landmarkSegmentToStateAngle[index].isRelativeToExtremeDirection = isRelativeToExtremeDirection
+                landmarkSegmentToStateAngle[index].extremeDirection = extremeDirection
+                
+            }
+            
+        }
+    
+    func firstLandmarkSegmentToStateDistanceIndexById(id: UUID) -> Int? {
+        landmarkSegmentToStateDistance.firstIndex(where: { _distance in
+            _distance.id == id
+            
+        })
     }
     
-    func lengthSatisfy(relativeDistance: LandmarkSegmentLength, poseMap: PoseMap) -> Bool {
-        return relativeDistance.satisfy(poseMap: poseMap)
-    }
+    mutating func updateRuleLandmarkSegmentToStateDistance(
+        fromAxis: CoordinateAxis,
+        fromLandmarkSegment: LandmarkSegment,
+        toStateId: Int,
+        isRelativeToExtremeDirection: Bool,
+        extremeDirection: ExtremeDirection,
+        toStateLandmarkSegment: LandmarkSegment,
+        lowerBound: Double, upperBound: Double,
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+            if let index = self.firstLandmarkSegmentToStateDistanceIndexById(id: id) {
+                
+                landmarkSegmentToStateDistance[index].warning.content = warningContent
+                landmarkSegmentToStateDistance[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+                landmarkSegmentToStateDistance[index].warning.delayTime = delayTime
+                
+                landmarkSegmentToStateDistance[index].lowerBound = lowerBound
+                landmarkSegmentToStateDistance[index].upperBound = upperBound
+                
+                landmarkSegmentToStateDistance[index].fromAxis =  fromAxis
+                landmarkSegmentToStateDistance[index].fromLandmarkSegment =  fromLandmarkSegment
+                landmarkSegmentToStateDistance[index].toLandmarkSegment =  toStateLandmarkSegment
+                landmarkSegmentToStateDistance[index].toStateId = toStateId
+                landmarkSegmentToStateDistance[index].isRelativeToExtremeDirection = isRelativeToExtremeDirection
+                landmarkSegmentToStateDistance[index].extremeDirection = extremeDirection
+                
+            }
+            
+        }
+    
+    
+    
+    
     
     
     // 是否满足， 收集提醒， 满足的数目， 总规则数
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         // 单帧
-
         
-        let lengthSatisfys = length.reduce((true, Set<Warning>(), 0, 0), {result, next in
-            let satisfy = self.lengthSatisfy(relativeDistance: next, poseMap: poseMap)
-
+        
+        let landmarkSegmentLengthSatisfys = landmarkSegmentLength.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            let satisfy = next.satisfy(poseMap: poseMap)
+            
             var newWarnings = result.1
             
             if next.warning.triggeredWhenRuleMet && satisfy {
@@ -140,8 +203,8 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
                     result.2 + 1)
         })
         
-        let angleSatisfys = angle.reduce((true, Set<Warning>(), 0, 0), {result, next in
-            let satisfy = self.angleSatisfy(angleRange: next, poseMap: poseMap)
+        let landmarkSegmentAngleSatisfys = landmarkSegmentAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            let satisfy = next.satisfy(poseMap: poseMap)
             var newWarnings = result.1
             
             if next.warning.triggeredWhenRuleMet && satisfy {
@@ -158,8 +221,44 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         
         let angleToLandmarkSegmentSatisfys = angleToLandmarkSegment.reduce((true, Set<Warning>(), 0, 0), {result, next in
             
-            let satisfy = self.angleToLandmarkSatisfy(angleToLandmarkSegment: next, poseMap: poseMap)
-
+            let satisfy = next.satisfy(poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy,
+                    newWarnings,
+                    satisfy ? result.2 + 1 : result.2,
+                    result.2 + 1)
+        })
+        
+        let landmarkSegmentToStateAngleSatisfys = landmarkSegmentToStateAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            
+            let satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy,
+                    newWarnings,
+                    satisfy ? result.2 + 1 : result.2,
+                    result.2 + 1)
+        })
+        
+        let landmarkSegmentToStateDistanceSatisfys = landmarkSegmentToStateDistance.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            
+            let satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            
             var newWarnings = result.1
             
             if next.warning.triggeredWhenRuleMet && satisfy {
@@ -175,10 +274,10 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         })
         
         
-        return (lengthSatisfys.0 && angleSatisfys.0 && angleToLandmarkSegmentSatisfys.0,
-         lengthSatisfys.1.union(angleSatisfys.1).union(angleToLandmarkSegmentSatisfys.1),
-         lengthSatisfys.2 + angleSatisfys.2 + angleToLandmarkSegmentSatisfys.2,
-         lengthSatisfys.3 + angleSatisfys.3 + angleToLandmarkSegmentSatisfys.3)
+        return (landmarkSegmentLengthSatisfys.0 && landmarkSegmentAngleSatisfys.0 && angleToLandmarkSegmentSatisfys.0 && landmarkSegmentToStateAngleSatisfys.0 && landmarkSegmentToStateDistanceSatisfys.0,
+                landmarkSegmentLengthSatisfys.1.union(landmarkSegmentAngleSatisfys.1).union(angleToLandmarkSegmentSatisfys.1).union(landmarkSegmentToStateAngleSatisfys.1).union(landmarkSegmentToStateDistanceSatisfys.1),
+                landmarkSegmentLengthSatisfys.2 + landmarkSegmentAngleSatisfys.2 + angleToLandmarkSegmentSatisfys.2 + landmarkSegmentToStateAngleSatisfys.2 + landmarkSegmentToStateDistanceSatisfys.2,
+                landmarkSegmentLengthSatisfys.3 + landmarkSegmentAngleSatisfys.3 + angleToLandmarkSegmentSatisfys.3 + landmarkSegmentToStateAngleSatisfys.3 + landmarkSegmentToStateDistanceSatisfys.3)
     }
     
     

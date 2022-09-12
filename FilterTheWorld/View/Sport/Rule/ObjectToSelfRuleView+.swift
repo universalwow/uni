@@ -28,7 +28,7 @@ struct ObjectToSelfRuleView: View {
     }
     
     func updateRemoteData() {
-        sportManager.updateRuleObjectToSelf(direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToSelf.id)
+//        sportManager.updateRuleObjectToSelf(direction: direction, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToSelf.id)
 
     }
     
@@ -40,7 +40,7 @@ struct ObjectToSelfRuleView: View {
                 Text("相对状态位移")
                 Spacer()
                 Button(action: {
-                    sportManager.removeRuleObjectToSelf(id: objectToSelf.id)
+//                    sportManager.removeRuleObjectToSelf(id: objectToSelf.id)
 
                 }) {
                     Text("删除")
@@ -109,14 +109,14 @@ struct ObjectToSelfRuleView: View {
             }
         }
         .onAppear{
-            let objectToSelf = sportManager.getRuleObjectToSelf(id: objectToSelf.id)
-            warningContent = objectToSelf.warning.content
-            triggeredWhenRuleMet = objectToSelf.warning.triggeredWhenRuleMet
-            delayTime = objectToSelf.warning.delayTime
-            
-            direction = objectToSelf.toDirection
-            xLowerBound = objectToSelf.xLowerBound
-            yLowerBound = objectToSelf.yLowerBound
+//            let objectToSelf = sportManager.getRuleObjectToSelf(id: objectToSelf.id)
+//            warningContent = objectToSelf.warning.content
+//            triggeredWhenRuleMet = objectToSelf.warning.triggeredWhenRuleMet
+//            delayTime = objectToSelf.warning.delayTime
+//            
+//            direction = objectToSelf.toDirection
+//            xLowerBound = objectToSelf.xLowerBound
+//            yLowerBound = objectToSelf.yLowerBound
             
         }
     }

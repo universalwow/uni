@@ -221,11 +221,11 @@ class Sporter: Identifiable {
                 stateTimeHistory.append(currentStateTime)
 //                print("state change time history \(currentStateTime.stateId) \(currentStateTime.time)")
                 // 移除无用的前置序列
-                if stateTimeHistory.count > sport.scoreStateSequence.map { stateIds in
-                    stateIds.count
-                }.max()! {
-                    stateTimeHistory.remove(at: 0)
-                }
+//                if !sport.scoreStateSequence.isEmpty && stateTimeHistory.count > sport.scoreStateSequence.map { stateIds in
+//                    stateIds.count
+//                }.max()! {
+//                    stateTimeHistory.remove(at: 0)
+//                }
                 
                 
                 sport.scoreStateSequence.forEach({ _scoreStateSequence in
@@ -236,9 +236,14 @@ class Sporter: Identifiable {
           
                         if allStateSatisfy {
                             // 检查状态改变后是否满足多帧条件 决定是否计分
-//                            let state = sport.findFirstStateByStateId(stateId: currentStateTime.stateId)!
-                            scoreTimes.append(contentsOf: timerScoreTimes)
-//                            scoreTimes.append(contentsOf: timerScoreTimes[timerScoreTimes.count - state.keepTime!.toInt..<timerScoreTimes.count])
+                            if sport.sportClass == .Counter {
+                                scoreTimes.append(
+                                    ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
+                                )
+
+                            }else {
+                                scoreTimes.append(contentsOf: timerScoreTimes)
+                            }
 
                         }
                         
@@ -249,7 +254,6 @@ class Sporter: Identifiable {
                 
                 if currentStateTime.stateId != SportState.readyState.id {
                     self.onStateChange()
-
                 }
             }
             
@@ -267,7 +271,7 @@ class Sporter: Identifiable {
                 return
             }
             
-            stateTimeHistory = [stateTimeHistory.last!]
+//            stateTimeHistory = [stateTimeHistory.last!]
 
         }
     }
@@ -607,7 +611,7 @@ class Sporter: Identifiable {
                     Warning(content: "开始\(sport.name)", triggeredWhenRuleMet: true, delayTime: sport.warningDelay)
                 ])
                 
-            }else {
+            } else {
                 let allRulesSatisfySorted = allRulesSatisfy.sorted(by: {($0).2 >= ($1).2})
                 if allRulesSatisfySorted.count > 1 && allRulesSatisfySorted[0].2 > allRulesSatisfySorted[1].2 && !allRulesSatisfySorted[0].0 {
                     allCurrentFrameWarnings = allCurrentFrameWarnings.union(allRulesSatisfySorted[0].1)

@@ -31,7 +31,7 @@ enum RuleType: String, Identifiable, CaseIterable {
     case SCORE, VIOLATE
 }
 
-enum RuleClass: String, Identifiable, CaseIterable, Codable {
+enum RuleClass: String, Identifiable, CaseIterable, Codable, Equatable {
     var id: String {
         self.rawValue
     }
@@ -204,7 +204,7 @@ struct LandmarkToState: Identifiable, Codable {
 }
 
 
-struct LandmarkToStateExtreme: Identifiable, Codable {
+struct LandmarkToStateDistance: Identifiable, Codable {
     var id = UUID()
     var lowerBound:Double = 0
     var upperBound:Double = 0
@@ -214,7 +214,6 @@ struct LandmarkToStateExtreme: Identifiable, Codable {
             if toStateId != oldValue {
                 initBound()
             }
-            
         }
     }
     //相对
@@ -382,6 +381,116 @@ struct LandmarkToStateExtreme: Identifiable, Codable {
 }
 
 
+
+struct LandmarkToStateAngle: Identifiable, Codable {
+    var id = UUID()
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+    
+    var toStateId:Int {
+        didSet {
+            if toStateId != oldValue {
+                initBound()
+            }
+        }
+    }
+    //相对
+    var fromLandmark: Landmark
+    
+    var toLandmark: Landmark
+    
+    var warning:Warning
+    
+    var isRelativeToExtremeDirection = false
+    var extremeDirection: ExtremeDirection = .MinX
+    
+    init(toStateId: Int, fromLandmark: Landmark, toLandmark: Landmark, warning: Warning) {
+        self.toStateId = toStateId
+        self.fromLandmark = fromLandmark
+        self.toLandmark = toLandmark
+        self.warning = warning
+        
+        initBound()
+    }
+    
+    var range: Range<Int> {
+        if lowerBound < upperBound {
+            return lowerBound.toInt..<upperBound.toInt
+        }else {
+            return lowerBound.toInt..<(upperBound + 360).toInt
+        }
+    }
+    
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromLandmark = self.fromLandmark.landmarkType.landmark(poseMap: poseMap)
+            var toLandmark = Landmark(position: Point3D.zero, landmarkType: fromLandmark.landmarkType)
+            
+            
+            if isRelativeToExtremeDirection {
+                switch extremeDirection {
+                    
+                    case .MinX:
+                    toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minX
+                    case .MinY:
+                    toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minY
+
+                    case .MaxX:
+                    toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxX
+
+                    case .MaxY:
+                        toLandmark.position = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxY
+                    
+
+                    case .MinX_MinY:
+                        toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minX.x
+                        toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minY.y
+
+                    case .MinX_MaxY:
+                        toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minX.x
+                        toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxY.y
+
+                    case .MaxX_MinY:
+                    toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxX.x
+                    toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.minY.y
+
+                    case .MaxX_MaxY:
+                    toLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxX.x
+                    toLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmark.landmarkType]!.maxY.y
+
+                    }
+                
+            }else {
+                toLandmark = self.fromLandmark.landmarkType.landmark(
+                    poseMap: toStateTime.poseMap
+                )
+            }
+            
+            
+            let landmarkSegment = LandmarkSegment(startLandmark: toLandmark, endLandmark: fromLandmark)
+            
+            return range.contains(Int(landmarkSegment.angle2d))
+
+            
+        } else {
+            return true
+        }
+    }
+    
+    mutating func initBound() {
+        let fromSegment = LandmarkSegment(startLandmark: toLandmark, endLandmark: fromLandmark)
+        let angle = fromSegment.angle2d
+        self.lowerBound = angle
+        self.upperBound = angle
+    }
+    
+}
+
+
 // 关节点相对自身位移
 
 struct LandmarkToSelf: Identifiable, Codable {
@@ -492,7 +601,7 @@ struct LandmarkToSelf: Identifiable, Codable {
 
 
 
-struct ObjectToStateExtreme: Identifiable, Codable {
+struct ObjectToStateDistance: Identifiable, Codable {
     var id = UUID()
     var lowerBound:Double = 0
     var upperBound:Double = 0
@@ -687,6 +796,142 @@ struct ObjectToStateExtreme: Identifiable, Codable {
         
         lowerBound = bound
         upperBound = bound
+        
+        
+    }
+    
+}
+
+
+
+struct ObjectToStateAngle: Identifiable, Codable {
+    var id = UUID()
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+    
+    var toStateId:Int {
+        didSet {
+            if toStateId != oldValue {
+                initBound()
+            }
+            
+        }
+    }
+    
+    var fromPosition: ObjectPositionPoint {
+        didSet {
+            if fromPosition.id != oldValue.id ||
+                fromPosition.position.id != oldValue.position.id || fromPosition.axis != oldValue.axis {
+                initBound()
+            }
+            
+        }
+    }
+    var toPosition: ObjectPositionPoint {
+        didSet {
+            if toPosition.id != oldValue.id ||
+                toPosition.position.id != oldValue.position.id {
+                initBound()
+            }
+        }
+    }
+    
+    
+    
+    var warning:Warning
+    
+    var isRelativeToExtremeDirection = false
+    var extremeDirection: ExtremeDirection = .MinX
+    
+    
+    init(toStateId: Int, fromPosition: ObjectPositionPoint, toPosition: ObjectPositionPoint, warning: Warning) {
+        self.toStateId = toStateId
+        self.fromPosition = fromPosition
+        self.toPosition = toPosition
+        self.warning = warning
+        
+        initBound()
+    }
+    
+    
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation) -> Bool {
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromObjectPoint = object.rect.pointOf(position: fromPosition.position).point2d
+            var toObjectPoint = Point2D.zero
+            
+            
+            if isRelativeToExtremeDirection {
+                switch extremeDirection {
+                    
+                    case .MinX:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minX.rect.pointOf(position: fromPosition.position).point2d
+                    case .MinY:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minY.rect.pointOf(position: fromPosition.position).point2d
+                    case .MaxX:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxX.rect.pointOf(position: fromPosition.position).point2d
+                    case .MaxY:
+                    toObjectPoint = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxY.rect.pointOf(position: fromPosition.position).point2d
+
+                    case .MinX_MinY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    case .MinX_MaxY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    case .MaxX_MinY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.minY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    case .MaxX_MaxY:
+                    toObjectPoint.x = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxX.rect.pointOf(position: fromPosition.position).point2d.x
+                    
+                    toObjectPoint.y = toStateTime.dynamicObjectsMaps[fromPosition.id]!.maxY.rect.pointOf(position: fromPosition.position).point2d.y
+
+                    }
+                
+            }else {
+                toObjectPoint = toStateTime.object!.rect.pointOf(position: fromPosition.position).point2d
+            }
+            
+            
+            let landmarkSegment = LandmarkSegment(startLandmark: Landmark(position: toObjectPoint.point3D, landmarkType: LandmarkType.None), endLandmark: Landmark(position: fromObjectPoint.point3D, landmarkType: LandmarkType.None))
+            
+            
+            return range.contains(Int(landmarkSegment.angle2d)) || range.contains(Int(landmarkSegment.angle2d + 360))
+
+            
+        }else {
+            return true
+        }
+    }
+    
+    var range: Range<Int> {
+        if lowerBound < upperBound {
+            return lowerBound.toInt..<upperBound.toInt
+        }else {
+            return lowerBound.toInt..<(upperBound + 360).toInt
+        }
+    }
+    
+ 
+    
+    
+    private mutating func initBound() {
+        
+        let angle = LandmarkSegment(startLandmark: Landmark(position: toPosition.point.point3D, landmarkType: .None),
+                                    endLandmark: Landmark(position: fromPosition.point.point3D, landmarkType: .None)).angle2d
+        
+        lowerBound = angle
+        upperBound = angle
         
         
     }
@@ -1236,7 +1481,7 @@ struct LandmarkSegmentAngle: Identifiable, Codable {
     
     func satisfy(poseMap: PoseMap) -> Bool {
         let landmarkSegment = landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        print("angle range - \(range) - \(Int(landmarkSegment.angle2d))")
+//        print("angle range - \(range) - \(Int(landmarkSegment.angle2d))")
         return range.contains(Int(landmarkSegment.angle2d)) || range.contains(Int(landmarkSegment.angle2d + 360))
     }
     
@@ -1245,6 +1490,386 @@ struct LandmarkSegmentAngle: Identifiable, Codable {
         self.lowerBound = angle
         self.upperBound = angle
     }
+}
+
+struct LandmarkSegmentToStateAngle: Identifiable, Codable {
+    var id = UUID()
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+    
+    var toStateId:Int {
+        didSet {
+            if toStateId != oldValue {
+                initBound()
+            }
+        }
+    }
+    //相对
+    var fromLandmarkSegment: LandmarkSegment
+    
+    var toLandmarkSegment: LandmarkSegment
+    
+    var warning:Warning
+    
+    var isRelativeToExtremeDirection = false
+    var extremeDirection: ExtremeDirection = .MinX
+    
+    init(toStateId: Int, fromLandmarkSegment: LandmarkSegment, toLandmarkSegment: LandmarkSegment, warning: Warning) {
+        self.toStateId = toStateId
+        self.fromLandmarkSegment = fromLandmarkSegment
+        self.toLandmarkSegment = toLandmarkSegment
+        self.warning = warning
+        
+        initBound()
+    }
+    
+    var range: Range<Double> {
+        lowerBound..<upperBound
+    }
+    
+    
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+            
+            
+            var toLandmarkSegment = LandmarkSegment(
+                startLandmark: Landmark(position: Point3D.zero, landmarkType: fromLandmarkSegment.startLandmark.landmarkType),
+                endLandmark: Landmark(position: Point3D.zero, landmarkType: fromLandmarkSegment.endLandmark.landmarkType)
+            )
+            
+            
+            if isRelativeToExtremeDirection {
+                switch extremeDirection {
+                    
+                    case .MinX:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX
+
+                    case .MinY:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY
+
+                    case .MaxX:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX
+
+                    case .MaxY:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY
+                    
+
+                    case .MinX_MinY:
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY.y
+
+    
+
+                    case .MinX_MaxY:
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY.y
+
+
+                    case .MaxX_MinY:
+                    
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY.y
+
+
+
+                    case .MaxX_MaxY:
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY.y
+
+
+                    }
+                
+            }else {
+                
+                toLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: toStateTime.poseMap)
+
+            }
+            
+            return range.contains(fromLandmarkSegment.angle2d - toLandmarkSegment.angle2d) || range.contains(fromLandmarkSegment.angle2d - toLandmarkSegment.angle2d + 360) || range.contains(fromLandmarkSegment.angle2d - toLandmarkSegment.angle2d - 360)
+
+            
+        } else {
+            return true
+        }
+    }
+    
+    mutating func initBound() {
+        
+        let angle = fromLandmarkSegment.angle2d - toLandmarkSegment.angle2d
+        self.lowerBound = angle
+        self.upperBound = angle
+    }
+    
+}
+
+
+struct LandmarkSegmentToStateDistance: Identifiable, Codable {
+    var id = UUID()
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+    
+    var toStateId:Int {
+        didSet {
+            if toStateId != oldValue {
+                initBound()
+            }
+        }
+    }
+    //相对
+    var fromAxis: CoordinateAxis {
+        didSet {
+            if fromAxis.rawValue != oldValue.rawValue {
+                initBound()
+            }
+        }
+    }
+    var fromLandmarkSegment: LandmarkSegment
+    
+    var toLandmarkSegment: LandmarkSegment
+    
+    var warning:Warning
+    
+    var isRelativeToExtremeDirection = false
+    var extremeDirection: ExtremeDirection = .MinX
+    
+    init(fromAxis: CoordinateAxis, toStateId: Int, fromLandmarkSegment: LandmarkSegment, toLandmarkSegment: LandmarkSegment, warning: Warning) {
+        self.fromAxis = fromAxis
+        self.toStateId = toStateId
+        self.fromLandmarkSegment = fromLandmarkSegment
+        self.toLandmarkSegment = toLandmarkSegment
+        self.warning = warning
+        
+        initBound()
+    }
+    
+    var range: Range<Double> {
+        lowerBound..<upperBound
+    }
+    
+    
+    func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+            
+            
+            var toLandmarkSegment = LandmarkSegment(
+                startLandmark: Landmark(position: Point3D.zero, landmarkType: fromLandmarkSegment.startLandmark.landmarkType),
+                endLandmark: Landmark(position: Point3D.zero, landmarkType: fromLandmarkSegment.endLandmark.landmarkType)
+            )
+            
+            
+            if isRelativeToExtremeDirection {
+                switch extremeDirection {
+                    
+                    case .MinX:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX
+
+                    case .MinY:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY
+
+                    case .MaxX:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX
+
+                    case .MaxY:
+                        toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY
+                        toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY
+                    
+
+                    case .MinX_MinY:
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY.y
+
+    
+
+                    case .MinX_MaxY:
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY.y
+
+
+                    case .MaxX_MinY:
+                    
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY.y
+
+
+
+                    case .MaxX_MaxY:
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY.y
+                    
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY.y
+
+
+                    }
+                
+            }else {
+                
+                toLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: toStateTime.poseMap)
+
+            }
+            
+            return ComplexRule.satisfyWithDirection(fromAxis: fromAxis, toAxis: fromAxis, range: range, fromSegment: fromLandmarkSegment, toSegment: toLandmarkSegment)
+
+
+            
+        } else {
+            return true
+        }
+    }
+    
+    private mutating func initBound() {
+        var bound = 0.0
+        switch fromAxis {
+        case .X:
+            bound = fromLandmarkSegment.distanceXWithDirection/toLandmarkSegment.distanceXWithDirection
+        case .Y:
+            bound = fromLandmarkSegment.distanceYWithDirection/toLandmarkSegment.distanceYWithDirection
+
+        case .XY:
+            bound = fromLandmarkSegment.distance/toLandmarkSegment.distance
+        }
+        lowerBound = bound
+        upperBound = bound
+    }
+    
+}
+
+
+
+
+struct DistanceToLandmark: Identifiable, Codable {
+    var id = UUID()
+    
+    var lowerBound:Double = 0
+    var upperBound:Double = 0
+
+    var from:LandmarkSegmentToAxis {
+        didSet {
+            if from.landmarkSegment.id != oldValue.landmarkSegment.id ||
+                from.axis.id != oldValue.axis.id {
+                initBound()
+            }
+            
+        }
+    }
+    var to: LandmarkSegmentToAxis {
+        didSet {
+            if to.landmarkSegment.id != oldValue.landmarkSegment.id ||
+                to.axis.id != oldValue.axis.id {
+                initBound()
+            }
+        }
+    }
+    
+    var warning:Warning
+    
+    init(from: LandmarkSegmentToAxis, to: LandmarkSegmentToAxis, warning: Warning) {
+        self.from = from
+        self.to = to
+        self.warning = warning
+        initBound()
+    }
+    
+    var range: Range<Double> {
+        lowerBound..<upperBound
+    }
+    
+    
+    func satisfy(poseMap: PoseMap) -> Bool {
+        
+        let fromSegment = self.from.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        let toSegment = self.to.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+        
+        return ComplexRule.satisfyWithDirection(fromAxis: self.from.axis,
+                                   toAxis: self.to.axis,
+                                   range: self.range,
+                                   fromSegment: fromSegment,
+                                   toSegment: toSegment)
+    }
+    
+ 
+    
+    private mutating func initBound() {
+        var bound = 0.0
+        switch (from.axis, to.axis) {
+        case (.X, .X):
+            bound = from.landmarkSegment.distanceXWithDirection/to.landmarkSegment.distanceX
+            
+            
+        case (.X, .Y):
+            bound = from.landmarkSegment.distanceXWithDirection/to.landmarkSegment.distanceY
+            
+            
+        case (.X, .XY):
+            bound = from.landmarkSegment.distanceXWithDirection/to.landmarkSegment.distance
+            
+            // from Y
+            
+        case (.Y, .X):
+            bound = from.landmarkSegment.distanceYWithDirection/to.landmarkSegment.distanceX
+            
+        case (.Y, .Y):
+            bound = from.landmarkSegment.distanceYWithDirection/to.landmarkSegment.distanceY
+            
+        case (.Y, .XY):
+            bound = from.landmarkSegment.distanceYWithDirection/to.landmarkSegment.distance
+            
+            
+            // from XY
+            
+        case (.XY, .X):
+            bound = from.landmarkSegment.distance/to.landmarkSegment.distanceX
+            
+        case (.XY, .Y):
+            bound = from.landmarkSegment.distance/to.landmarkSegment.distanceY
+            
+            
+        case (.XY, .XY):
+            bound = from.landmarkSegment.distance/to.landmarkSegment.distance
+            
+        }
+        lowerBound = bound
+        upperBound = bound
+    }
+    
 }
 
 
@@ -1262,7 +1887,7 @@ struct AngleToLandmark: Identifiable, Codable {
     }
     
     var landmarkSegment: LandmarkSegment {
-        LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
+        LandmarkSegment(startLandmark: toLandmark, endLandmark: fromLandmark)
     }
     var warning:Warning
 
@@ -1284,7 +1909,7 @@ struct AngleToLandmark: Identifiable, Codable {
     
     func satisfy(poseMap: PoseMap) -> Bool {
         let landmarkSegment = landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-        print("angle range - \(range) - \(Int(landmarkSegment.angle2d))")
+//        print("angle range - \(range) - \(Int(landmarkSegment.angle2d))")
         return range.contains(Int(landmarkSegment.angle2d)) || range.contains(Int(landmarkSegment.angle2d + 360))
     }
     
@@ -1414,15 +2039,7 @@ struct ComplexRules: Identifiable, Hashable, Codable {
         }
     }
     
-//    mutating func updateSportStateRule(editedRule: Ruler, ruleClass: Rule) {
-//
-//        if let index = firstIndexOfRule(editedRule: editedRule) {
-//            rules[index] = editedRule
-//        }else{
-//            rules.append(editedRule)
-//        }
-//
-//    }
+
     
     mutating func setupLandmarkArea(editedSportStateRule: ComplexRule, landmarkinArea: LandmarkInArea?) {
         if let index = firstIndexOfRule(editedRule: editedSportStateRule) {

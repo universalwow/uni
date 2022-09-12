@@ -2,8 +2,8 @@
 
 import SwiftUI
 
-struct ObjectToStateExtremeRuleView: View {
-    var objectToStateExtreme: ObjectToStateExtreme
+struct ObjectToStateDistanceRuleView: View {
+    var objectToStateDistance: ObjectToStateDistance
     
     @EnvironmentObject var sportManager: SportsManager
     
@@ -30,7 +30,7 @@ struct ObjectToStateExtremeRuleView: View {
  
     
     func updateLocalData() {
-        let length = sportManager.getRuleObjectToStateExtreme(id: objectToStateExtreme.id)
+        let length = sportManager.getRuleObjectToStateDistance(id: objectToStateDistance.id)
         lowerBound = length.lowerBound
         upperBound = length.upperBound
         
@@ -54,7 +54,7 @@ struct ObjectToStateExtremeRuleView: View {
     }
     
     func updateRemoteData() {
-        sportManager.updateRuleObjectToStateExtreme(fromAxis: fromAxis,
+        sportManager.updateRuleObjectToStateDistance(fromAxis: fromAxis,
                                                toStateId: toStateId,
                                                       fromPosition: fromObjectPosition,
                                                       isRelativeToObject: isRelativeToObject,
@@ -63,7 +63,7 @@ struct ObjectToStateExtremeRuleView: View {
                                                toLandmarkSegmentType: toLandmarkSegmentType,
                                                toAxis: toAxis,
                                                lowerBound: lowerBound, upperBound: upperBound,
-                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToStateExtreme.id)
+                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToStateDistance.id)
 
     }
     
@@ -73,7 +73,7 @@ struct ObjectToStateExtremeRuleView: View {
         VStack {
             
             HStack {
-                Text("物体自身(相对状态)位移")
+                Text("相对状态位移")
                 Spacer()
                 
                 Spacer()
@@ -102,7 +102,7 @@ struct ObjectToStateExtremeRuleView: View {
                 }.disabled(!isRelativeToExtremeDirection)
                 
                 Button(action: {
-                    sportManager.removeRuleObjectToStateExtreme(id: objectToStateExtreme.id)
+                    sportManager.removeRuleObjectToStateDistance(id: objectToStateDistance.id)
 
                 }) {
                     Text("删除")
@@ -226,7 +226,7 @@ struct ObjectToStateExtremeRuleView: View {
             }
         }
         .onAppear{
-            let length = sportManager.getRuleObjectToStateExtreme(id: objectToStateExtreme.id)
+            let length = sportManager.getRuleObjectToStateDistance(id: objectToStateDistance.id)
             
             fromAxis = length.fromPosition.axis
             fromObjectPosition = length.fromPosition.position

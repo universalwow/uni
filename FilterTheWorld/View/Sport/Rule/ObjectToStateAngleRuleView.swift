@@ -2,8 +2,8 @@
 
 import SwiftUI
 
-struct LandmarkToStateExtremeRuleView: View {
-    var landmarkToStateExtreme: LandmarkToStateExtreme
+struct ObjectToStateAngleRuleView: View {
+    var objectToStateAngle: ObjectToStateAngle
     
     @EnvironmentObject var sportManager: SportsManager
     
@@ -12,53 +12,35 @@ struct LandmarkToStateExtremeRuleView: View {
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
 
-    @State var fromAxis = CoordinateAxis.X
-    @State var toLandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
-    @State var toAxis = CoordinateAxis.X
+    @State var fromObjectPosition = ObjectPosition.middle
+
     
     @State var toStateId = SportState.startState.id
     @State var isRelativeToExtremeDirection = false
     @State var extremeDirection = ExtremeDirection.MinX
 
+
     @State var lowerBound: Double = 0.0
     @State var upperBound: Double = 0.0
     
-
  
     
     func updateLocalData() {
-        let length = sportManager.getRuleLandmarkToStateExtreme(id: landmarkToStateExtreme.id)
+        let length = sportManager.getRuleObjectToStateAngle(id: objectToStateAngle.id)
         lowerBound = length.lowerBound
         upperBound = length.upperBound
         
-        switch fromAxis {
-        case .X:
-            if lowerBound > 0 {
-                extremeDirection = .MinX
-            } else {
-                extremeDirection = .MaxX
-            }
-        case .Y:
-            if lowerBound > 0 {
-                extremeDirection = .MinY
-            } else {
-                extremeDirection = .MaxY
-            }
-        case .XY:
-            break
-        }
  
     }
     
     func updateRemoteData() {
-        sportManager.updateRuleLandmarkToStateExtreme(fromAxis: fromAxis,
+        sportManager.updateRuleObjectToStateAngle(
                                                toStateId: toStateId,
+                                                      fromPosition: fromObjectPosition,
                                                       isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                extremeDirection: extremeDirection,
-                                               toLandmarkSegmentType: toLandmarkSegmentType,
-                                               toAxis: toAxis,
                                                lowerBound: lowerBound, upperBound: upperBound,
-                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkToStateExtreme.id)
+                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToStateAngle.id)
 
     }
     
@@ -68,8 +50,9 @@ struct LandmarkToStateExtremeRuleView: View {
         VStack {
             
             HStack {
-                Text("关节自身(相对状态)位移")
+                Text("相对状态角度")
                 Spacer()
+                
                 
                 Toggle(isOn: $isRelativeToExtremeDirection.didSet { _ in
                     updateRemoteData()
@@ -88,7 +71,7 @@ struct LandmarkToStateExtremeRuleView: View {
                 }.disabled(!isRelativeToExtremeDirection)
                 
                 Button(action: {
-                    sportManager.removeRuleLandmarkToStateExtreme(id: landmarkToStateExtreme.id)
+                    sportManager.removeRuleObjectToStateAngle(id: objectToStateAngle.id)
 
                 }) {
                     Text("删除")
@@ -121,22 +104,22 @@ struct LandmarkToStateExtremeRuleView: View {
                 VStack {
 
                     
+                    
                     HStack {
-                        Text("当前轴")
-                        Picker("当前轴", selection: $fromAxis.didSet { _ in
-
+                        
+                        Text("位置")
+                        Picker("位置", selection: $fromObjectPosition.didSet{ _ in
                             updateRemoteData()
                             updateLocalData()
                             
                         }) {
-                            ForEach(CoordinateAxis.allCases) { axis in
-                                Text(axis.rawValue).tag(axis)
+                            ForEach(ObjectPosition.allCases) { position in
+                                Text(position.rawValue).tag(position)
                             }
                         }
                         
                         Text("相对状态")
                         Picker("相对状态", selection: $toStateId.didSet{ _ in
-                            print("相对状态-------\(toStateId)")
                             updateRemoteData()
                             updateLocalData()
                         }) {
@@ -144,30 +127,7 @@ struct LandmarkToStateExtremeRuleView: View {
                                 Text(state.name).tag(state.id)
                             }
                         }
-                        Spacer()
-
-                        Text("相对关节对")
-                        Picker("相对关节对", selection: $toLandmarkSegmentType.didSet{ _ in
-                            updateRemoteData()
-                            updateLocalData()
-                            
-                        }) {
-                            ForEach(LandmarkType.landmarkSegmentTypes) { landmarkSegmentType in
-                                Text(landmarkSegmentType.id).tag(landmarkSegmentType)
-                            }
-                        }
                         
-                        Text("/")
-                        Picker("相对轴", selection: $toAxis.didSet{ _ in
-                            updateRemoteData()
-                            updateLocalData()
-                        }) {
-                            ForEach(CoordinateAxis.allCases) { axis in
-                                Text(axis.rawValue).tag(axis)
-                            }
-                        }
-                    }
-                    HStack {
                         Text("最小值:")
                         TextField("最小值", value: $lowerBound, formatter: formatter) { flag in
                             if !flag {
@@ -200,14 +160,15 @@ struct LandmarkToStateExtremeRuleView: View {
             }
         }
         .onAppear{
-            let length = sportManager.getRuleLandmarkToStateExtreme(id: landmarkToStateExtreme.id)
+            let length = sportManager.getRuleObjectToStateAngle(id: objectToStateAngle.id)
+            
+            fromObjectPosition = length.fromPosition.position
+            
             warningContent = length.warning.content
             triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
             delayTime = length.warning.delayTime
                             
-            fromAxis = length.fromLandmarkToAxis.axis
-            toLandmarkSegmentType = length.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
-            toAxis = length.toLandmarkSegmentToAxis.axis
+
             toStateId = length.toStateId
             isRelativeToExtremeDirection = length.isRelativeToExtremeDirection
             extremeDirection = length.extremeDirection

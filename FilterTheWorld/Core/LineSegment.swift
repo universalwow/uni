@@ -29,9 +29,12 @@ struct LandmarkTypeSegment: Identifiable, Hashable, Codable {
 
 struct LandmarkSegment: Hashable, Identifiable, Equatable,  Codable {
     
-    var id: String
-    let startLandmark:Landmark
-    let endLandmark:Landmark
+    var id: String {
+        landmarkTypeSegmentString(startLandmarkType: startLandmark.landmarkType,
+                                            endLandmarkType: endLandmark.landmarkType)
+    }
+    var startLandmark:Landmark
+    var endLandmark:Landmark
     var selected:Bool = false
     var color:Color = .white
     var angleRange:Range<Int>?
@@ -51,8 +54,6 @@ struct LandmarkSegment: Hashable, Identifiable, Equatable,  Codable {
     init(startLandmark:Landmark, endLandmark:Landmark, color: Color) {
         self.startLandmark = startLandmark
         self.endLandmark = endLandmark
-        self.id = landmarkTypeSegmentString(startLandmarkType: startLandmark.landmarkType,
-                                            endLandmarkType: endLandmark.landmarkType)
         self.color = color
     }
 }

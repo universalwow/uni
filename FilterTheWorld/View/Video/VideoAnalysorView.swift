@@ -296,11 +296,16 @@ struct VideoAnalysorView: View {
                                     let ropes = imageAnalysis.sportData.frameData.objects.filter{ object in
                                         object.label == ObjectLabel.BASKETBALL.rawValue
                                     }
-                         
+                                    
+                                    let human = imageAnalysis.sportData.frameData.objects.filter{ object in
+                                        object.label == ObjectLabel.POSE.rawValue
+                                    }
+                                    
+                                    print("--------------object\(ropes)")
                                     
                                     if !sportGround.sporters.isEmpty && !poses.isEmpty {
                                         
-                                        sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
+                                        sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: human.first, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
                                         self.sportGround.objectWillChange.send()
                                     }
                                 }
@@ -360,24 +365,15 @@ struct VideoAnalysorView: View {
         .onChange(of: currentSportIndex) { _ in
             print("currentsport \(currentSportIndex)")
         }
-//        .onChange(of: self.scrollOffset) { newValue in
-//            if self.frameWidth > 0 &&  newValue >= 0 {
-//                videoManager.getFrame(time: newValue/self.frameWidth)
-//                let uiImage = UIImage(cgImage: videoManager.frame!, scale: 1,orientation: orientation).fixedOrientation()!
-//                imageAnalysis.imageAnalysis(image: uiImage, request: nil, currentTime: newValue/self.frameWidth)
-//                let poses = imageAnalysis.sportData.frameData.poses
-//                let ropes = imageAnalysis.objects.filter{ object in
-//                    object.label == ObjectLabel.BASKETBALL.rawValue
-//                }
-//                print("currentIndex-2 \(newValue/self.frameWidth)")
-//
-//                if !sportGround.sporters.isEmpty && !poses.isEmpty {
-//
-//                    sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: nil, frameSize: uiImage.size.point2d, currentTime: newValue/self.frameWidth)
-//                }
-//            }
-//
-//        }
+        .onChange(of: self.scrollOffset) { newValue in
+            if self.frameWidth > 0 &&  newValue >= 0 && stopAnalysis {
+                videoManager.getFrame(time: newValue/self.frameWidth)
+                let uiImage = UIImage(cgImage: videoManager.frame!, scale: 1,orientation: orientation).fixedOrientation()!
+                imageAnalysis.imageAnalysis(image: uiImage, request: nil, currentTime: newValue/self.frameWidth)
+    
+            }
+
+        }
         
         
     }

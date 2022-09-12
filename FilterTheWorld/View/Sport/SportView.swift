@@ -188,6 +188,7 @@ struct SportView: View {
         VStack {
             HStack {
                 Text("基础信息")
+                Text(":左/4 右/5 上/6 下/7 进入/8").opacity(isGestureController ? 0.8 : 0)
                 Spacer()
                 Toggle(isOn: $isGestureController.didSet { _ in
                     updateBasicMessage()
@@ -445,7 +446,7 @@ struct SportView: View {
                                 
                                 Button(action: {
                                     
-                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .SCORE, ruleClass: nil)
+                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .SCORE, ruleClass: .LandmarkSegment)
                                     self.editRuleFlag = true
                                 }) {
                                     Text("添加规则")
@@ -559,7 +560,8 @@ struct SportView: View {
 
                                 Button(action: {
 
-                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .VIOLATE, ruleClass: nil)
+                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
+                                    
                                     self.editRuleFlag = true
                                 }) {
                                     Text("添加规则")
@@ -581,6 +583,7 @@ struct SportView: View {
                                         Spacer()
                                         Button(action: {
                                             sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
+                                            ruleClass = .LandmarkSegment
 
                                             self.editRuleFlag = true
                                         }) {
@@ -600,6 +603,65 @@ struct SportView: View {
                                     LandmarkSegmentRuleDescriptionView(rule: Binding.constant(rule))
 
 
+                                }.background(Color.gray)
+                            }
+                            
+                            ForEach(scoreRules.landmarkRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则: \(rule.id)")
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .Landmark)
+                                            ruleClass = .Landmark
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .Landmark)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    LandmarkRuleDescriptionView(rule: Binding.constant(rule))
+                                }.background(Color.gray)
+                            }
+                            
+                            ForEach(scoreRules.observationRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则: \(rule.id)")
+                                        Spacer()
+                                        
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .Observation)
+                                            ruleClass = .Observation
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .Observation)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    ObservationRuleDescriptionView(rule: Binding.constant(rule))
                                 }.background(Color.gray)
                             }
                         }

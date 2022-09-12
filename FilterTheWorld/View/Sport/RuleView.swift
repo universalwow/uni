@@ -27,8 +27,6 @@ struct RuleView: View {
                             PosesViewForSetupRule(imageSize: pngImage.imageSize, viewSize: geometry.size)
                             ObjectsViewForSetupRule(imageSize: pngImage.imageSize, viewSize: geometry.size)
                             RectView(viewSize: geometry.size)
-                            
-                            
                         }
                         
                     }
@@ -84,12 +82,15 @@ struct RuleView: View {
             ruleClass = .Landmark
             sportManager.setCurrentSportStateRule(landmarkType: self.selectedLandmarkType, ruleClass: ruleClass)
         }
+//        .onChange(of: sportManager.currentSportStateRuleClass, perform: {
+//            ruleClass =
+//        })
 //        .onChange(of: self.selectedObject) { _ in
 //
 //        }
         .sheet(isPresented: self.$showSetupRule) {
             
-            switch ruleClass {
+            switch sportManager.currentSportStateRuleClass {
             case .LandmarkSegment:
                 SetupLandmarkSegmentRuleView()
                 
@@ -103,6 +104,7 @@ struct RuleView: View {
         }.toast(isPresenting: self.$showToast, duration: 2, tapToDismiss: false, offsetY: 0, alert: {
             AlertToast(displayMode: .alert, type: .error(.red), title: "请选择要设置的规则")
         })
+       
      
 //        .alert(isPresented: self.$showToast, content: {
 //            Alert(title: Text("请选择要设置的规则"))

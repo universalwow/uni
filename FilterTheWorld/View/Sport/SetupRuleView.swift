@@ -21,21 +21,30 @@ struct SetupLandmarkSegmentRuleView: View {
                     Button(action: {
                         sportManager.addRuleLandmarkSegmentAngle()
                     }) {
-                        Text("添加关节对角度规则")
+                        Text("关节对角度")
                     }
 
                     Button(action: {
                         sportManager.addRuleLandmarkSegmentLength()
                     }) {
-                        Text("添加关节对长度规则")
+                        Text("关节对长度")
                     }
 
                     Button(action: {
                         sportManager.addRuleAngleToLandmarkSegment()
                     }) {
-                        Text("添加相对关节对角度规则")
+                        Text("相对关节对角度")
                     }
-                    Button("取消", role: .cancel) {
+                    Button(action: {
+                        sportManager.addRuleLandmarkSegmentToStateAngle()
+                    }) {
+                        Text("关节对(相对状态)角度")
+                    }
+                    
+                    Button(action: {
+                        sportManager.addRuleLandmarkSegmentToStateDistance()
+                    }) {
+                        Text("关节对(相对状态)长度*")
                     }
                 }
                 
@@ -55,16 +64,23 @@ struct SetupLandmarkSegmentRuleView: View {
                         Divider()
                     }
                     
-         
                     ForEach(sportManager.getRuleAngleToLandmarkSegments()) { angle in
                         AngleToLandmarkSegmentRuleView(angle: angle)
                         Divider()
                     }
-
-                
                     
                     ForEach(sportManager.getRuleLandmarkSegmentLengths()) { length in
                         LandmarkSegmentLengthRuleView(landmarkSegmentLength: length)
+                        Divider()
+                    }
+                    
+                    ForEach(sportManager.getRuleLandmarkSegmentToStateAngles()) { angle in
+                        LandmarkSegmentToStateAngleRuleView(landmarkSegmentToStateAngle: angle)
+                        Divider()
+                    }
+                    
+                    ForEach(sportManager.getRuleLandmarkSegmentToStateDistances()) { distance in
+                        LandmarkSegmentToStateDistanceRuleView(landmarkSegmentToStateDistance: distance)
                         Divider()
                     }
 
@@ -93,38 +109,38 @@ struct SetupLandmarkRuleView: View {
                 Button("添加规则") {
                                 showingOptions = true
                 }.confirmationDialog("选择关节规则", isPresented: $showingOptions, titleVisibility: .visible) {
-//                        Button(action: {
-//                            sportManager.addRuleLandmarkToSelf()
-//                        }) {
-//                            Text("添加关节相对自身位移规则")
-//                        }
-//
-//                        Button(action: {
-//                            sportManager.addRuleLandmarkToState()
-//                        }) {
-//                            Text("添加关节自身(相对状态)位移规则")
-//                        }
+                    Button(action: {
+                        sportManager.addRuleLandmarkInArea()
+                    }) {
+                        Text("关节在区域内")
+                        
+                    }
+       
+                        Button(action: {
+                            sportManager.addRuleDistanceToLandmark()
+                        }) {
+                            Text("相对关节距离")
+                        }
                     
                     Button(action: {
                         sportManager.addRuleAngleToLandmark()
                     }) {
-                        Text("添加相对关节角度规则")
+                        Text("相对关节角度")
                     }
                     
                     Button(action: {
-                        sportManager.addRuleLandmarkToStateExtreme()
+                        sportManager.addRuleLandmarkToStateDistance()
                     }) {
-                        Text("添加关节自身(相对状态)位移规则")
+                        Text("关节自身(相对状态)位移")
+                    }
+                    
+                    Button(action: {
+                        sportManager.addRuleLandmarkToStateAngle()
+                    }) {
+                        Text("关节自身(相对状态)角度")
                     }
 
-                        Button(action: {
-                            sportManager.addRuleLandmarkInArea()
-                        }) {
-                            Text("添加关节在区域内规则")
-                        }
-                        Button("取消", role: .cancel) {
-                        }
-                    }
+                }
                 
                 Button(action: {
                     clearBackground.toggle()
@@ -136,30 +152,33 @@ struct SetupLandmarkRuleView: View {
             ScrollView(showsIndicators: false) {
                 VStack {
 
-//                    ForEach(sportManager.getRuleLandmarkToSelfs()) { landmarkToSelf in
-//                        LandmarkToSelfRuleView(landmarkToSelf: landmarkToSelf)
-//                        Divider()
-//                    }
-//
-//                    ForEach(sportManager.getRuleLandmarkToStates()) { landmarkToState in
-//                        LandmarkToStateRuleView(landmarkToState: landmarkToState)
-//                        Divider()
-//                    }
+                    
+                    ForEach(sportManager.getRuleLandmarkInAreas()) { landmarkInArea in
+                        LandmarkInAreaRuleView(landmarkInArea: landmarkInArea)
+                        Divider()
+                    }
+                    
+                    ForEach(sportManager.getRuleDistanceToLandmarks()) { distanceToLandmark in
+                        DistanceToLandmarkRuleView(distanceToLandmark: distanceToLandmark)
+                        Divider()
+                    }
                     
                     ForEach(sportManager.getRuleAngleToLandmarks()) { angleToLandmark in
                         AngleToLandmarkRuleView(angleToLandmark: angleToLandmark)
                         Divider()
                     }
                     
-                    ForEach(sportManager.getRuleLandmarkToStateExtremes()) { landmarkToStateExtreme in
-                        LandmarkToStateExtremeRuleView(landmarkToStateExtreme: landmarkToStateExtreme)
+                    ForEach(sportManager.getRuleLandmarkToStateDistances()) { landmarkToStateDistance in
+                        LandmarkToStateDistanceRuleView(landmarkToStateDistance: landmarkToStateDistance)
                         Divider()
                     }
                     
-                    ForEach(sportManager.getRuleLandmarkInAreas()) { landmarkInArea in
-                        LandmarkInAreaRuleView(landmarkInArea: landmarkInArea)
+                    ForEach(sportManager.getRuleLandmarkToStateAngles()) { landmarkToStateAngle in
+                        LandmarkToStateAngleRuleView(landmarkToStateAngle: landmarkToStateAngle)
                         Divider()
                     }
+                    
+               
                     
                     
                 }
@@ -192,23 +211,29 @@ struct SetupObservationRuleView: View {
                     Button(action: {
                         sportManager.addRuleObjectToLandmark()
                     }) {
-                        Text("添加物体相对关节点位置规则")
+                        Text("物体相对关节点位置")
                     }
 
                     Button(action: {
                         sportManager.addRuleObjectToObject()
                     }) {
-                        Text("添加物体相对物体位置规则")
+                        Text("物体相对物体位置")
                     }
 
                     Button(action: {
-                        sportManager.addRuleObjectToStateExtreme()
+                        sportManager.addRuleObjectToStateDistance()
                     }) {
-                        Text("添加物体位移(相对状态)规则")
+                        Text("物体位移(相对状态)")
                     }
                     
-                    Button("取消", role: .cancel) {
+                    Button(action: {
+                        sportManager.addRuleObjectToStateAngle()
+                    }) {
+                        Text("物体角度(相对状态)")
                     }
+                    
+                    
+
                 }
                 Button(action: {
                     clearBackground.toggle()
@@ -232,14 +257,13 @@ struct SetupObservationRuleView: View {
                         Divider()
                     }
                     
+                    ForEach(sportManager.getRuleObjectToStateDistances()) { objectToStateDistance in
+                        ObjectToStateDistanceRuleView(objectToStateDistance: objectToStateDistance)
+                        Divider()
+                    }
                     
-//                    ForEach(sportManager.getRuleObjectToSelfs()) { objectToSelf in
-//                        ObjectToSelfRuleView(objectToSelf: objectToSelf)
-//                        Divider()
-//                    }
-                    
-                    ForEach(sportManager.getRuleObjectToStateExtremes()) { objectToState in
-                        ObjectToStateExtremeRuleView(objectToStateExtreme: objectToState)
+                    ForEach(sportManager.getRuleObjectToStateAngles()) { objectToStateAngle in
+                        ObjectToStateAngleRuleView(objectToStateAngle: objectToStateAngle)
                         Divider()
                     }
                     

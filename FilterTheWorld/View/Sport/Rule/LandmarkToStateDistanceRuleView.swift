@@ -2,8 +2,8 @@
 
 import SwiftUI
 
-struct LandmarkToStateRuleView: View {
-    var landmarkToState: LandmarkToState
+struct LandmarkToStateDistanceRuleView: View {
+    var landmarkToStateDistance: LandmarkToStateDistance
     
     @EnvironmentObject var sportManager: SportsManager
     
@@ -17,6 +17,8 @@ struct LandmarkToStateRuleView: View {
     @State var toAxis = CoordinateAxis.X
     
     @State var toStateId = SportState.startState.id
+    @State var isRelativeToExtremeDirection = false
+    @State var extremeDirection = ExtremeDirection.MinX
 
     @State var lowerBound: Double = 0.0
     @State var upperBound: Double = 0.0
@@ -25,19 +27,38 @@ struct LandmarkToStateRuleView: View {
  
     
     func updateLocalData() {
-//        let length = sportManager.getRuleLandmarkToState(id: landmarkToState.id)
-//        lowerBound = length.lowerBound
-//        upperBound = length.upperBound
+        let length = sportManager.getRuleLandmarkToStateDistance(id: landmarkToStateDistance.id)
+        lowerBound = length.lowerBound
+        upperBound = length.upperBound
+        
+        switch fromAxis {
+        case .X:
+            if lowerBound > 0 {
+                extremeDirection = .MinX
+            } else {
+                extremeDirection = .MaxX
+            }
+        case .Y:
+            if lowerBound > 0 {
+                extremeDirection = .MinY
+            } else {
+                extremeDirection = .MaxY
+            }
+        case .XY:
+            break
+        }
  
     }
     
     func updateRemoteData() {
-//        sportManager.updateRuleLandmarkToState(fromAxis: fromAxis,
-//                                               toStateId: toStateId,
-//                                               toLandmarkSegmentType: toLandmarkSegmentType,
-//                                               toAxis: toAxis,
-//                                               lowerBound: lowerBound, upperBound: upperBound,
-//                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkToState.id)
+        sportManager.updateRuleLandmarkToStateDistance(fromAxis: fromAxis,
+                                               toStateId: toStateId,
+                                                      isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                                               extremeDirection: extremeDirection,
+                                               toLandmarkSegmentType: toLandmarkSegmentType,
+                                               toAxis: toAxis,
+                                               lowerBound: lowerBound, upperBound: upperBound,
+                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkToStateDistance.id)
 
     }
     
@@ -49,8 +70,25 @@ struct LandmarkToStateRuleView: View {
             HStack {
                 Text("关节自身(相对状态)位移")
                 Spacer()
+                
+                Toggle(isOn: $isRelativeToExtremeDirection.didSet { _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("相对极值").frame(maxWidth: .infinity, alignment: .trailing)
+                })
+                
+                Text("极值选择")
+                Picker("极值选择", selection: $extremeDirection.didSet{ _ in
+                    updateRemoteData()
+
+                }) {
+                    ForEach(ExtremeDirection.allCases) { direction in
+                        Text(direction.rawValue).tag(direction)
+                    }
+                }.disabled(!isRelativeToExtremeDirection)
+                
                 Button(action: {
-//                    sportManager.removeRuleLandmarkToState(id: landmarkToState.id)
+                    sportManager.removeRuleLandmarkToStateDistance(id: landmarkToStateDistance.id)
 
                 }) {
                     Text("删除")
@@ -162,17 +200,19 @@ struct LandmarkToStateRuleView: View {
             }
         }
         .onAppear{
-//            let length = sportManager.getRuleLandmarkToState(id: landmarkToState.id)
-//            warningContent = length.warning.content
-//            triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
-//            delayTime = length.warning.delayTime
-//
-//            fromAxis = length.fromLandmarkToAxis.axis
-//            toLandmarkSegmentType = length.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
-//            toAxis = length.toLandmarkSegmentToAxis.axis
-//            toStateId = length.toStateId
-//            lowerBound = length.lowerBound
-//            upperBound = length.upperBound
+            let length = sportManager.getRuleLandmarkToStateDistance(id: landmarkToStateDistance.id)
+            warningContent = length.warning.content
+            triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
+            delayTime = length.warning.delayTime
+                            
+            fromAxis = length.fromLandmarkToAxis.axis
+            toLandmarkSegmentType = length.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
+            toAxis = length.toLandmarkSegmentToAxis.axis
+            toStateId = length.toStateId
+            isRelativeToExtremeDirection = length.isRelativeToExtremeDirection
+            extremeDirection = length.extremeDirection
+            lowerBound = length.lowerBound
+            upperBound = length.upperBound
             
         }
     }

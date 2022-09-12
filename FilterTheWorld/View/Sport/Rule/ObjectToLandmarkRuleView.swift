@@ -48,7 +48,7 @@ struct ObjectToLandmarkRuleView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("物体相对关节位置")
+                Text("相对关节位置")
                 Spacer()
                 
                 Toggle(isOn: $isRelativeToObject.didSet { _ in

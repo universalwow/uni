@@ -32,7 +32,7 @@ struct LandmarkToSelfRuleView: View {
     }
 
     func updateRemoteData() {
-        sportManager.updateRuleLandmarkToSelf(direction: direction, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkToSelf.id)
+//        sportManager.updateRuleLandmarkToSelf(direction: direction, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis, xLowerBound: xLowerBound, yLowerBound: yLowerBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkToSelf.id)
 
     }
 
@@ -42,7 +42,7 @@ struct LandmarkToSelfRuleView: View {
                 Text("关节对相对自身位移")
                 Spacer()
                 Button(action: {
-                    sportManager.removeRuleLandmarkToSelf(id: landmarkToSelf.id)
+//                    sportManager.removeRuleLandmarkToSelf(id: landmarkToSelf.id)
 
                 }) {
                     Text("删除")
@@ -140,17 +140,17 @@ struct LandmarkToSelfRuleView: View {
             }
         }
         .onAppear{
-                let landmarkToSelf = sportManager.getRuleLandmarkToSelf(id: landmarkToSelf.id)
-                warningContent = landmarkToSelf.warning.content
-                triggeredWhenRuleMet = landmarkToSelf.warning.triggeredWhenRuleMet
-                delayTime = landmarkToSelf.warning.delayTime
-
-                direction = landmarkToSelf.toDirection
-            toLandmarkSegmentType = landmarkToSelf.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
-                toAxis = landmarkToSelf.toLandmarkSegmentToAxis.axis
-
-                xLowerBound = landmarkToSelf.xLowerBound
-                yLowerBound = landmarkToSelf.yLowerBound
+//                let landmarkToSelf = sportManager.getRuleLandmarkToSelf(id: landmarkToSelf.id)
+//                warningContent = landmarkToSelf.warning.content
+//                triggeredWhenRuleMet = landmarkToSelf.warning.triggeredWhenRuleMet
+//                delayTime = landmarkToSelf.warning.delayTime
+//
+//                direction = landmarkToSelf.toDirection
+//            toLandmarkSegmentType = landmarkToSelf.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
+//                toAxis = landmarkToSelf.toLandmarkSegmentToAxis.axis
+//
+//                xLowerBound = landmarkToSelf.xLowerBound
+//                yLowerBound = landmarkToSelf.yLowerBound
 
         }
     }

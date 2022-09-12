@@ -32,10 +32,11 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
     // 物体位置相对于物体位置
     var objectToObject: [ObjectToObject] = []
     
+    
     // 物体相对于自身最大位移
-    var objectToSelf: [ObjectToSelf] = []
-    // 物体相对于自身最大位移
-    var objectToState: [ObjectToStateExtreme] = []
+    var objectToStateDistance: [ObjectToStateDistance] = []
+    
+    var objectToStateAngle: [ObjectToStateAngle] = []
     
     func firstObjectToLandmarkIndexById(id: UUID) -> Int? {
         objectToLandmark.firstIndex(where: { _objectToLandmark in
@@ -70,7 +71,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             objectToLandmark[index].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
             objectToLandmark[index].isRelativeToObject = isRelativeToObject
             
-
+            
         }
         
     }
@@ -96,118 +97,129 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             objectToObject[index].lowerBound = lowerBound
             objectToObject[index].upperBound = upperBound
             
-     
+            
             objectToObject[index].fromPosition.point = fromObjectPoint
             objectToObject[index].fromPosition.position = fromObjectPosition
             objectToObject[index].fromPosition.axis = fromAxis
-
+            
             
             objectToObject[index].toPosition.point = toObjectPoint
             objectToObject[index].toPosition.id = toObject.label
             objectToObject[index].toPosition.position = toObjectPosition
             objectToObject[index].toPosition.axis = fromAxis
-
-
+            
+            
             objectToObject[index].toLandmarkSegmentToAxis = LandmarkSegmentToAxis(landmarkSegment: toLandmarkSegment, axis: toAxis)
             objectToObject[index].isRelativeToObject = isRelativeToObject
             
-
+            
         }
     }
     
-    func firstObjectToSelfIndexById(id: UUID) -> Int? {
-        objectToSelf.firstIndex(where: { _objectToSelf in
-            _objectToSelf.id == id
-            
-        })
-    }
     
-    mutating func updateRuleObjectToSelf(direction: Direction, xLowerBound: Double, yLowerBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
-        if let index = self.firstObjectToSelfIndexById(id: id) {
-            
-
-            objectToSelf[index].warning.content = warningContent
-            objectToSelf[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-            objectToSelf[index].warning.delayTime = delayTime
-            
-            objectToSelf[index].xLowerBound = xLowerBound
-            objectToSelf[index].yLowerBound = yLowerBound
-            
-            objectToSelf[index].toDirection = direction
-        }
-    }
     
-    func firstObjectToStateExtremeIndexById(id: UUID) -> Int? {
-        objectToState.firstIndex(where: { _objectToState in
+    func firstObjectToStateDistanceIndexById(id: UUID) -> Int? {
+        objectToStateDistance.firstIndex(where: { _objectToState in
             _objectToState.id == id
             
         })
     }
     
     
-    mutating func updateRuleObjectToStateExtreme(
+    mutating func updateRuleObjectToStateDistance(
         fromAxis: CoordinateAxis,
-                                                   toStateId: Int,
-                                            fromPosition: ObjectPosition,
+        toStateId: Int,
+        fromPosition: ObjectPosition,
         fromObject: Observation,
         toObject: Observation,
-                                            isRelativeToObject: Bool,
-                                              isRelativeToExtremeDirection: Bool,
-                                              extremeDirection: ExtremeDirection,
-                                                   toLandmarkSegment: LandmarkSegment,
-                                                   toAxis: CoordinateAxis,
-                                                   lowerBound: Double, upperBound: Double,
+        isRelativeToObject: Bool,
+        isRelativeToExtremeDirection: Bool,
+        extremeDirection: ExtremeDirection,
+        toLandmarkSegment: LandmarkSegment,
+        toAxis: CoordinateAxis,
+        lowerBound: Double, upperBound: Double,
         warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID){
-            if let index = self.firstObjectToStateExtremeIndexById(id: id) {
+            if let index = self.firstObjectToStateDistanceIndexById(id: id) {
                 
-                objectToState[index].warning.content = warningContent
-                objectToState[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-                objectToState[index].warning.delayTime = delayTime
+                objectToStateDistance[index].warning.content = warningContent
+                objectToStateDistance[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+                objectToStateDistance[index].warning.delayTime = delayTime
                 
-                objectToState[index].lowerBound = lowerBound
-                objectToState[index].upperBound = upperBound
+                objectToStateDistance[index].lowerBound = lowerBound
+                objectToStateDistance[index].upperBound = upperBound
                 
-                objectToState[index].fromPosition.point = fromObject.rect.pointOf(position: fromPosition).point2d
-                objectToState[index].fromPosition.position = fromPosition
-                objectToState[index].fromPosition.axis = fromAxis
+                objectToStateDistance[index].fromPosition.point = fromObject.rect.pointOf(position: fromPosition).point2d
+                objectToStateDistance[index].fromPosition.position = fromPosition
+                objectToStateDistance[index].fromPosition.axis = fromAxis
                 
-                objectToState[index].toPosition.point = toObject.rect.pointOf(position: fromPosition).point2d
-                objectToState[index].toPosition.position = fromPosition
-                objectToState[index].toPosition.axis = fromAxis
+                objectToStateDistance[index].toPosition.point = toObject.rect.pointOf(position: fromPosition).point2d
+                objectToStateDistance[index].toPosition.position = fromPosition
+                objectToStateDistance[index].toPosition.axis = fromAxis
                 
-                objectToState[index].isRelativeToObject = isRelativeToObject
-                objectToState[index].isRelativeToExtremeDirection = isRelativeToExtremeDirection
-                objectToState[index].extremeDirection = extremeDirection
-                objectToState[index].toStateId = toStateId
-                objectToState[index].toLandmarkSegmentToAxis.landmarkSegment = toLandmarkSegment
-                objectToState[index].toLandmarkSegmentToAxis.axis = toAxis
-
-
+                objectToStateDistance[index].isRelativeToObject = isRelativeToObject
+                objectToStateDistance[index].isRelativeToExtremeDirection = isRelativeToExtremeDirection
+                objectToStateDistance[index].extremeDirection = extremeDirection
+                objectToStateDistance[index].toStateId = toStateId
+                objectToStateDistance[index].toLandmarkSegmentToAxis.landmarkSegment = toLandmarkSegment
+                objectToStateDistance[index].toLandmarkSegmentToAxis.axis = toAxis
                 
             }
             
         }
     
     
-    func objectToLandmarkSatisfy(objectToLandmark: ObjectToLandmark, poseMap: PoseMap, object: Observation) -> Bool {
-        return objectToLandmark.satisfy(poseMap: poseMap, object: object)
+    func firstObjectToStateAngleIndexById(id: UUID) -> Int? {
+        objectToStateAngle.firstIndex(where: { _objectToStateAngle in
+            _objectToStateAngle.id == id
+            
+        })
     }
     
-    func objectToObjectSatisfy(objectToObject: ObjectToObject, poseMap: PoseMap, object: Observation, targetObject: Observation) -> Bool {
-        return objectToObject.satisfy(poseMap: poseMap, fromObject: object, toObject: targetObject)
-    }
     
-    func objectToSelfSatisfy(objectToSelf: ObjectToSelf, stateTimeHistory: [StateTime], object: Observation) -> Bool {
-        return objectToSelf.satisfy(stateTimeHistory: stateTimeHistory, object: object)
-    }
+    mutating func updateRuleObjectToStateAngle(
+        toStateId: Int,
+        fromPosition: ObjectPosition,
+        fromObject: Observation,
+        toObject: Observation,
+        isRelativeToExtremeDirection: Bool,
+        extremeDirection: ExtremeDirection,
+        lowerBound: Double, upperBound: Double,
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID){
+            if let index = self.firstObjectToStateAngleIndexById(id: id) {
+                
+                objectToStateAngle[index].warning.content = warningContent
+                objectToStateAngle[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
+                objectToStateAngle[index].warning.delayTime = delayTime
+                
+                objectToStateAngle[index].lowerBound = lowerBound
+                objectToStateAngle[index].upperBound = upperBound
+                
+                objectToStateAngle[index].fromPosition.point = fromObject.rect.pointOf(position: fromPosition).point2d
+                objectToStateAngle[index].fromPosition.position = fromPosition
+                objectToStateAngle[index].fromPosition.axis = .X
+                
+                objectToStateAngle[index].toPosition.point = toObject.rect.pointOf(position: fromPosition).point2d
+                objectToStateAngle[index].toPosition.position = fromPosition
+                objectToStateAngle[index].toPosition.axis = .X
+                
+                objectToStateAngle[index].isRelativeToExtremeDirection = isRelativeToExtremeDirection
+                objectToStateAngle[index].extremeDirection = extremeDirection
+                objectToStateAngle[index].toStateId = toStateId
+                
+            }
+            
+        }
     
-
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
         let objectToLandmarkSatisfys = objectToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
-            if let object = object {
-                satisfy = self.objectToLandmarkSatisfy(objectToLandmark: next, poseMap: poseMap, object: object)
+            let selectedObject = [object, targetObject].first(where: { _object in
+                _object?.label == next.fromPosition.id
+            })
+            
+            if selectedObject != nil {
+                satisfy = next.satisfy(poseMap: poseMap, object: selectedObject!!)
             }
             
             var newWarnings = result.1
@@ -225,11 +237,19 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         
         let objectToObjectSatisfys = objectToObject.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
-            if let object = object, let targetObject = targetObject {
-                satisfy = self.objectToObjectSatisfy(objectToObject: next, poseMap: poseMap, object: object, targetObject: targetObject)
-            } else {
-                satisfy = false
+            
+            let selectedFromObject = [object, targetObject].first(where: { _object in
+                _object?.label == next.fromPosition.id
+            })
+            
+            let selectedToObject = [object, targetObject].first(where: { _object in
+                _object?.label == next.toPosition.id
+            })
+            
+            if selectedFromObject != nil && selectedToObject != nil {
+                satisfy = next.satisfy(poseMap: poseMap, fromObject: selectedFromObject!!, toObject: selectedToObject!!)
             }
+
             
             var newWarnings = result.1
             if next.warning.triggeredWhenRuleMet && satisfy {
@@ -244,13 +264,48 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
                     result.2 + 1)
         })
         
-        let objectToSelfSatisfys = objectToSelf.reduce((true, Set<Warning>(), 0, 0), {result, next in
+        let objectToStateDistanceSatisfys = objectToStateDistance.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
-            if let object = object {
-                satisfy = self.objectToSelfSatisfy(objectToSelf: next, stateTimeHistory: stateTimeHistory, object: object)
-            } else {
-                satisfy = false
+            
+            let selectedObject = [object, targetObject].first(where: { _object in
+                _object?.label == next.fromPosition.id
+            })
+            
+            if selectedObject != nil {
+                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!!)
             }
+            
+
+            
+            var newWarnings = result.1
+            if next.warning.triggeredWhenRuleMet && satisfy {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy,
+                    newWarnings,
+                    satisfy ? result.2 + 1 : result.2,
+                    result.2 + 1)
+        })
+        
+        let objectToStateAngleSatisfys = objectToStateAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            var satisfy = false
+            
+            let selectedObject = [object, targetObject].first(where: { _object in
+                _object?.label == next.fromPosition.id
+            })
+            
+            if selectedObject != nil {
+                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!!)
+            }
+            
+//            if let object = object {
+//                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
+//            } else {
+//                satisfy = false
+//            }
             
             var newWarnings = result.1
             if next.warning.triggeredWhenRuleMet && satisfy {
@@ -266,10 +321,14 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         })
         
         // 每个规则至少要包含一个条件 且所有条件都必须满足
-        return (objectToLandmarkSatisfys.0 && objectToObjectSatisfys.0 && objectToSelfSatisfys.0,
-                objectToLandmarkSatisfys.1.union(objectToObjectSatisfys.1).union(objectToSelfSatisfys.1),
-                objectToLandmarkSatisfys.2 + objectToObjectSatisfys.2 + objectToSelfSatisfys.2,
-                objectToLandmarkSatisfys.3 + objectToObjectSatisfys.3 + objectToSelfSatisfys.3)
+        return (objectToLandmarkSatisfys.0 && objectToObjectSatisfys.0 && objectToStateDistanceSatisfys.0 &&
+                objectToStateAngleSatisfys.0,
+                objectToLandmarkSatisfys.1.union(objectToObjectSatisfys.1).union(objectToStateDistanceSatisfys.1)
+            .union(objectToStateAngleSatisfys.1),
+                objectToLandmarkSatisfys.2 + objectToObjectSatisfys.2 + objectToStateDistanceSatisfys.2
+                + objectToStateAngleSatisfys.2,
+                objectToLandmarkSatisfys.3 + objectToObjectSatisfys.3 + objectToStateDistanceSatisfys.3
+                + objectToStateAngleSatisfys.3)
     }
     
     
