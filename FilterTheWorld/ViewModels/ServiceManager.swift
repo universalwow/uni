@@ -20,7 +20,7 @@ struct SportFile: Codable {
 class ServiceManager: NSObject, ObservableObject {
     
     struct StaticValue {
-        static let IP = "192.168.0.103"
+        static let IP = "192.168.0.102"
     }
   @Published var loginState: LoginResponse?
   
@@ -155,7 +155,7 @@ extension ServiceManager {
                 multipartFormData: { multipartFormData in
                     multipartFormData.append(data, withName: "upload_data" , fileName: filename, mimeType: "application/json")
             },
-                to: "https://192.168.0.103:4001/rules", method: .post , headers: headers)
+                to: "https://\(StaticValue.IP):4001/rules", method: .post , headers: headers)
                 .response { response in
                     if let responseData = response.data {
                         //handle the response however you like

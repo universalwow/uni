@@ -117,7 +117,8 @@ struct WarningTest: View {
     @State var fourth = ""
     @State var five = ""
 
-    @State var timer = Timer.publish(every: 1, on: .main, in: .default).autoconnect()
+    @State var timer = Timer.publish(every: 1, on: .main, in: .default)
+        .autoconnect()
       
     
     var body: some View {
@@ -148,6 +149,13 @@ struct WarningTest: View {
             .clipped()
 
         }
+        .onDisappear(perform: {
+            timer.upstream.connect().cancel()
+        })
+        .onAppear(perform: {
+            timer = timer.upstream.autoconnect()
+
+        })
         .onReceive(timer, perform: { time in
             print("warning... 9 \(sportGround.warnings)")
             if !sportGround.warnings.isEmpty {
