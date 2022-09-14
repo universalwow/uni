@@ -276,8 +276,8 @@ class Sporter: Identifiable {
         }
     }
     
-    var delayWarnings: Set<String> = []
-    var noDelayWarnings: Set<String> = []
+    var delayWarnings: Set<Warning> = []
+    var noDelayWarnings: Set<Warning> = []
 //    MARK: 第一次捕获到时 添加到延迟展示
 //    当下一帧消失时 未必想取消该展示 比如运球过低 是在等高位置的出现
 //    开合跳之类的不存在这种问题是因为开合之间没有中间状态
@@ -330,7 +330,7 @@ class Sporter: Identifiable {
     var stateTimeHistory: [StateTime] = [StateTime(stateId: SportState.startState.id, time: 0, poseMap: [:], object: nil)]
     
   
-    var cancelableWarningMap: [String: Timer] = [:]
+    var cancelableWarningMap: [Warning: Timer] = [:]
     
     var warningsData: [WarningData] = []
     
@@ -340,7 +340,7 @@ class Sporter: Identifiable {
             withTimeInterval: warning.warning.delayTime, repeats: false) { [self] timer in
 
                 DispatchQueue.main.async {
-                    self.delayWarnings.insert(warning.warning.content)
+                    self.delayWarnings.insert(warning.warning)
                     self.warningsData.append(warning)
                 }
         
@@ -475,7 +475,7 @@ class Sporter: Identifiable {
         noDelayWarnings = []
         allCurrentFrameWarnings.forEach { warning in
             if warning.delayTime < 0.3 {
-                noDelayWarnings.insert(warning.content)
+                noDelayWarnings.insert(warning)
                 self.warningsData.append(WarningData(warning: warning, stateId: currentStateTime.stateId, time: currentTime))
             }
         }
@@ -492,7 +492,7 @@ class Sporter: Identifiable {
             warning
         }.filter { warning in
             !totalWarnings.contains(where: { newWarning in
-                warning == newWarning.warning.content
+                warning.content == newWarning.warning.content
             })
         }
         cancelWarnings.forEach { cancelWarning in
@@ -507,11 +507,11 @@ class Sporter: Identifiable {
         
         totalWarnings.filter { newWarning in
             !cancelableWarningMap.contains(where: { warning, _ in
-                warning == newWarning.warning.content
+                warning.content == newWarning.warning.content
             })
         }.forEach { newWarning in
             if newWarning.warning.delayTime >= 0.3 {
-                cancelableWarningMap[newWarning.warning.content] = warningTimer(warning: newWarning)
+                cancelableWarningMap[newWarning.warning] = warningTimer(warning: newWarning)
             }
             
         }
@@ -602,7 +602,9 @@ class Sporter: Identifiable {
                 warning.triggeredWhenRuleMet
             })
         }) {
-            allCurrentFrameWarnings = []
+            allCurrentFrameWarnings = allCurrentFrameWarnings.filter({ warning in
+                warning.changeStateClear == false
+            })
         }
         
         if self.inCheckingStatesTimer.isEmpty {
@@ -693,8 +695,9 @@ class Sporter: Identifiable {
                 warning.triggeredWhenRuleMet
             })
         }) {
-            allCurrentFrameWarnings = []
-        }
+            allCurrentFrameWarnings = allCurrentFrameWarnings.filter({ warning in
+                warning.changeStateClear == false
+            })        }
 
 //        计分逻辑 状态未切换时判断
    
@@ -748,8 +751,9 @@ class Sporter: Identifiable {
                 warning.triggeredWhenRuleMet
             })
         }) {
-            allCurrentFrameWarnings = []
-        }
+            allCurrentFrameWarnings = allCurrentFrameWarnings.filter({ warning in
+                warning.changeStateClear == false
+            })        }
         
         allCurrentFrameWarnings.remove(Warning(content: "", triggeredWhenRuleMet: true, delayTime: 0.0))
         updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)
@@ -785,7 +789,7 @@ class Sporter: Identifiable {
         var allCurrentFrameWarnings : Set<Warning> = []
 
 //
-        if currentTime - currentStateTime.time > sport.scoreTimeLimit {
+        if currentStateTime.time > 1 && currentTime - currentStateTime.time > sport.scoreTimeLimit {
 //            print("时间间隔3秒")
             currentStateTime = StateTime(stateId: SportState.startState.id, time: currentTime, poseMap: poseMap, object: object)
             allCurrentFrameWarnings = allCurrentFrameWarnings.union([
@@ -832,8 +836,9 @@ class Sporter: Identifiable {
                 warning.triggeredWhenRuleMet
             })
         }) {
-            allCurrentFrameWarnings = []
-        }
+            allCurrentFrameWarnings = allCurrentFrameWarnings.filter({ warning in
+                warning.changeStateClear == false
+            })        }
 
 //        计分逻辑 状态未切换时判断
         
@@ -881,8 +886,9 @@ class Sporter: Identifiable {
                 warning.triggeredWhenRuleMet
             })
         }) {
-            allCurrentFrameWarnings = []
-        }
+            allCurrentFrameWarnings = allCurrentFrameWarnings.filter({ warning in
+                warning.changeStateClear == false
+            })        }
         
         // 长度等于计数序列开始判断是否满足计分条件
         sport.violateStateSequence.forEach({ _violateStateSequence in

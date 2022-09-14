@@ -19,7 +19,7 @@ struct DistanceToLandmarkRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
-    
+    @State var changeStateClear = true
     
     func updateLocalData() {
         let length = sportManager.getRuleDistanceToLandmark(id: distanceToLandmark.id)
@@ -29,7 +29,7 @@ struct DistanceToLandmarkRuleView: View {
     }
     
     func updateRemoteData() {
-        self.sportManager.updateRuleDistanceToLandmark(fromAxis: fromAxis, toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: distanceToLandmark.id)
+        self.sportManager.updateRuleDistanceToLandmark(fromAxis: fromAxis, toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: distanceToLandmark.id)
     }
     
     var body : some View {
@@ -38,6 +38,12 @@ struct DistanceToLandmarkRuleView: View {
             HStack {
                 Text("关节对长度")
                 Spacer()
+                
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 Button(action: {
                     sportManager.removeRuleDistanceToLandmark(id: distanceToLandmark.id)
 
@@ -67,8 +73,10 @@ struct DistanceToLandmarkRuleView: View {
                     .keyboardType(.decimalPad)
 
                             
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                     
                 }
@@ -159,6 +167,7 @@ struct DistanceToLandmarkRuleView: View {
             self.warningContent = length.warning.content
             self.triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
             self.delayTime = length.warning.delayTime
+            changeStateClear = length.warning.changeStateClear == true
         }
     }
     

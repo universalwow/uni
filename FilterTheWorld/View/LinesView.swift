@@ -42,8 +42,8 @@ struct LinesView: Shape {
        lines.forEach{ line in
            path.move(to: line[0].pointToFit(imageSize: imageSize, viewSize: viewSize))
            path.addLine(to: line[1].pointToFit(imageSize: imageSize, viewSize: viewSize))
-           
        }
+       
        return path
    }
 }

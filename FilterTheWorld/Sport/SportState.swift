@@ -219,12 +219,21 @@ extension SportState {
         // 每一组条件全部满足
 
         let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+        
+        
+        
         // 返回满足率最大的那一组数目
+//        MARK: 初始化isScoreWarning逻辑应移至外部设置
+        let warningSet = Set(satisfy.1.map { warning -> Warning in
+            var newWarning = warning
+            newWarning.isScoreWarning = ruleType == .SCORE
+            return newWarning
+        })
         
         if result.3 == 0 && satisfy.3 == 0 {
-            return (false, satisfy.1, satisfy.2, satisfy.3)
+            return (false, warningSet, satisfy.2, satisfy.3)
         } else if result.3 == 0 && satisfy.3 != 0 {
-            return (result.0 || satisfy.0, satisfy.1, satisfy.2, satisfy.3)
+            return (result.0 || satisfy.0, warningSet, satisfy.2, satisfy.3)
         } else if result.3 != 0 && satisfy.3 == 0 {
             return (false, result.1, result.2, result.3)
         } else {
@@ -232,9 +241,9 @@ extension SportState {
             let currentSatisfyPercent = Double(satisfy.2) / Double(satisfy.3)
             
             if currentSatisfyPercent >= lastSatisfyPercent {
-                return (result.0 || satisfy.0, satisfy.1, satisfy.2, satisfy.3)
+                return (result.0 || satisfy.0, warningSet, satisfy.2, satisfy.3)
             }else {
-                return (result.0 || satisfy.0, result.1, result.2, result.3)
+                return (result.0 || satisfy.0, warningSet, result.2, result.3)
             }
         }
     })
@@ -264,9 +273,9 @@ extension SportState {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].addRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+                scoreRules[rulesIndex].addRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, isScoreWarning: true)
             case .VIOLATE:
-                violateRules[rulesIndex].addRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+                violateRules[rulesIndex].addRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, isScoreWarning: false)
             }
         }
     }
@@ -306,15 +315,15 @@ extension SportState {
     
     
     
-    mutating func updateRuleLandmarkSegmentAngle(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, id: UUID) {
+    mutating func updateRuleLandmarkSegmentAngle(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool,lowerBound: Double, upperBound: Double, id: UUID) {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
                 scoreRules[rulesIndex].updateRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass,
-                                                                      warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: id)
+                                                                      warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, lowerBound: lowerBound, upperBound: upperBound, id: id)
             case .VIOLATE:
                 violateRules[rulesIndex].updateRuleLandmarkSegmentAngle(ruleId: ruleId, ruleClass: ruleClass,
-                                                                        warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: id)
+                                                                        warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, lowerBound: lowerBound, upperBound: upperBound, id: id)
             }
         }
     }
@@ -350,9 +359,9 @@ extension SportState {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].addRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+                scoreRules[rulesIndex].addRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, isScoreWarning: true)
             case .VIOLATE:
-                violateRules[rulesIndex].addRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+                violateRules[rulesIndex].addRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, isScoreWarning: false)
             }
         }
     }
@@ -367,13 +376,13 @@ extension SportState {
         }
     }
     
-    mutating func updateRuleAngleToLandmarkSegment(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleAngleToLandmarkSegment(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].updateRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments)
+                scoreRules[rulesIndex].updateRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id, landmarkSegments: humanPose!.landmarkSegments)
             case .VIOLATE:
-                violateRules[rulesIndex].updateRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments)
+                violateRules[rulesIndex].updateRuleAngleToLandmarkSegment(ruleId: ruleId, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id, landmarkSegments: humanPose!.landmarkSegments)
             }
         }
     }
@@ -407,9 +416,9 @@ extension SportState {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].addRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+                scoreRules[rulesIndex].addRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, isScoreWarning: true)
             case .VIOLATE:
-                violateRules[rulesIndex].addRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments)
+                violateRules[rulesIndex].addRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, isScoreWarning: false)
             }
         }
     }
@@ -424,13 +433,13 @@ extension SportState {
         }
     }
     
-    mutating func updateRuleLandmarkSegmentLength(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis,tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleLandmarkSegmentLength(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis,tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].updateRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments)
+                scoreRules[rulesIndex].updateRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, landmarkSegments: humanPose!.landmarkSegments)
             case .VIOLATE:
-                violateRules[rulesIndex].updateRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments)
+                violateRules[rulesIndex].updateRuleLandmarkSegmentLength(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, landmarkSegments: humanPose!.landmarkSegments)
             }
         }
     }
@@ -464,9 +473,9 @@ extension SportState {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
-                        scoreRules[rulesIndex].addRuleLandmarkSegmentToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                        scoreRules[rulesIndex].addRuleLandmarkSegmentToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: true)
                     case .VIOLATE:
-                        violateRules[rulesIndex].addRuleLandmarkSegmentToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                        violateRules[rulesIndex].addRuleLandmarkSegmentToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: false)
                     }
                 }
             }
@@ -487,7 +496,7 @@ extension SportState {
                                                            extremeDirection: ExtremeDirection,
                                                     toStateLandmarkSegment: LandmarkSegment,
                                                     lowerBound: Double, upperBound: Double,
-                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, id: UUID) {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
@@ -497,7 +506,7 @@ extension SportState {
                                                                                 extremeDirection: extremeDirection,
                                                                          toStateLandmarkSegment: toStateLandmarkSegment,
                                                                          lowerBound: lowerBound, upperBound: upperBound,
-                                                                         warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                         warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id, humanPose: self.humanPose!)
                     case .VIOLATE:
                         violateRules[rulesIndex].updateRuleLandmarkSegmentToStateAngle(ruleId: ruleId, ruleClass: ruleClass,
                                                                            toStateId: toStateId,
@@ -505,7 +514,7 @@ extension SportState {
                                                                                   extremeDirection: extremeDirection,
                                                                            toStateLandmarkSegment: toStateLandmarkSegment,
                                                                            lowerBound: lowerBound, upperBound: upperBound,
-                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear,id: id, humanPose: self.humanPose!)
                     }
                 }
             }
@@ -541,9 +550,9 @@ extension SportState {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
-                        scoreRules[rulesIndex].addRuleLandmarkSegmentToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                        scoreRules[rulesIndex].addRuleLandmarkSegmentToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: true)
                     case .VIOLATE:
-                        violateRules[rulesIndex].addRuleLandmarkSegmentToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                        violateRules[rulesIndex].addRuleLandmarkSegmentToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: false)
                     }
                 }
             }
@@ -565,7 +574,7 @@ extension SportState {
                                                            extremeDirection: ExtremeDirection,
                                                     toStateLandmarkSegment: LandmarkSegment,
                                                     lowerBound: Double, upperBound: Double,
-                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
@@ -576,7 +585,7 @@ extension SportState {
                                                                                 extremeDirection: extremeDirection,
                                                                          toStateLandmarkSegment: toStateLandmarkSegment,
                                                                          lowerBound: lowerBound, upperBound: upperBound,
-                                                                         warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                         warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, humanPose: self.humanPose!)
                     case .VIOLATE:
                         violateRules[rulesIndex].updateRuleLandmarkSegmentToStateDistance(ruleId: ruleId, ruleClass: ruleClass,
                                                                                           fromAxis: fromAxis,
@@ -585,7 +594,7 @@ extension SportState {
                                                                                   extremeDirection: extremeDirection,
                                                                            toStateLandmarkSegment: toStateLandmarkSegment,
                                                                            lowerBound: lowerBound, upperBound: upperBound,
-                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!)
                     }
                 }
             }
@@ -620,9 +629,10 @@ extension SportState {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 switch ruleType {
                 case .SCORE:
-                    scoreRules[rulesIndex].addRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!)
+                    scoreRules[rulesIndex].addRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!
+                                                                     , isScoreWarning: true)
                 case .VIOLATE:
-                    violateRules[rulesIndex].addRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!)
+                    violateRules[rulesIndex].addRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, isScoreWarning: false)
                 }
             }
         }
@@ -637,13 +647,13 @@ extension SportState {
             }
         }
         
-    mutating func updateRuleDistanceToLandmark(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis, toLandmarkType: LandmarkType, tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleDistanceToLandmark(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis, toLandmarkType: LandmarkType, tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 switch ruleType {
                 case .SCORE:
-                    scoreRules[rulesIndex].updateRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis, toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: humanPose!)
+                    scoreRules[rulesIndex].updateRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis, toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id, humanPose: humanPose!)
                 case .VIOLATE:
-                    violateRules[rulesIndex].updateRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis,  toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: humanPose!)
+                    violateRules[rulesIndex].updateRuleDistanceToLandmark(ruleId: ruleId, ruleClass: ruleClass, fromAxis: fromAxis,  toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id, humanPose: humanPose!)
                 }
             }
         }
@@ -655,10 +665,10 @@ extension SportState {
             switch ruleType {
             case .SCORE:
                 scoreRules[rulesIndex].addRuleAngleToLandmark(ruleId: ruleId, ruleClass: ruleClass,
-                                                               landmarks: humanPose!.landmarks)
+                                                               landmarks: humanPose!.landmarks, isScoreWarning: true)
             case .VIOLATE:
                 violateRules[rulesIndex].addRuleAngleToLandmark(ruleId: ruleId, ruleClass: ruleClass,
-                                                                 landmarks: humanPose!.landmarks)
+                                                                 landmarks: humanPose!.landmarks, isScoreWarning: false)
             }
         }
     }
@@ -697,7 +707,7 @@ extension SportState {
     }
     
     
-    mutating func updateRuleAngleToLandmark(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double,
+    mutating func updateRuleAngleToLandmark(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  lowerBound: Double, upperBound: Double,
                                                  toLandmarkType:LandmarkType, id: UUID) {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             let toLandmark = humanPose!.landmarks.first(where: { landmark in
@@ -707,11 +717,11 @@ extension SportState {
             switch ruleType {
             case .SCORE:
                 scoreRules[rulesIndex].updateRuleAngleToLandmark(ruleId: ruleId, ruleClass: ruleClass,
-                                                                      warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound,
+                                                                      warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, lowerBound: lowerBound, upperBound: upperBound,
                                                                       toLandmark: toLandmark, id: id)
             case .VIOLATE:
                 violateRules[rulesIndex].updateRuleAngleToLandmark(ruleId: ruleId, ruleClass: ruleClass,
-                                                                        warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound,
+                                                                        warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  lowerBound: lowerBound, upperBound: upperBound,
                                                                         toLandmark: toLandmark, id: id)
             }
         }
@@ -746,9 +756,9 @@ extension SportState {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 switch ruleType {
                 case .SCORE:
-                    scoreRules[rulesIndex].addRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                    scoreRules[rulesIndex].addRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: true)
                 case .VIOLATE:
-                    violateRules[rulesIndex].addRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                    violateRules[rulesIndex].addRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: false)
                 }
             }
         }
@@ -772,7 +782,7 @@ extension SportState {
                                                 toLandmarkSegmentType: LandmarkTypeSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
-                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 switch ruleType {
                 case .SCORE:
@@ -785,7 +795,7 @@ extension SportState {
                                                                      toLandmarkSegmentType: toLandmarkSegmentType,
                                                                      toAxis: toAxis,
                                                                      lowerBound: lowerBound, upperBound: upperBound,
-                                                                     warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                     warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!)
                 case .VIOLATE:
                     violateRules[rulesIndex].updateRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass,
                                                                        fromAxis: fromAxis,
@@ -796,7 +806,7 @@ extension SportState {
                                                                        toLandmarkSegmentType: toLandmarkSegmentType,
                                                                        toAxis: toAxis,
                                                                        lowerBound: lowerBound, upperBound: upperBound,
-                                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!)
                 }
             }
         }
@@ -832,9 +842,9 @@ extension SportState {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
-                        scoreRules[rulesIndex].addRuleLandmarkToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                        scoreRules[rulesIndex].addRuleLandmarkToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: true)
                     case .VIOLATE:
-                        violateRules[rulesIndex].addRuleLandmarkToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id)
+                        violateRules[rulesIndex].addRuleLandmarkToStateAngle(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: false)
                     }
                 }
             }
@@ -855,7 +865,7 @@ extension SportState {
                                                            extremeDirection: ExtremeDirection,
                                                     toStateLandmark: Landmark,
                                                     lowerBound: Double, upperBound: Double,
-                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
@@ -865,7 +875,7 @@ extension SportState {
                                                                                 extremeDirection: extremeDirection,
                                                                          toStateLandmark: toStateLandmark,
                                                                          lowerBound: lowerBound, upperBound: upperBound,
-                                                                         warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                         warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!)
                     case .VIOLATE:
                         violateRules[rulesIndex].updateRuleLandmarkToStateAngle(ruleId: ruleId, ruleClass: ruleClass,
                                                                            toStateId: toStateId,
@@ -873,7 +883,7 @@ extension SportState {
                                                                                   extremeDirection: extremeDirection,
                                                                            toStateLandmark: toStateLandmark,
                                                                            lowerBound: lowerBound, upperBound: upperBound,
-                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, humanPose: self.humanPose!)
+                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!)
                     }
                 }
             }
@@ -908,9 +918,9 @@ extension SportState {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].addRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d)
+                scoreRules[rulesIndex].addRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: true)
             case .VIOLATE:
-                violateRules[rulesIndex].addRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d)
+                violateRules[rulesIndex].addRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: false)
             }
         }
     }
@@ -927,17 +937,17 @@ extension SportState {
     }
     
     mutating func updateRuleLandmarkInArea(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
-                    area: [Point2D], warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                    area: [Point2D], warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             let imageSize = self.image!.imageSize.point2d
             switch ruleType {
             case .SCORE:
                 scoreRules[rulesIndex].updateRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass,
-                                                                area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                                area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
 
             case .VIOLATE:
                 violateRules[rulesIndex].updateRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass,
-                                                                   area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                                   area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
 
             }
         }
@@ -971,9 +981,9 @@ extension SportState {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].addRuleObjectToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects)
+                scoreRules[rulesIndex].addRuleObjectToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects, isScoreWarning: true)
             case .VIOLATE:
-                violateRules[rulesIndex].addRuleObjectToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects)
+                violateRules[rulesIndex].addRuleObjectToLandmark(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects, isScoreWarning: false)
             }
         }
     }
@@ -994,7 +1004,7 @@ extension SportState {
                                                                                      toLandmarkType: LandmarkType,
                                                                                      toLandmarkSegmentType: LandmarkTypeSegment,
                                                                                      toAxis: CoordinateAxis,
-                                             lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
+                                             lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, id: UUID, isRelativeToObject: Bool) {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
@@ -1004,7 +1014,7 @@ extension SportState {
                                                                   toLandmarkType: toLandmarkType,
                                                                   toLandmarkSegmentType: toLandmarkSegmentType,
                                                                   toAxis: toAxis,
-                                                                  lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id,
+                                                                  lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear,id: id,
                                                                   humanPose: humanPose!, objects: objects, isRelativeToObject: isRelativeToObject)
 
             case .VIOLATE:
@@ -1014,7 +1024,7 @@ extension SportState {
                                                                     toLandmarkType: toLandmarkType,
                                                                     toLandmarkSegmentType: toLandmarkSegmentType,
                                                                     toAxis: toAxis,
-                                                            lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id,
+                                                            lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id,
                                                                     humanPose: humanPose!, objects: objects, isRelativeToObject: isRelativeToObject)
 
             }
@@ -1051,9 +1061,9 @@ extension SportState {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].addRuleObjectToObject(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects)
+                scoreRules[rulesIndex].addRuleObjectToObject(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects, isScoreWarning: true)
             case .VIOLATE:
-                violateRules[rulesIndex].addRuleObjectToObject(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects)
+                violateRules[rulesIndex].addRuleObjectToObject(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, objects: objects, isScoreWarning: false)
             }
         }
     }
@@ -1069,17 +1079,17 @@ extension SportState {
     }
     
     mutating func updateRuleObjectToObject(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
-                                           fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, toLandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
+                                           fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, toLandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, isRelativeToObject: Bool) {
         if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
             switch ruleType {
             case .SCORE:
                 scoreRules[rulesIndex].updateRuleObjectToObject(ruleId: ruleId, ruleClass: ruleClass,
-                                                                fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id,
+                                                                fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id,
                                                                 landmarkSegments: humanPose!.landmarkSegments, objects: objects, isRelativeToObject: isRelativeToObject)
 
             case .VIOLATE:
                 violateRules[rulesIndex].updateRuleObjectToObject(ruleId: ruleId,  ruleClass: ruleClass,
-                                                                  fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id,
+                                                                  fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id,
                                                                   landmarkSegments: humanPose!.landmarkSegments, objects: objects, isRelativeToObject: isRelativeToObject)
 
             }
@@ -1116,9 +1126,9 @@ extension SportState {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
-                        scoreRules[rulesIndex].addRuleObjectToStateDistance(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, stateId: self.id, objects: objects)
+                        scoreRules[rulesIndex].addRuleObjectToStateDistance(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, stateId: self.id, objects: objects, isScoreWarning: true)
                     case .VIOLATE:
-                        violateRules[rulesIndex].addRuleObjectToStateDistance(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, stateId: self.id, objects: objects)
+                        violateRules[rulesIndex].addRuleObjectToStateDistance(ruleId: ruleId, ruleClass: ruleClass, landmarkSegments: humanPose!.landmarkSegments, stateId: self.id, objects: objects, isScoreWarning: false)
                     }
                 }
             }
@@ -1144,7 +1154,7 @@ extension SportState {
                                                                                                     toLandmarkSegmentType: LandmarkTypeSegment,
                                                                                                     toAxis: CoordinateAxis,
                                                                                                     lowerBound: Double, upperBound: Double,
-                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID)   {
+                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID)   {
                 
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
@@ -1161,7 +1171,7 @@ extension SportState {
                                                                               toAxis: toAxis,
                                                                               lowerBound: lowerBound, upperBound: upperBound,
                                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet,
-                                                                              delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments, objects: objects)
+                                                                              delayTime: delayTime, changeStateClear: changeStateClear, id: id, landmarkSegments: humanPose!.landmarkSegments, objects: objects)
 
                     case .VIOLATE:
                         violateRules[rulesIndex].updateRuleObjectToStateDistance(ruleId: ruleId, ruleClass: ruleClass,
@@ -1176,7 +1186,7 @@ extension SportState {
                                                                                 toAxis: toAxis,
                                                                                 lowerBound: lowerBound, upperBound: upperBound,
                                                                                 warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet,
-                                                                                delayTime: delayTime, id: id, landmarkSegments: humanPose!.landmarkSegments, objects: objects)
+                                                                                delayTime: delayTime, changeStateClear: changeStateClear, id: id, landmarkSegments: humanPose!.landmarkSegments, objects: objects)
 
                     }
                 }
@@ -1213,9 +1223,9 @@ extension SportState {
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
                     case .SCORE:
-                        scoreRules[rulesIndex].addRuleObjectToStateAngle(ruleId: ruleId, ruleClass: ruleClass, stateId: self.id, objects: objects)
+                        scoreRules[rulesIndex].addRuleObjectToStateAngle(ruleId: ruleId, ruleClass: ruleClass, stateId: self.id, objects: objects, isScoreWarning: true)
                     case .VIOLATE:
-                        violateRules[rulesIndex].addRuleObjectToStateAngle(ruleId: ruleId, ruleClass: ruleClass, stateId: self.id, objects: objects)
+                        violateRules[rulesIndex].addRuleObjectToStateAngle(ruleId: ruleId, ruleClass: ruleClass, stateId: self.id, objects: objects, isScoreWarning: false)
                     }
                 }
             }
@@ -1238,7 +1248,7 @@ extension SportState {
                                                                                                extremeDirection: ExtremeDirection,
 
                                                                                                     lowerBound: Double, upperBound: Double,
-                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID)   {
+                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID)   {
                 
                 if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                     switch ruleType {
@@ -1251,7 +1261,7 @@ extension SportState {
                                                                               extremeDirection: extremeDirection,
                                                                               lowerBound: lowerBound, upperBound: upperBound,
                                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet,
-                                                                              delayTime: delayTime, id: id,
+                                                                              delayTime: delayTime,changeStateClear: changeStateClear,  id: id,
                                                                              objects: objects)
 
                     case .VIOLATE:
@@ -1263,7 +1273,7 @@ extension SportState {
                                                                                 extremeDirection: extremeDirection,
                                                                                 lowerBound: lowerBound, upperBound: upperBound,
                                                                                 warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet,
-                                                                                delayTime: delayTime, id: id,
+                                                                                delayTime: delayTime, changeStateClear: changeStateClear, id: id,
                                                                               objects: objects)
 
                     }

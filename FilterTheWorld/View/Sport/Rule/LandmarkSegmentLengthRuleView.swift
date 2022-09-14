@@ -18,6 +18,7 @@ struct LandmarkSegmentLengthRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
     
     
     func updateLocalData() {
@@ -28,15 +29,23 @@ struct LandmarkSegmentLengthRuleView: View {
     }
     
     func updateRemoteData() {
-        self.sportManager.updateRuleLandmarkSegmentLength(fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkSegmentLength.id)
+        self.sportManager.updateRuleLandmarkSegmentLength(fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: landmarkSegmentLength.id)
     }
     
     var body : some View {
         VStack {
             
             HStack {
-                Text("关节对长度")
+                Text("长度")
                 Spacer()
+                
+                
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
+                
                 Button(action: {
                     sportManager.removeRuleLandmarkSegmentLength(id: landmarkSegmentLength.id)
 
@@ -66,8 +75,10 @@ struct LandmarkSegmentLengthRuleView: View {
                     .keyboardType(.decimalPad)
 
                             
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                     
                 }
@@ -147,6 +158,7 @@ struct LandmarkSegmentLengthRuleView: View {
             self.warningContent = length.warning.content
             self.triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
             self.delayTime = length.warning.delayTime
+            self.changeStateClear = length.warning.changeStateClear == true
         }
     }
     

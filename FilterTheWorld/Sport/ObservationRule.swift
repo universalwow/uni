@@ -51,14 +51,15 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
                                              toLandmark: Landmark,
                                              toLandmarkSegment: LandmarkSegment,
                                              toAxis: CoordinateAxis,
-                                             lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
+                                             lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, id: UUID, isRelativeToObject: Bool) {
         if let index = self.firstObjectToLandmarkIndexById(id: id) {
             
             
             objectToLandmark[index].warning.content = warningContent
             objectToLandmark[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             objectToLandmark[index].warning.delayTime = delayTime
-            
+            objectToLandmark[index].warning.changeStateClear = changeStateClear
+
             objectToLandmark[index].lowerBound = lowerBound
             objectToLandmark[index].upperBound = upperBound
             
@@ -84,7 +85,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
     }
     
     
-    mutating func updateRuleObjectToObject(fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, fromObject: Observation, toObject: Observation, toObjectPosition: ObjectPosition, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
+    mutating func updateRuleObjectToObject(fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, fromObject: Observation, toObject: Observation, toObjectPosition: ObjectPosition, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, isRelativeToObject: Bool) {
         if let index = self.firstObjectToObjectIndexById(id: id) {
             
             let fromObjectPoint = fromObject.rect.pointOf(position: fromObjectPosition).point2d
@@ -93,7 +94,8 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             objectToObject[index].warning.content = warningContent
             objectToObject[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             objectToObject[index].warning.delayTime = delayTime
-            
+            objectToObject[index].warning.changeStateClear = changeStateClear
+
             objectToObject[index].lowerBound = lowerBound
             objectToObject[index].upperBound = upperBound
             
@@ -138,13 +140,14 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         toLandmarkSegment: LandmarkSegment,
         toAxis: CoordinateAxis,
         lowerBound: Double, upperBound: Double,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID){
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID){
             if let index = self.firstObjectToStateDistanceIndexById(id: id) {
                 
                 objectToStateDistance[index].warning.content = warningContent
                 objectToStateDistance[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
                 objectToStateDistance[index].warning.delayTime = delayTime
-                
+                objectToStateDistance[index].warning.changeStateClear = changeStateClear
+
                 objectToStateDistance[index].lowerBound = lowerBound
                 objectToStateDistance[index].upperBound = upperBound
                 
@@ -184,13 +187,14 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         isRelativeToExtremeDirection: Bool,
         extremeDirection: ExtremeDirection,
         lowerBound: Double, upperBound: Double,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID){
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID){
             if let index = self.firstObjectToStateAngleIndexById(id: id) {
                 
                 objectToStateAngle[index].warning.content = warningContent
                 objectToStateAngle[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
                 objectToStateAngle[index].warning.delayTime = delayTime
-                
+                objectToStateAngle[index].warning.changeStateClear = changeStateClear
+
                 objectToStateAngle[index].lowerBound = lowerBound
                 objectToStateAngle[index].upperBound = upperBound
                 

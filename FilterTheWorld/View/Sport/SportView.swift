@@ -585,7 +585,7 @@ struct SportView: View {
                                             sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
                                             ruleClass = .LandmarkSegment
 
-                                            self.editRuleFlag = true
+                                            self.showSetupRule = true
                                         }) {
                                             Text("修改")
                                         }
@@ -646,8 +646,8 @@ struct SportView: View {
                                         Button(action: {
                                             sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .Observation)
                                             ruleClass = .Observation
-
                                             self.showSetupRule = true
+                                            
                                         }) {
                                             Text("修改")
                                         }

@@ -82,7 +82,7 @@
 		95A99220283CE0A200F79FB1 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921F283CE0A200F79FB1 /* Constants.swift */; };
 		95A99222283CEF1C00F79FB1 /* LandmarkInAreaRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99221283CEF1C00F79FB1 /* LandmarkInAreaRuleView.swift */; };
 		95A99224283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99223283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift */; };
-		95A99226283E207400F79FB1 /* LandmarkToStateRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99225283E207400F79FB1 /* LandmarkToStateRuleView.swift */; };
+		95A99226283E207400F79FB1 /* LandmarkToStateRuleView+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A99225283E207400F79FB1 /* LandmarkToStateRuleView+.swift */; };
 		95AA02CA277959D300C6E340 /* robot.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 95AA02CC277959D300C6E340 /* robot.usdz */; };
 		95B7627427F18C45000DE18C /* AnnotationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B7627327F18C45000DE18C /* AnnotationManager.swift */; };
 		95B7BFE4283668740037EC55 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B7BFE3283668740037EC55 /* ContentView.swift */; };
@@ -216,7 +216,7 @@
 		95A9921F283CE0A200F79FB1 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		95A99221283CEF1C00F79FB1 /* LandmarkInAreaRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkInAreaRuleView.swift; sourceTree = "<group>"; };
 		95A99223283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkSegmentAngleRuleView.swift; sourceTree = "<group>"; };
-		95A99225283E207400F79FB1 /* LandmarkToStateRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkToStateRuleView.swift; sourceTree = "<group>"; };
+		95A99225283E207400F79FB1 /* LandmarkToStateRuleView+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LandmarkToStateRuleView+.swift"; sourceTree = "<group>"; };
 		95B7627327F18C45000DE18C /* AnnotationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationManager.swift; sourceTree = "<group>"; };
 		95B7BFE3283668740037EC55 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		95BF354A27A16D81006F5D80 /* VideoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
@@ -424,7 +424,7 @@
 			children = (
 				954AA334289BBE6E001BEAAF /* LandmarkToSelfRuleView+.swift */,
 				954AA332289BBE6D001BEAAF /* ObjectToSelfRuleView+.swift */,
-				95A99225283E207400F79FB1 /* LandmarkToStateRuleView.swift */,
+				95A99225283E207400F79FB1 /* LandmarkToStateRuleView+.swift */,
 				95A9921C283CDFF200F79FB1 /* LandmarkSegmentLengthRuleView.swift */,
 				954AA333289BBE6D001BEAAF /* AngleToLandmarkSegmentRuleView.swift */,
 				95A99223283CF5B600F79FB1 /* LandmarkSegmentAngleRuleView.swift */,
@@ -770,7 +770,7 @@
 				95F4853D28B7B00D004753C6 /* ObjectToStateAngleRuleView.swift in Sources */,
 				954AA30A289BBAEB001BEAAF /* SportReportView.swift in Sources */,
 				954AA336289BBE6E001BEAAF /* AngleToLandmarkSegmentRuleView.swift in Sources */,
-				95A99226283E207400F79FB1 /* LandmarkToStateRuleView.swift in Sources */,
+				95A99226283E207400F79FB1 /* LandmarkToStateRuleView+.swift in Sources */,
 				958F8C352760560500F6DF48 /* SVC6.mlmodel in Sources */,
 				95E79E2C27A13CED00AC36E1 /* CGPoint+Extension.swift in Sources */,
 				954AA340289BD894001BEAAF /* yolov5-pipeline-basketball.mlmodel in Sources */,

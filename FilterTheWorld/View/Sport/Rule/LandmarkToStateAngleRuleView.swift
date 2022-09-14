@@ -11,6 +11,7 @@ struct LandmarkToStateAngleRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
     
     @State var toStateId = SportState.startState.id
     @State var isRelativeToExtremeDirection = false
@@ -35,7 +36,7 @@ struct LandmarkToStateAngleRuleView: View {
                                                       isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                extremeDirection: extremeDirection,
                                                lowerBound: lowerBound, upperBound: upperBound,
-                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkToStateAngle.id)
+                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: landmarkToStateAngle.id)
 
     }
     
@@ -47,6 +48,11 @@ struct LandmarkToStateAngleRuleView: View {
             HStack {
                 Text("关节自身(相对状态)角度")
                 Spacer()
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 
                 Toggle(isOn: $isRelativeToExtremeDirection.didSet { _ in
                     updateRemoteData()
@@ -91,8 +97,10 @@ struct LandmarkToStateAngleRuleView: View {
                     })
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                 }
                 HStack {
@@ -140,6 +148,7 @@ struct LandmarkToStateAngleRuleView: View {
             warningContent = length.warning.content
             triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
             delayTime = length.warning.delayTime
+            changeStateClear = length.warning.changeStateClear == true
 
             toStateId = length.toStateId
             isRelativeToExtremeDirection = length.isRelativeToExtremeDirection

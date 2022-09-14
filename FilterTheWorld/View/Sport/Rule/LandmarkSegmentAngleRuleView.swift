@@ -37,6 +37,7 @@ struct LandmarkSegmentAngleRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
     
     
     func updateLocalData() {
@@ -46,7 +47,7 @@ struct LandmarkSegmentAngleRuleView: View {
     }
     
     func updateRemoteData() {
-        sportManager.updateRuleLandmarkSegmentAngle(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: angle.id)
+        sportManager.updateRuleLandmarkSegmentAngle(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, lowerBound: lowerBound, upperBound: upperBound, id: angle.id)
     }
     
     //角度
@@ -142,8 +143,13 @@ struct LandmarkSegmentAngleRuleView: View {
         VStack {
             
             HStack {
-                Text("关节对角度")
+                Text("角度")
                 Spacer()
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 Button(action: {
                     sportManager.removeRuleLandmarkSegmentAngle(id: angle.id)
 
@@ -172,8 +178,10 @@ struct LandmarkSegmentAngleRuleView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
                     
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                     
                 }
@@ -204,6 +212,7 @@ struct LandmarkSegmentAngleRuleView: View {
             self.warningContent = angle.warning.content
             self.triggeredWhenRuleMet = angle.warning.triggeredWhenRuleMet
             self.delayTime = angle.warning.delayTime
+            self.changeStateClear = angle.warning.changeStateClear == true
         })
     }
 }

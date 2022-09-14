@@ -57,24 +57,27 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
     
 
     
-    mutating func updateRuleLandmarkSegmentAngle(warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, id: UUID) {
+    mutating func updateRuleLandmarkSegmentAngle(warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, lowerBound: Double, upperBound: Double, id: UUID) {
         if let angleIndex = self.firstAngleIndexById(id: id) {
             landmarkSegmentAngle[angleIndex].warning.content = warningContent
             landmarkSegmentAngle[angleIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             landmarkSegmentAngle[angleIndex].warning.delayTime = delayTime
+            landmarkSegmentAngle[angleIndex].warning.changeStateClear = changeStateClear
+
             landmarkSegmentAngle[angleIndex].lowerBound = lowerBound
             landmarkSegmentAngle[angleIndex].upperBound = upperBound
         }
         
     }
     
-    mutating func updateRuleAngleToLandmarkSegment(fromLandmarkSegment: LandmarkSegment, toLandmarkSegment: LandmarkSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleAngleToLandmarkSegment(fromLandmarkSegment: LandmarkSegment, toLandmarkSegment: LandmarkSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
         if let angleIndex = self.firstAngleToLandmarkSegmentIndexById(id: id) {
             
             angleToLandmarkSegment[angleIndex].warning.content = warningContent
             angleToLandmarkSegment[angleIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             angleToLandmarkSegment[angleIndex].warning.delayTime = delayTime
-            
+            angleToLandmarkSegment[angleIndex].warning.changeStateClear = changeStateClear
+
             angleToLandmarkSegment[angleIndex].lowerBound = lowerBound
             angleToLandmarkSegment[angleIndex].upperBound = upperBound
             
@@ -90,12 +93,14 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         })
     }
     
-    mutating func updateRuleLandmarkSegmentLength(fromLandmarkSegment: LandmarkSegment, fromAxis: CoordinateAxis, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleLandmarkSegmentLength(fromLandmarkSegment: LandmarkSegment, fromAxis: CoordinateAxis, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool,  id: UUID) {
         if let lengthIndex = self.firstLandmarkSegmentLengthIndexById(id: id) {
             
             landmarkSegmentLength[lengthIndex].warning.content = warningContent
             landmarkSegmentLength[lengthIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             landmarkSegmentLength[lengthIndex].warning.delayTime = delayTime
+            landmarkSegmentLength[lengthIndex].warning.changeStateClear = changeStateClear
+
             
             landmarkSegmentLength[lengthIndex].lowerBound = lowerBound
             landmarkSegmentLength[lengthIndex].upperBound = upperBound
@@ -120,13 +125,14 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         extremeDirection: ExtremeDirection,
         toStateLandmarkSegment: LandmarkSegment,
         lowerBound: Double, upperBound: Double,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, id: UUID) {
             if let index = self.firstLandmarkSegmentToStateAngleIndexById(id: id) {
                 
                 landmarkSegmentToStateAngle[index].warning.content = warningContent
                 landmarkSegmentToStateAngle[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
                 landmarkSegmentToStateAngle[index].warning.delayTime = delayTime
-                
+                landmarkSegmentToStateAngle[index].warning.changeStateClear = changeStateClear
+
                 landmarkSegmentToStateAngle[index].lowerBound = lowerBound
                 landmarkSegmentToStateAngle[index].upperBound = upperBound
                 
@@ -155,13 +161,14 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
         extremeDirection: ExtremeDirection,
         toStateLandmarkSegment: LandmarkSegment,
         lowerBound: Double, upperBound: Double,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
             if let index = self.firstLandmarkSegmentToStateDistanceIndexById(id: id) {
                 
                 landmarkSegmentToStateDistance[index].warning.content = warningContent
                 landmarkSegmentToStateDistance[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
                 landmarkSegmentToStateDistance[index].warning.delayTime = delayTime
-                
+                landmarkSegmentToStateDistance[index].warning.changeStateClear = changeStateClear
+
                 landmarkSegmentToStateDistance[index].lowerBound = lowerBound
                 landmarkSegmentToStateDistance[index].upperBound = upperBound
                 

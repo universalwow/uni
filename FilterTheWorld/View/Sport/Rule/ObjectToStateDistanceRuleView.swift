@@ -11,6 +11,8 @@ struct ObjectToStateDistanceRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
+
 
     @State var fromAxis = CoordinateAxis.X
     @State var fromObjectPosition = ObjectPosition.middle
@@ -63,7 +65,7 @@ struct ObjectToStateDistanceRuleView: View {
                                                toLandmarkSegmentType: toLandmarkSegmentType,
                                                toAxis: toAxis,
                                                lowerBound: lowerBound, upperBound: upperBound,
-                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToStateDistance.id)
+                                                     warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: objectToStateDistance.id)
 
     }
     
@@ -75,8 +77,12 @@ struct ObjectToStateDistanceRuleView: View {
             HStack {
                 Text("相对状态位移")
                 Spacer()
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 
-                Spacer()
                 Toggle(isOn: $isRelativeToObject.didSet { _ in
                     updateRemoteData()
                     updateLocalData()
@@ -128,8 +134,10 @@ struct ObjectToStateDistanceRuleView: View {
                     })
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                 }
                 VStack {
@@ -234,6 +242,7 @@ struct ObjectToStateDistanceRuleView: View {
             warningContent = length.warning.content
             triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
             delayTime = length.warning.delayTime
+            changeStateClear = length.warning.changeStateClear == true
                             
             toLandmarkSegmentType = length.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType
             toAxis = length.toLandmarkSegmentToAxis.axis

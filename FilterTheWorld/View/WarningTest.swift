@@ -68,24 +68,24 @@ struct OffsetEffect: AnimatableModifier {
 
 struct WarningText: View {
     
-    @Binding var text: String
+    @Binding var warning: Warning
 
     @State private var offset: CGFloat = 0
     @Binding var childViewSize: CGSize
     
     var body: some View {
         
-        Text(text)
+        Text(warning.content)
             .padding()
-            .background(RoundedRectangle(cornerRadius: 10).fill(.green))
+            .background(RoundedRectangle(cornerRadius: 10).fill(warning.isScoreWarning == false ? .green : .red))
             .offset(x: 0, y: offset)
 //                .modifier(OffsetEffect(offset: offset))
             .modifier(AnimationCompletionObserverModifier(observedValue: offset, completion: {
-                self.text = ""
+                self.warning = Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2)
 
             }))
-            .onChange(of: self.text, perform: { text in
-            if text != "" {
+            .onChange(of: self.warning, perform: { text in
+                if warning.content != "" {
                 self.offset = self.childViewSize.height * 3
                 
                 withAnimation(.linear(duration: Double(4))) {
@@ -111,11 +111,11 @@ struct WarningTest: View {
     @EnvironmentObject var sportGround: SportsGround
 
     @State var childViewSize: CGSize = .zero
-    @State var first = ""
-    @State var second = ""
-    @State var third = ""
-    @State var fourth = ""
-    @State var five = ""
+    @State var first = Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2)
+    @State var second = Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2)
+    @State var third = Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2)
+    @State var fourth = Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2)
+    @State var five = Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2)
 
     @State var timer = Timer.publish(every: 1, on: .main, in: .default)
         .autoconnect()
@@ -133,11 +133,11 @@ struct WarningTest: View {
                                 .font(.largeTitle)
                         }.opacity(0)
                         
-                        WarningText(text: $first, childViewSize: $childViewSize)
-                        WarningText(text: $second, childViewSize: $childViewSize)
-                        WarningText(text: $third, childViewSize: $childViewSize)
-                        WarningText(text: $fourth, childViewSize: $childViewSize)
-                        WarningText(text: $five, childViewSize: $childViewSize)
+                        WarningText(warning: $first, childViewSize: $childViewSize)
+                        WarningText(warning: $second, childViewSize: $childViewSize)
+                        WarningText(warning: $third, childViewSize: $childViewSize)
+                        WarningText(warning: $fourth, childViewSize: $childViewSize)
+                        WarningText(warning: $five, childViewSize: $childViewSize)
                         
                     }
                     Spacer()
@@ -161,19 +161,22 @@ struct WarningTest: View {
             if !sportGround.warnings.isEmpty {
                 let warning = sportGround.warnings.removeFirst()
             
-                if ![first, second, third, fourth, five].contains(warning) {
+                if ![first, second, third, fourth, five].contains(where: { _warning in
+                    _warning.content == warning.content
                     
-                    print("warning 8 \(warning)")
-                    if first == "" {
-                        first = "\(warning)"
-                    } else if second == "" {
-                        second = "\(warning)"
-                    }else if third == "" {
-                        third = "\(warning)"
-                    }else if fourth == "" {
-                        fourth = "\(warning)"
-                    }else if five == "" {
-                        five = "\(warning)"
+                }) {
+                    
+                    print("warning 8 \(warning.content)")
+                    if first.content == "" {
+                        first = warning
+                    } else if second.content == "" {
+                        second = warning
+                    }else if third.content == "" {
+                        third = warning
+                    }else if fourth.content == "" {
+                        fourth = warning
+                    }else if five.content == "" {
+                        five = warning
                     }
                 }
             }

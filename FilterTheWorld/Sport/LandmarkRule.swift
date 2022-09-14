@@ -48,13 +48,14 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
     }
     
     mutating func updateRuleLandmarkInArea(
-        area: [Point2D],imageSize: Point2D, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        area: [Point2D],imageSize: Point2D, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
             if let landmarkInAreaIndex = self.firstLandmarkInAreaIndexById(id: id) {
                 
                 landmarkInArea[landmarkInAreaIndex].warning.content = warningContent
                 landmarkInArea[landmarkInAreaIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
                 landmarkInArea[landmarkInAreaIndex].warning.delayTime = delayTime
-                
+                landmarkInArea[landmarkInAreaIndex].warning.changeStateClear = changeStateClear
+
                 landmarkInArea[landmarkInAreaIndex].area = area
                 landmarkInArea[landmarkInAreaIndex].imageSize = imageSize
                 
@@ -71,13 +72,14 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         })
     }
     
-    mutating func updateRuleDistanceToLandmark(toLandmark: Landmark, fromAxis: CoordinateAxis, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleDistanceToLandmark(toLandmark: Landmark, fromAxis: CoordinateAxis, toLandmarkSegment: LandmarkSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
         if let lengthIndex = self.firstDistanceToLandmarkIndexById(id: id) {
             
             distanceToLandmark[lengthIndex].warning.content = warningContent
             distanceToLandmark[lengthIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             distanceToLandmark[lengthIndex].warning.delayTime = delayTime
-            
+            distanceToLandmark[lengthIndex].warning.changeStateClear = changeStateClear
+
             distanceToLandmark[lengthIndex].lowerBound = lowerBound
             distanceToLandmark[lengthIndex].upperBound = upperBound
             
@@ -97,11 +99,13 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         })
     }
     
-    mutating func updateRuleAngleToLandmark(warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, toLandmark: Landmark, id: UUID) {
+    mutating func updateRuleAngleToLandmark(warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  lowerBound: Double, upperBound: Double, toLandmark: Landmark, id: UUID) {
         if let index = self.firstAngleToLandmarkIndexById(id: id) {
             angleToLandmark[index].warning.content = warningContent
             angleToLandmark[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             angleToLandmark[index].warning.delayTime = delayTime
+            angleToLandmark[index].warning.changeStateClear = changeStateClear
+
             angleToLandmark[index].lowerBound = lowerBound
             angleToLandmark[index].upperBound = upperBound
             
@@ -127,13 +131,14 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                                                     toLandmarkSegment: LandmarkSegment,
                                                     toAxis: CoordinateAxis,
                                                     lowerBound: Double, upperBound: Double,
-                                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
         if let index = self.firstLandmarkToStateDistanceIndexById(id: id) {
             
             landmarkToStateDistance[index].warning.content = warningContent
             landmarkToStateDistance[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             landmarkToStateDistance[index].warning.delayTime = delayTime
-            
+            landmarkToStateDistance[index].warning.changeStateClear = changeStateClear
+
             landmarkToStateDistance[index].lowerBound = lowerBound
             landmarkToStateDistance[index].upperBound = upperBound
             
@@ -165,13 +170,14 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         extremeDirection: ExtremeDirection,
         toStateLandmark: Landmark,
         lowerBound: Double, upperBound: Double,
-        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
             if let index = self.firstLandmarkToStateAngleIndexById(id: id) {
                 
                 landmarkToStateAngle[index].warning.content = warningContent
                 landmarkToStateAngle[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
                 landmarkToStateAngle[index].warning.delayTime = delayTime
-                
+                landmarkToStateAngle[index].warning.changeStateClear = changeStateClear
+
                 landmarkToStateAngle[index].lowerBound = lowerBound
                 landmarkToStateAngle[index].upperBound = upperBound
                 

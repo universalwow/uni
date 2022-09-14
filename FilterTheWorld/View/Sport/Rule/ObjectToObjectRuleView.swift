@@ -12,6 +12,7 @@ struct ObjectToObjectRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
 
 
     @State var fromAxis = CoordinateAxis.X
@@ -35,7 +36,7 @@ struct ObjectToObjectRuleView: View {
     }
     
     func updateRemoteData() {
-        sportManager.updateRuleObjectToObject(fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToObject.id, isRelativeToObject: isRelativeToObject)
+        sportManager.updateRuleObjectToObject(fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: objectToObject.id, isRelativeToObject: isRelativeToObject)
 
     }
     
@@ -46,6 +47,11 @@ struct ObjectToObjectRuleView: View {
             HStack {
                 Text("物体相对物体位置")
                 Spacer()
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 Toggle(isOn: $isRelativeToObject.didSet { _ in
                     updateRemoteData()
                     updateLocalData()
@@ -81,8 +87,10 @@ struct ObjectToObjectRuleView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
                     
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                 }
                 
@@ -193,6 +201,7 @@ struct ObjectToObjectRuleView: View {
             warningContent = objectToObject.warning.content
             triggeredWhenRuleMet = objectToObject.warning.triggeredWhenRuleMet
             delayTime = objectToObject.warning.delayTime
+            changeStateClear = objectToObject.warning.changeStateClear == true
             
             fromAxis = objectToObject.fromPosition.axis
             fromObjectPosition = objectToObject.fromPosition.position

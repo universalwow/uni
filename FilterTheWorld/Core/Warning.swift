@@ -7,6 +7,9 @@ struct Warning: Codable, Hashable {
   var triggeredWhenRuleMet: Bool
   // 延迟多久触发
   var delayTime:Double
+// 切换状态是否清除
+  var changeStateClear: Bool?
+  var isScoreWarning: Bool?
     
     static func == (lhs: Warning, rhs: Warning) -> Bool {
         return lhs.content == rhs.content

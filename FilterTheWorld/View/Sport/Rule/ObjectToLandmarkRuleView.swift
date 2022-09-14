@@ -13,6 +13,7 @@ struct ObjectToLandmarkRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
 
     //    此处的id是label
     @State var objectPosition = ObjectPosition.middle
@@ -39,7 +40,7 @@ struct ObjectToLandmarkRuleView: View {
                                                 toLandmarkType: toLandmarkType,
                                                 toLandmarkSegmentType: toLandmarkSegmentType,
                                                 toAxis: toAxis,
-                                                lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: objectToLandmark.id, isRelativeToObject: isRelativeToObject)
+                                                lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: objectToLandmark.id, isRelativeToObject: isRelativeToObject)
 
     }
     
@@ -51,6 +52,11 @@ struct ObjectToLandmarkRuleView: View {
                 Text("相对关节位置")
                 Spacer()
                 
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 Toggle(isOn: $isRelativeToObject.didSet { _ in
                     updateRemoteData()
                     updateLocalData()
@@ -86,8 +92,10 @@ struct ObjectToLandmarkRuleView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
 
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                 }
 //                MARK: 有多个物体时，迁移规则可能出错 重新选择关键帧也会导致识别到的物体顺序或者多余而出错
@@ -194,6 +202,7 @@ struct ObjectToLandmarkRuleView: View {
             warningContent = objectToLandmark.warning.content
             triggeredWhenRuleMet = objectToLandmark.warning.triggeredWhenRuleMet
             delayTime = objectToLandmark.warning.delayTime
+            changeStateClear = objectToLandmark.warning.changeStateClear == true
 
             fromAxis = objectToLandmark.fromPosition.axis
             objectPosition = objectToLandmark.fromPosition.position

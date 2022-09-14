@@ -36,6 +36,7 @@ struct AngleToLandmarkRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
     
     @State var toLandmarkType = LandmarkType.LeftShoulder
     
@@ -47,7 +48,7 @@ struct AngleToLandmarkRuleView: View {
     }
     
     func updateRemoteData() {
-        sportManager.updateRuleAngleToLandmark(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, toLandmarkType: toLandmarkType, id: angleToLandmark.id)
+        sportManager.updateRuleAngleToLandmark(warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, lowerBound: lowerBound, upperBound: upperBound, toLandmarkType: toLandmarkType, id: angleToLandmark.id)
     }
     
     //角度
@@ -145,6 +146,11 @@ struct AngleToLandmarkRuleView: View {
             HStack {
                 Text("关节对角度")
                 Spacer()
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 
                 Text("相对关节")
                 Picker("相对关节", selection: $toLandmarkType.didSet{ _ in
@@ -186,8 +192,10 @@ struct AngleToLandmarkRuleView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
                     
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                     
                 }
@@ -219,6 +227,7 @@ struct AngleToLandmarkRuleView: View {
             self.warningContent = angle.warning.content
             self.triggeredWhenRuleMet = angle.warning.triggeredWhenRuleMet
             self.delayTime = angle.warning.delayTime
+            changeStateClear = angle.warning.changeStateClear == true
             
             self.toLandmarkType = angle.toLandmark.landmarkType
         })

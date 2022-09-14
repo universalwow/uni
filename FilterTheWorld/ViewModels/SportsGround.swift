@@ -8,9 +8,8 @@ class SportsGround: ObservableObject {
     @Published var sports: [Sport] = SportsGround.allSports
     
     @Published var sporters : [Sporter] = []
-    @Published var warnings: [String] = []
+    @Published var warnings: [Warning] = []
     var sportersReport: [SportReport] = []
-    
     
     func clearWarning() {
         warnings = []
@@ -19,7 +18,10 @@ class SportsGround: ObservableObject {
     func addSporter(sport: Sport) {
         print("add Sporter")
         let sporter = Sporter(name: "Uni", sport: sport, onStateChange: {
-            self.warnings = []
+            self.warnings = self.warnings.filter({ warning in
+                print("content \(warning.changeStateClear == false) - \(warning.content)")
+                return warning.changeStateClear == false
+            })
         })
         sporters = [sporter]
         sportersReport = [SportReport(sporterName: sporter.name, sportName: sport.name, sportClass: sport.sportClass, sportPeriod: sport.sportPeriod, statesDescription: sport.statesDescription)]
@@ -63,11 +65,6 @@ class SportsGround: ObservableObject {
 //            状态切换清除warning
             
             
-            
-            
-            
-            
-            
 
         }
     }
@@ -82,15 +79,21 @@ class SportsGround: ObservableObject {
 extension SportsGround {
     static var allSports: [Sport] {
 //        MARK: 此处加载的项目 从服务端加载时去掉图片等大资源。提升存储和网络效率
-        Storage.allFiles(.documents).map{ url in
-            Storage.retrieve(url: url, as: Sport.self)
+        let files = Storage.allFiles(.documents).filter{ url in
+            let v:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+            return url.absoluteString.contains(v)
+        }.map{ url -> Sport in
+//            print(url)
+            return Storage.retrieve(url: url, as: Sport.self)
         }.sorted(by: { (first, second) in
             if first.name == second.name {
                 return first.sportClass.rawValue <= second.sportClass.rawValue
             }
-            return first.name < second.name
+            return first.name <= second.name
             
         })
+        print("files \(files.count)")
+        return files
     }
     
     var allGrstureControllerSports : [Sport] {
@@ -100,7 +103,10 @@ extension SportsGround {
     }
     
     func updateSports() {
-        sports = Storage.allFiles(.documents).map{ url in
+        sports = Storage.allFiles(.documents).filter{ url in
+            let v:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+            return url.absoluteString.contains(v)
+        }.map{ url in
             
             let sport = Storage.retrieve(url: url, as: Sport.self)
             return sport

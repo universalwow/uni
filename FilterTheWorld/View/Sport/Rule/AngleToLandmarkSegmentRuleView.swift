@@ -15,27 +15,33 @@ struct AngleToLandmarkSegmentRuleView : View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
-    
+    @State var changeStateClear = true
     
         
     func updateLocalData() {
         let angleToLandmarkSegment = sportManager.getRuleAngleToLandmarkSegment(id: angle.id)
         lowerBound = angleToLandmarkSegment.lowerBound
         upperBound = angleToLandmarkSegment.upperBound
-        print("2 \(lowerBound)  - \(upperBound)")
         
     }
     
     func updateRemoteData() {
-        self.sportManager.updateRuleAngleToLandmarkSegment(tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: angle.id)
+        self.sportManager.updateRuleAngleToLandmarkSegment(tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: angle.id)
 
     }
     
     var body : some View {
         VStack {
             HStack {
-                Text("关节对相对角度")
+                Text("相对角度")
                 Spacer()
+                
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
+                
                 Button(action: {
                     sportManager.removeRuleAngleToLandmarkSegment(id: angle.id)
 
@@ -64,8 +70,10 @@ struct AngleToLandmarkSegmentRuleView : View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
                     
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                 }
                 Spacer()
@@ -124,6 +132,7 @@ struct AngleToLandmarkSegmentRuleView : View {
             self.warningContent = angleToLandmarkSegment.warning.content
             self.triggeredWhenRuleMet = angleToLandmarkSegment.warning.triggeredWhenRuleMet
             self.delayTime = angleToLandmarkSegment.warning.delayTime
+            self.changeStateClear = angleToLandmarkSegment.warning.changeStateClear == true
         }
     }
     

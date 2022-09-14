@@ -17,6 +17,7 @@ struct LandmarkInAreaRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
 
     
     var landmarkInAreaTextColor : Color {
@@ -49,7 +50,7 @@ struct LandmarkInAreaRuleView: View {
         
         func updateRemoteData() {
             if self.leftTopX < self.rightBottomX && self.leftTopY < self.rightBottomY {
-                sportManager.updateRuleLandmarkInArea(area: initArea, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkInArea.id)
+                sportManager.updateRuleLandmarkInArea(area: initArea, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: landmarkInArea.id)
             }
         }
     
@@ -62,6 +63,13 @@ struct LandmarkInAreaRuleView: View {
             HStack {
                 Text("关节在区域内")
                 Spacer()
+                
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
+                
                 Button(action: {
                     sportManager.removeRuleLandmarkInArea(id: landmarkInArea.id)
 
@@ -91,8 +99,10 @@ struct LandmarkInAreaRuleView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
                     
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                 }
                 HStack {
@@ -155,6 +165,7 @@ struct LandmarkInAreaRuleView: View {
             warningContent = area.warning.content
             triggeredWhenRuleMet = area.warning.triggeredWhenRuleMet
             delayTime = area.warning.delayTime
+            changeStateClear = area.warning.changeStateClear == true
         }
     }
 }

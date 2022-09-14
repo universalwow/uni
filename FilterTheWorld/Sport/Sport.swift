@@ -461,9 +461,9 @@ extension Sport {
         states[stateIndex].removeRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
     }
     
-    mutating func updateRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double, id: UUID) {
+    mutating func updateRuleLandmarkSegmentAngle(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool,lowerBound: Double, upperBound: Double, id: UUID) {
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
-          states[stateIndex].updateRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, id: id)
+          states[stateIndex].updateRuleLandmarkSegmentAngle(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, lowerBound: lowerBound, upperBound: upperBound, id: id)
 
         }
     }
@@ -493,9 +493,9 @@ extension Sport {
     }
     
     
-    mutating func updateRuleAngleToLandmarkSegment(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleAngleToLandmarkSegment(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, tolandmarkSegmentType: LandmarkTypeSegment, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
-          states[stateIndex].updateRuleAngleToLandmarkSegment(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+          states[stateIndex].updateRuleAngleToLandmarkSegment(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, tolandmarkSegmentType: tolandmarkSegmentType, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id)
 
         }
     }
@@ -522,9 +522,9 @@ extension Sport {
         states[stateIndex].removeRuleLandmarkSegmentLength(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
     }
     
-    mutating func updateRuleLandmarkSegmentLength(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis,tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+    mutating func updateRuleLandmarkSegmentLength(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis,tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
-          states[stateIndex].updateRuleLandmarkSegmentLength(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+            states[stateIndex].updateRuleLandmarkSegmentLength(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, fromAxis: fromAxis, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id)
 
         }
     }
@@ -561,7 +561,7 @@ extension Sport {
                                                            isRelativeToExtremeDirection: Bool,
                                                            extremeDirection: ExtremeDirection,
                                                     lowerBound: Double, upperBound: Double,
-                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool,id: UUID) {
                 
                 
                 
@@ -579,7 +579,7 @@ extension Sport {
                                                                       extremeDirection: extremeDirection,
                                                                toStateLandmarkSegment: toStateLandmarkSegment,
                                                                lowerBound: lowerBound, upperBound: upperBound,
-                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id)
 
                 }
             }
@@ -616,7 +616,7 @@ extension Sport {
                                                            isRelativeToExtremeDirection: Bool,
                                                            extremeDirection: ExtremeDirection,
                                                     lowerBound: Double, upperBound: Double,
-                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
                 
                 
                 
@@ -635,7 +635,7 @@ extension Sport {
                                                                       extremeDirection: extremeDirection,
                                                                toStateLandmarkSegment: toStateLandmarkSegment,
                                                                lowerBound: lowerBound, upperBound: upperBound,
-                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id)
 
                 }
             }
@@ -664,9 +664,9 @@ extension Sport {
             states[stateIndex].removeRuleDistanceToLandmark(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
         }
         
-        mutating func updateRuleDistanceToLandmark(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis, toLandmarkType: LandmarkType, tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,  id: UUID) {
+        mutating func updateRuleDistanceToLandmark(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fromAxis: CoordinateAxis, toLandmarkType: LandmarkType, tolandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
             if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
-              states[stateIndex].updateRuleDistanceToLandmark(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, fromAxis: fromAxis,  toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+              states[stateIndex].updateRuleDistanceToLandmark(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, fromAxis: fromAxis,  toLandmarkType: toLandmarkType, tolandmarkSegmentType: tolandmarkSegmentType, toAxis: toAxis, lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, id: id)
 
             }
         }
@@ -694,10 +694,10 @@ extension Sport {
         states[stateIndex].removeRuleAngleToLandmark(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
     }
     
-    mutating func updateRuleAngleToLandmark(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, lowerBound: Double, upperBound: Double,
+    mutating func updateRuleAngleToLandmark(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  lowerBound: Double, upperBound: Double,
                                             toLandmarkType: LandmarkType, id: UUID) {
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
-            states[stateIndex].updateRuleAngleToLandmark(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, lowerBound: lowerBound, upperBound: upperBound, toLandmarkType: toLandmarkType,
+            states[stateIndex].updateRuleAngleToLandmark(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  lowerBound: lowerBound, upperBound: upperBound, toLandmarkType: toLandmarkType,
                                                        id: id)
 
         }
@@ -738,7 +738,7 @@ extension Sport {
                                                 toLandmarkSegmentType: LandmarkTypeSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
-                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
             
             
             
@@ -760,7 +760,7 @@ extension Sport {
                                                            toLandmarkSegmentType: toLandmarkSegmentType,
                                                            toAxis: toAxis,
                                                            lowerBound: lowerBound, upperBound: upperBound,
-                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
 
             }
         }
@@ -797,7 +797,7 @@ extension Sport {
                                                            isRelativeToExtremeDirection: Bool,
                                                            extremeDirection: ExtremeDirection,
                                                     lowerBound: Double, upperBound: Double,
-                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
                 
                 
                 
@@ -815,7 +815,7 @@ extension Sport {
                                                                       extremeDirection: extremeDirection,
                                                                toStateLandmark: toStateLandmark,
                                                                lowerBound: lowerBound, upperBound: upperBound,
-                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
 
                 }
             }
@@ -850,12 +850,12 @@ extension Sport {
     
     mutating func updateRuleLandmarkInArea(
         stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
-        area: [Point2D],warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID) {
+        area: [Point2D],warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
         
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
       
           states[stateIndex].updateRuleLandmarkInArea(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
-                                                      area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                      area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
 
         }
     }
@@ -889,7 +889,7 @@ extension Sport {
                                                 toLandmarkType: LandmarkType,
                                                 toLandmarkSegmentType: LandmarkTypeSegment,
                                                 toAxis: CoordinateAxis,
-        lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
+        lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, id: UUID, isRelativeToObject: Bool) {
         
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
       
@@ -900,7 +900,7 @@ extension Sport {
             toLandmarkType: toLandmarkType,
             toLandmarkSegmentType: toLandmarkSegmentType,
             toAxis: toAxis,
-            lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, isRelativeToObject: isRelativeToObject)
+            lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear,id: id, isRelativeToObject: isRelativeToObject)
 
         }
     }
@@ -929,12 +929,12 @@ extension Sport {
     }
     
     mutating func updateRuleObjectToObject(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
-                                           fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, toLandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID, isRelativeToObject: Bool) {
+                                           fromAxis: CoordinateAxis, fromObjectPosition: ObjectPosition, toObjectId: String, toObjectPosition: ObjectPosition, toLandmarkSegmentType: LandmarkTypeSegment, toAxis: CoordinateAxis, lowerBound: Double, upperBound: Double, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, isRelativeToObject: Bool) {
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
       
           states[stateIndex].updateRuleObjectToObject(
             rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
-            fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id, isRelativeToObject: isRelativeToObject)
+            fromAxis: fromAxis,fromObjectPosition: fromObjectPosition,toObjectId: toObjectId, toObjectPosition: toObjectPosition, toLandmarkSegmentType: toLandmarkSegmentType, toAxis: toAxis,     lowerBound: lowerBound, upperBound: upperBound, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, isRelativeToObject: isRelativeToObject)
         }
         
     }
@@ -975,7 +975,7 @@ extension Sport {
                                                                                                     toLandmarkSegmentType: LandmarkTypeSegment,
                                                                                                     toAxis: CoordinateAxis,
                                                                                                     lowerBound: Double, upperBound: Double,
-                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID)  {
+                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID)  {
                 
                 
                 
@@ -998,7 +998,7 @@ extension Sport {
                                                                     toLandmarkSegmentType: toLandmarkSegmentType,
                                                                     toAxis: toAxis,
                                                                     lowerBound: lowerBound, upperBound: upperBound,
-                                                                    warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                                    warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id)
 
                 }
             }
@@ -1036,7 +1036,7 @@ extension Sport {
                                                                                                isRelativeToExtremeDirection: Bool,
                                                                                                extremeDirection: ExtremeDirection,
                                                                                                     lowerBound: Double, upperBound: Double,
-                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, id: UUID)  {
+                                                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID)  {
                 
                 
                 
@@ -1055,7 +1055,7 @@ extension Sport {
                                                                     isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                                     extremeDirection: extremeDirection,
                                                                     lowerBound: lowerBound, upperBound: upperBound,
-                                                                    warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: id)
+                                                                    warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
 
                 }
             }

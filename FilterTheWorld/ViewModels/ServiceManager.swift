@@ -99,6 +99,7 @@ extension ServiceManager {
         return
         
       }
+        
     let appVersion:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
       var request = URLRequest(url: requestUrl)
       request.httpMethod = "POST"

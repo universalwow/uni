@@ -11,6 +11,7 @@ struct LandmarkSegmentToStateDistanceRuleView: View {
     @State var warningContent = ""
     @State var triggeredWhenRuleMet = false
     @State var delayTime: Double = 2.0
+    @State var changeStateClear = true
     
     @State var fromAxis: CoordinateAxis = .XY
     
@@ -38,7 +39,7 @@ struct LandmarkSegmentToStateDistanceRuleView: View {
                                                       isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                extremeDirection: extremeDirection,
                                                lowerBound: lowerBound, upperBound: upperBound,
-                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, id: landmarkSegmentToStateDistance.id)
+            warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: landmarkSegmentToStateDistance.id)
 
     }
     
@@ -48,8 +49,13 @@ struct LandmarkSegmentToStateDistanceRuleView: View {
         VStack {
             
             HStack {
-                Text("关节对自身(相对状态)角度")
+                Text("自身(相对状态)距离")
                 Spacer()
+                Toggle(isOn: $changeStateClear.didSet{ _ in
+                    updateRemoteData()
+                }, label: {
+                    Text("状态切换清除提示").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 
                 Toggle(isOn: $isRelativeToExtremeDirection.didSet { _ in
                     updateRemoteData()
@@ -94,8 +100,10 @@ struct LandmarkSegmentToStateDistanceRuleView: View {
                     })
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
-                    Toggle("规则满足时提示", isOn: $triggeredWhenRuleMet.didSet{ _ in
+                    Toggle(isOn: $triggeredWhenRuleMet.didSet{ _ in
                         updateRemoteData()
+                    }, label: {
+                        Text("规则满足时提示").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                 }
                 HStack {
@@ -154,6 +162,7 @@ struct LandmarkSegmentToStateDistanceRuleView: View {
             warningContent = length.warning.content
             triggeredWhenRuleMet = length.warning.triggeredWhenRuleMet
             delayTime = length.warning.delayTime
+            changeStateClear = length.warning.changeStateClear == true
             
             fromAxis = length.fromAxis
             toStateId = length.toStateId
