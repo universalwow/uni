@@ -348,7 +348,6 @@ extension SportsManager {
     
     func findSelectedObjects() -> [Observation] {
         findFirstState()!.objects
-        
     }
     
     func findSelectedObjects(sport:Sport) -> [Observation]? {
