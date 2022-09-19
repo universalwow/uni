@@ -10,14 +10,14 @@ struct ContentView: View {
                 SportsManagerView().padding()
             }
             .tabItem{
-                Text("Sports Manager")
+                Text("运动实验室")
             }
             
             VStack {
                 SportsGroundView().padding()
             }
             .tabItem{
-                Text("Sports Ground")
+                Text("运动场")
             }
             
             VStack {
@@ -26,7 +26,7 @@ struct ContentView: View {
 //                VideoPlayerCoreImageView().padding()
             }
             .tabItem{
-                Text("Video Test")
+                Text("视频测试")
             }
             
             VStack {
@@ -36,7 +36,7 @@ struct ContentView: View {
 //                VideoPlayerCoreImageView().padding()
             }
             .tabItem{
-                Text("Reports")
+                Text("运动报告")
             }
             
             
@@ -47,7 +47,15 @@ struct ContentView: View {
                 LabelImageView().padding()
             }
             .tabItem{
-                Text("Label Me")
+                Text("图片标注")
+            }
+            
+            VStack {
+                
+                GenerateAreaView().padding()
+            }
+            .tabItem{
+                Text("生成区域")
             }
             
             
@@ -55,7 +63,7 @@ struct ContentView: View {
             VStack {
                 LoginView()
             }.tabItem{
-                Text("Login")
+                Text("登录")
             }
             
 //            VStack {

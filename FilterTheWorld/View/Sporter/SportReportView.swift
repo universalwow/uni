@@ -20,17 +20,19 @@ struct ReportDetail: View {
                         Divider()
                         Text("Score Analysis:")
                         HStack{
-                            Text("总计分次数:\(report.scoreTimes.count)")
+                            Text("总计分次数:\(report.scoreTimes.count)/\(report.interactionScoreTimes?.count ?? 0)")
                         }
                         
                         if let stateDescriptions = report.statesDescription {
                             ForEach(stateDescriptions) { stateDescription in
                                 let stateScores = report.findStateScoreTimes(stateId: stateDescription.stateId)
+                                let stateInteractionScores = report.findStateInteractionScoreTimes(stateId: stateDescription.stateId)
+
                                 HStack {
                                     Text("状态:\(stateDescription.stateName)")
-                                    Text("计分次数:\(stateScores.count)")
+                                    Text("计分次数:\(stateScores.count)/\(stateInteractionScores.count)")
                                     if let checkCycle = stateDescription.checkCycle {
-                                        Text("计分时长:\(Double(stateScores.count) * checkCycle)")
+                                        Text("计分时长:\(Double(stateScores.count) * checkCycle)/\(Double(stateInteractionScores.count) * checkCycle)")
                                     }
                                 }
                             }

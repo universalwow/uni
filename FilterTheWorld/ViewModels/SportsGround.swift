@@ -15,6 +15,26 @@ class SportsGround: ObservableObject {
         warnings = []
     }
     
+    func areas() -> [LandmarkInArea]  {
+        var areas: [LandmarkInArea] = []
+        sporters.forEach( { sporter in
+            areas.append(contentsOf:
+                            sporter.areas()
+            )
+        } )
+        return areas
+    }
+    
+    func dynamicAreas() -> [LandmarkInAreaForAreaRule]  {
+        var areas: [LandmarkInAreaForAreaRule] = []
+        sporters.forEach( { sporter in
+            areas.append(contentsOf:
+                            sporter.dynamicAreas()
+            )
+        } )
+        return areas
+    }
+    
     func addSporter(sport: Sport) {
         print("add Sporter")
         let sporter = Sporter(name: "Uni", sport: sport, onStateChange: {
@@ -33,6 +53,7 @@ class SportsGround: ObservableObject {
             let sporter = sporters[sporterIndex]
             sportersReport[sporterIndex].endTime = endTime
             sportersReport[sporterIndex].scoreTimes = sporter.scoreTimes
+            sportersReport[sporterIndex].interactionScoreTimes = sporter.interactionScoreTimes
             sportersReport[sporterIndex].allStateTimes = sporter.allStateTimeHistory
 
             sportersReport[sporterIndex].warnings = sporter.warningsData
@@ -52,6 +73,9 @@ class SportsGround: ObservableObject {
                 sportersReport[sporterIndex].startTime = currentTime
             }
             sporters[sporterIndex].play(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
+            
+       
+//            if sporters[sporterIndex].scoreTimes 
             self.sporters[sporterIndex].delayWarnings.forEach({ newWarning in
                 if !self.warnings.contains(newWarning) {
                     self.warnings.append(newWarning)
@@ -62,9 +86,6 @@ class SportsGround: ObservableObject {
                     self.warnings.append(newWarning)
                 }
             })
-//            状态切换清除warning
-            
-            
 
         }
     }

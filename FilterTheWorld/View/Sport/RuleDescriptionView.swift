@@ -151,6 +151,18 @@ struct LandmarkInAreaDescriptionView: View {
     }
 }
 
+struct LandmarkInAreaForAreaRuleDescriptionView: View {
+    var area:LandmarkInAreaForAreaRule
+    var body:some View {
+        HStack {
+            Text("关节\(area.landmark.id)在区域\(area.dynamicAreaId):\(area.warning.content)")
+            Spacer()
+            Text(area.areaString)
+            Spacer()
+        }
+    }
+}
+
 
 struct ObjectToLandmarkDescriptionView: View {
     var objectToLandmark: ObjectToLandmark
@@ -339,6 +351,27 @@ struct ObservationRuleDescriptionView: View {
                 Divider()
                 
             })
+            
+        }
+    }
+}
+
+struct AreaRuleDescriptionView: View {
+    @Binding var rule:AreaRule
+    var body : some View {
+        VStack {
+            
+            
+            ForEach(rule.landmarkInArea, content: { landmarkInArea in
+                LandmarkInAreaForAreaRuleDescriptionView(area: landmarkInArea)
+                Divider()
+                
+            })
+            
+            
+            
+        
+
             
         }
     }

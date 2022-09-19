@@ -139,6 +139,7 @@ struct SportView: View {
     @State var toState = SportState.endState
     
     @State var scoreState = SportState.startState
+    @State var interactionScoreState = SportState.startState
     @State var violateState = SportState.startState
     @State var scoreSequenceIndex = 0
     
@@ -160,6 +161,8 @@ struct SportView: View {
     @State var noStateWarning = ""
     @State var violateSequenceWarning = ""
     @State var isGestureController = false
+    @State var isInteraction = false
+    @State var interactionScoreCycle = 1
     
 
     
@@ -180,7 +183,9 @@ struct SportView: View {
                                  sportPeriod: sportPeriod,
                                  sportDiscrete: sportDiscrete,
                                  noStateWarning: noStateWarning,
-                                 isGestureController: isGestureController)
+                                 isGestureController: isGestureController,
+                                 isInteraction: isInteraction
+        )
     }
     
     
@@ -190,6 +195,11 @@ struct SportView: View {
                 Text("基础信息")
                 Text(":左/4 右/5 上/6 下/7 进入/8").opacity(isGestureController ? 0.8 : 0)
                 Spacer()
+                Toggle(isOn: $isInteraction.didSet { _ in
+                    updateBasicMessage()
+                }, label: {
+                    Text("交互项目?").frame(maxWidth: .infinity, alignment: .trailing)
+                })
                 Toggle(isOn: $isGestureController.didSet { _ in
                     updateBasicMessage()
                 }, label: {
@@ -198,6 +208,19 @@ struct SportView: View {
                 
                
                 
+            }
+            
+            if isInteraction {
+                HStack {
+                    Text("切换周期:")
+                    TextField("切换周期:", value: $interactionScoreCycle, formatter: formatter, onEditingChanged: { flag in
+                        if !flag {
+                            sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, interactionScoreCycle: interactionScoreCycle, warningDelay: warningDelay)
+                        }
+                        
+                    }).textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.numberPad)
+                }
             }
             
             HStack{
@@ -241,8 +264,6 @@ struct SportView: View {
                         Text(_sportDiscrete.rawValue).tag(_sportDiscrete)
                     }
                 }
-                
-                
             }
             HStack{
                 Text("简介:")
@@ -257,6 +278,67 @@ struct SportView: View {
         }.padding()
    
 
+    }
+    
+    
+    func interactionMessageView(sport: Sport) -> some View {
+        VStack {
+            Divider()
+            HStack {
+                Text("交互成绩状态序列")
+                Spacer()
+                HStack {
+                    Text("状态")
+                    Picker("成绩序列", selection: $interactionScoreState) {
+                        ForEach(sport.allStates) { state in
+                            Text(state.name).tag(state)
+                        }
+                    }
+                }
+                Spacer()
+                Button(action: {
+                    sportManager.addSportStateInteractionScoreSequence(sport: sport)
+                    
+                }) {
+                    Text("添加成绩序列")
+                }
+            }
+            
+            if sport.interactionScoreStateSequence != nil {
+                ForEach(sport.interactionScoreStateSequence!.indices, id: \.self) { sequenceIndex in
+                    Divider()
+                    HStack {
+                        Text("序列\(sequenceIndex)")
+                        Spacer()
+                        
+                        
+                        Button(action: {
+                           sportManager.addSportStateInteractionScoreSequence(sport: sport, index: sequenceIndex, scoreState: interactionScoreState)
+
+                       }) {
+                           Text("添加状态")
+                       }
+                        
+                    }.padding([.top], StaticValue.padding)
+                    
+                            ForEach(sport.interactionScoreStateSequence![sequenceIndex].indices, id: \.self) { stateIndex in
+                                HStack {
+                                    Text(sport.findFirstStateByStateId(stateId: sport.interactionScoreStateSequence![sequenceIndex][stateIndex])!.name)
+                                    Spacer()
+                                    Button(action: {
+                                        sportManager.deleteSportStateFromInteractionScoreSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
+                                    }) {
+                                        Text("删除")
+                                    }
+                                }.padding([.top], StaticValue.padding)
+
+                            }
+                    
+                }
+            }
+            
+            
+        }
     }
     
     
@@ -337,7 +419,7 @@ struct SportView: View {
                         Text("计分周期:")
                         TextField("计分周期:", value: $scoreTimeLimit, formatter: formatter, onEditingChanged: { flag in
                             if !flag {
-                                sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, warningDelay: warningDelay)
+                                sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, interactionScoreCycle: interactionScoreCycle, warningDelay: warningDelay)
                             }
                             
                         }).textFieldStyle(RoundedBorderTextFieldStyle())
@@ -345,7 +427,7 @@ struct SportView: View {
                         Text("提示延迟:")
                         TextField("提示延迟:", value: $warningDelay, formatter: formatter, onEditingChanged: { flag in
                             if !flag {
-                                sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, warningDelay: warningDelay)
+                                sportManager.updateSport(editedSport: sport, scoreTimeLimit: scoreTimeLimit, interactionScoreCycle: interactionScoreCycle, warningDelay: warningDelay)
                             }
                             
                         }).textFieldStyle(RoundedBorderTextFieldStyle())
@@ -395,6 +477,8 @@ struct SportView: View {
                                 Text("\(state.name)/\(state.id)")
                                 Spacer()
                                 
+                                
+                                
                                 Button(action: {
                                     
                                     sportManager.setState(editedSport: sport, editedSportState: state)
@@ -403,6 +487,15 @@ struct SportView: View {
                                 }) {
                                     Text("添加关键帧")
                                         .foregroundColor(sportManager.keyFrameSetted(sport: sport, state: state) ? Color.green : Color.blue)
+                                }
+                                
+                                Button(action: {
+                                    sportManager.addNewDynamicArea(editedSport: sport, editedSportState: state)
+                                    
+                                    //                            self.editRuleFlag = true
+                                    
+                                }) {
+                                    Text("添加动态区域")
                                 }
                                 
                                 Button(action: {
@@ -545,6 +638,35 @@ struct SportView: View {
                                        
                                     TransferToOtherRulesView(sport: $sport, rule: rule)
                                     ObservationRuleDescriptionView(rule: Binding.constant(rule))
+                                }.background(Color.yellow)
+                            }
+                            
+                            ForEach(scoreRules.areaRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则: \(rule.id)")
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Area)
+                                            ruleClass = .Area
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Area)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    AreaRuleDescriptionView(rule: Binding.constant(rule))
                                 }.background(Color.yellow)
                             }
                         }
@@ -779,6 +901,10 @@ struct SportView: View {
                     }
                 }
                 
+                
+                
+                interactionMessageView(sport: sport)
+                
                 VStack {
                     Divider()
                     HStack {
@@ -868,6 +994,9 @@ struct SportView: View {
                 SetupLandmarkRuleView()
             case .Observation:
                 SetupObservationRuleView()
+            
+            case .Area:
+                SetupAreaRuleView()
             }
             
             
@@ -890,6 +1019,9 @@ struct SportView: View {
                 self.warningDelay = sport.warningDelay
                 self.noStateWarning = sport.noStateWarning
                 self.isGestureController = sport.isGestureController
+                
+                self.isInteraction = sport.isInteraction ?? false
+                self.interactionScoreCycle = sport.interactionScoreCycle ?? 1
             }
         }
     }

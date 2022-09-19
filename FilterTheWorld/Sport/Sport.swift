@@ -85,7 +85,7 @@ struct Sport: Identifiable, Hashable, Codable {
   var id = UUID()
   var name:String = ""
   var description:String = ""
-    var states: [SportState] = [SportState.startState, SportState.endState, SportState.readyState] {
+    var states: [SportState] = [SportState.interAction_1, SportState.interAction_2,SportState.interAction_3, SportState.startState, SportState.endState, SportState.readyState] {
     didSet {
       // 删除操作 更新状态转换 和 计分状态列表
       if states.count < oldValue.count {
@@ -102,6 +102,7 @@ struct Sport: Identifiable, Hashable, Codable {
   var stateTransForm: [SportStateTransform] = []
   //MARK: 添加计分状态序列 使之可用于半周期
   var scoreStateSequence: [[Int]] = []
+    var interactionScoreStateSequence: [[Int]]? = []
   var violateStateSequence: [ViolateSequenceAndWarning] = []
     
     //需要收集的关节点或者物体
@@ -117,7 +118,8 @@ struct Sport: Identifiable, Hashable, Codable {
     var sportDiscrete:SportPeriod?
     var noStateWarning: String = ""
     var isGestureController = false
-    
+    var isInteraction: Bool? = false
+    var interactionScoreCycle: Int? = 1
     
     var sportDescription: SportDescription {
         SportDescription(name: name, sportClass: sportClass, sportPeriod: sportPeriod, sportDiscrete: sportDiscrete ?? .None, isController: isGestureController)
@@ -138,9 +140,6 @@ struct StateDescription: Identifiable, Codable {
 extension Sport {
     
   static var newSport: Sport = Sport(name: "New")
-    
-    
-
   
   var sportFileName : String {
       let v:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
@@ -152,6 +151,10 @@ extension Sport {
     }
   
   var allStates: [SportState]  {
+//      if states.contains(where: { state in
+//          state.id == SportState.in
+//
+//      })
     states
   }
     
@@ -194,6 +197,28 @@ extension Sport {
       state.id
     }.max()!
   }
+    
+    
+    mutating func generatorArea() {
+        states.indices.forEach( { index in
+            states[index].generatorArea()
+            
+        })
+    }
+    
+    func areas(stateId: Int) -> [LandmarkInArea] {
+        if let state = findFirstStateByStateId(stateId: stateId) {
+            return state.areas()
+        }
+        return []
+    }
+    
+    func dynamicAreas(stateId: Int) -> [LandmarkInAreaForAreaRule] {
+        if let state = findFirstStateByStateId(stateId: stateId) {
+            return state.getDynamicAreas()
+        }
+        return []
+    }
 
   // MARK: state
   
@@ -223,7 +248,7 @@ extension Sport {
   }
   
   mutating func addState(stateName: String, stateDescription: String) {
-    let state = SportState(id: maxStateId + 1, name: stateName, description: stateDescription)
+      let state = SportState(id: maxStateId + 1, name: stateName, description: stateDescription, dynamicAreas: [])
     addState(state: state)
   }
   
@@ -290,6 +315,10 @@ extension Sport {
         scoreStateSequence[index].append(scoreState.id)
     }
     
+    mutating func addSportStateInteractionScoreSequence(index: Int, scoreState: SportState) {
+        interactionScoreStateSequence![index].append(scoreState.id)
+    }
+    
     mutating func addSportStateViolateSequence(index: Int, violateState: SportState, warning: String) {
         violateStateSequence[index].stateIds.append(violateState.id)
         violateStateSequence[index].warning = Warning(content: warning, triggeredWhenRuleMet: true, delayTime: 0.0)
@@ -297,6 +326,13 @@ extension Sport {
     
     mutating func addSportStateScoreSequence() {
       scoreStateSequence.append([])
+    }
+    
+    mutating func addSportStateInteractionScoreSequence() {
+        if interactionScoreStateSequence == nil {
+            interactionScoreStateSequence = []
+        }
+      interactionScoreStateSequence?.append([])
     }
     
     mutating func addSportStateViolateSequence() {
@@ -312,6 +348,14 @@ extension Sport {
         scoreStateSequence[sequenceIndex].remove(at: stateIndex)
         if scoreStateSequence[sequenceIndex].count == 0 {
             scoreStateSequence.remove(at: sequenceIndex)
+        }
+    }
+    
+    
+    mutating func deleteSportStateFromInteractionScoreSequence(sequenceIndex: Int, stateIndex: Int) {
+        interactionScoreStateSequence![sequenceIndex].remove(at: stateIndex)
+        if interactionScoreStateSequence![sequenceIndex].count == 0 {
+            interactionScoreStateSequence!.remove(at: sequenceIndex)
         }
     }
     
@@ -376,13 +420,24 @@ extension Sport {
           })
       }
     
+    mutating func addNewSportStateDynamicArea(editedSportState: SportState) {
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          
+          let id = states[index].dynamicAreas.map({ area in
+              Int(area.id)!
+          }).max() ?? 0
+          let imageSize = self.states[index].image!.imageSize.point2d
+          self.states[index].dynamicAreas.append(DynamicArea(id: "\(id + 1)", imageSize: imageSize))
+      }
+    }
+    
   mutating func addNewSportStateRules(editedSportState: SportState, ruleType: RuleType) {
     if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
       switch ruleType {
       case .SCORE:
-        states[index].scoreRules.append(Rules(description: "计分规则集"))
+          states[index].scoreRules.append(Rules(areaRules: [], description: "计分规则集"))
       case .VIOLATE:
-        states[index].violateRules.append(Rules(description: "违规规则集"))
+        states[index].violateRules.append(Rules(areaRules: [], description: "违规规则集"))
       }
     }
   }
@@ -850,12 +905,12 @@ extension Sport {
     
     mutating func updateRuleLandmarkInArea(
         stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
-        area: [Point2D],warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
+        area: [Point2D],warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, isDynamicArea: Bool, width: Double, heightToWidthRatio: Double,  id: UUID) {
         
         if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
       
           states[stateIndex].updateRuleLandmarkInArea(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
-                                                      area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
+                                                      area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, isDynamicArea: isDynamicArea, width: width, heightToWidthRatio: heightToWidthRatio,  id: id)
 
         }
     }
@@ -1059,6 +1114,61 @@ extension Sport {
 
                 }
             }
+    
+    //    -----------
+        
+    func getDynamicArea(stateId: Int, ruleId: String) -> DynamicArea {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getDynamicArea(ruleId: ruleId)
+    }
+    
+    mutating func updateDynamicArea(
+        stateId: Int, ruleId: String, width: Double, heightToWidthRatio: Double, limitArea: [Point2D]) {
+        
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+      
+          states[stateIndex].updateDynamicArea(ruleId: ruleId, width: width, heightToWidthRatio: heightToWidthRatio, limitArea: limitArea)
+
+        }
+    }
+    
+//    ---------------
+    
+    
+        func getRuleLandmarkInAreasForAreaRule(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkInAreaForAreaRule] {
+            let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+            return states[stateIndex].getRuleLandmarkInAreasForAreaRule(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+        
+        func getRuleLandmarkInAreaForAreaRule(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkInAreaForAreaRule {
+            let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+            return states[stateIndex].getRuleLandmarkInAreaForAreaRule(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+        }
+        
+        mutating func addRuleLandmarkInAreaForAreaRule(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+            if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+              states[stateIndex].addRuleLandmarkInAreaForAreaRule(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+            }
+        }
+        
+        
+        mutating func removeRuleLandmarkInAreaForAreaRule(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+            let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+            states[stateIndex].removeRuleLandmarkInAreaForAreaRule(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+        }
+        
+        mutating func updateRuleLandmarkInAreaForAreaRule(
+            stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
+            area: [Point2D],warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, landmarkType: LandmarkType,
+            id: UUID) {
+            
+            if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          
+              states[stateIndex].updateRuleLandmarkInAreaForAreaRule(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
+                                                                     area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, landmarkType: landmarkType, id: id)
+
+            }
+        }
     
 //    -----------
     mutating func transferRuleTo(stateId:Int, ruleType:RuleType, rulesIndex:Int, rule: Ruler) {

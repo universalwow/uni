@@ -78,6 +78,7 @@ struct SportReport: Identifiable, Codable {
     var endTime = -1.0
     var statesDescription: [StateDescription]?
     var scoreTimes: [ScoreTime] = []
+    var interactionScoreTimes: [ScoreTime]? = []
     var allStateTimes: [ScoreTime]?
     var warnings: [WarningData] = []
     var createTime: Double?
@@ -121,6 +122,12 @@ struct SportReport: Identifiable, Codable {
         self.scoreTimes.filter( { scoreTime in
             scoreTime.stateId == stateId
         })
+    }
+    
+    func findStateInteractionScoreTimes(stateId: Int) -> [ScoreTime] {
+        self.interactionScoreTimes?.filter( { scoreTime in
+            scoreTime.stateId == stateId
+        }) ?? []
     }
     
     func filterWarningsByContent(content: String) -> Int {
@@ -208,12 +215,48 @@ class Sporter: Identifiable {
         })
     }
     
+    
+    
+    func generatorArea() {
+        sport.generatorArea()
+    }
+    
+    func areas() -> [LandmarkInArea] {
+        var areas : [LandmarkInArea] = []
+        sport.stateTransForm.filter( { transform in
+            transform.from == currentStateTime.stateId
+        }).forEach({ transform in
+            areas.append(contentsOf:
+                            sport.areas(stateId: transform.to)
+            )
+        })
+        return areas
+    }
+    
+    func dynamicAreas() -> [LandmarkInAreaForAreaRule] {
+        var areas : [LandmarkInAreaForAreaRule] = []
+        sport.stateTransForm.filter( { transform in
+            transform.from == currentStateTime.stateId
+        }).forEach({ transform in
+            areas.append(contentsOf:
+                            sport.dynamicAreas(stateId: transform.to)
+            )
+        })
+        return areas
+    }
+    
+    
+    
     var allStateTimeHistory :[ScoreTime] = []
     
     var nextStatePreview = SportState.startState
     var currentStateTime = StateTime(stateId: SportState.startState.id, time: 0, poseMap: [:], object: nil) {
         
         didSet {
+            allStateTimeHistory.append(ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object))
+            
+            generatorArea()
+            
             if currentStateTime.stateId == SportState.startState.id {
                 stateTimeHistory = [currentStateTime]
             }else {
@@ -241,8 +284,39 @@ class Sporter: Identifiable {
                                     ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
                                 )
 
-                            }else {
+                            } else {
                                 scoreTimes.append(contentsOf: timerScoreTimes)
+                            }
+
+                        }
+                        
+                    }
+                    
+                })
+                
+
+//                timerScoreTimes = []
+//
+//                if currentStateTime.stateId != SportState.readyState.id {
+//                    self.onStateChange()
+//                }
+                
+//              基于交互的计分
+                sport.interactionScoreStateSequence?.forEach({ _scoreStateSequence in
+                    if stateTimeHistory.count >= _scoreStateSequence.count {
+                        let allStateSatisfy = _scoreStateSequence.indices.allSatisfy{ index in
+                            _scoreStateSequence[index] == stateTimeHistory[index + stateTimeHistory.count - _scoreStateSequence.count].stateId
+                        }
+          
+                        if allStateSatisfy {
+                            // 检查状态改变后是否满足多帧条件 决定是否计分
+                            if sport.sportClass == .Counter {
+                                interactionScoreTimes.append(
+                                    ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
+                                )
+
+                            }else {
+                                interactionScoreTimes.append(contentsOf: timerScoreTimes)
                             }
 
                         }
@@ -255,9 +329,10 @@ class Sporter: Identifiable {
                 if currentStateTime.stateId != SportState.readyState.id {
                     self.onStateChange()
                 }
+                
             }
             
-            allStateTimeHistory.append(ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object))
+        
         }
     }
     
@@ -271,10 +346,16 @@ class Sporter: Identifiable {
                 return
             }
             
+            if sport.isInteraction == true && scoreTimes.count % sport.interactionScoreCycle! == 0 {
+                currentStateTime = StateTime(stateId: -1, time: scoreTimes.last!.time, poseMap: scoreTimes.last!.poseMap, object: scoreTimes.last?.object)
+            }
 //            stateTimeHistory = [stateTimeHistory.last!]
-
         }
     }
+    
+//    交互计分
+    var interactionScoreTimes: [ScoreTime] = []
+    
     
     var delayWarnings: Set<Warning> = []
     var noDelayWarnings: Set<Warning> = []
@@ -519,17 +600,19 @@ class Sporter: Identifiable {
     
     func play(poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
         switch sport.sportClass {
-        case .Counter:
-            playCounter(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
-        case .Timer:
-            playTimer(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
-        case .TimeCounter:
-            
-            playTimeCounter(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
-            
-        case .None: break
+            case .Counter:
+                playCounter(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
+            case .Timer:
+                playTimer(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
+            case .TimeCounter:
+                
+                playTimeCounter(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
+                
+            case .None: break
             
         }
+        
+
         
     }
     

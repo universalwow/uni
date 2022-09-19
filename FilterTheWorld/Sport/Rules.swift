@@ -9,6 +9,7 @@ struct Rules: Identifiable, Hashable, Codable {
     var landmarkSegmentRules: [LandmarkSegmentRule] = []
     var landmarkRules: [LandmarkRule] = []
     var observationRules: [ObservationRule] = []
+    var areaRules: [AreaRule] = []
     
     var description:String = ""
     
@@ -18,6 +19,18 @@ struct Rules: Identifiable, Hashable, Codable {
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+    
+    mutating func generatorArea() {
+        landmarkRules.indices.forEach({ index in
+            landmarkRules[index].generatorArea()
+        })
+    }
+    
+    mutating func generatorArea(areaId: String, area: [Point2D]) {
+        areaRules.indices.forEach({ index in
+            areaRules[index].generatorArea(areaId: areaId, area: area)
+        })
     }
     
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int) {
@@ -46,10 +59,20 @@ struct Rules: Identifiable, Hashable, Codable {
                     result.3 + satisfy.3)
         })
         
-        return (landmarkSegmentRulesSatisfy.0 && landmarkRulesSatisfy.0 && observationRuleSatisfy.0,
-                landmarkSegmentRulesSatisfy.1.union(landmarkRulesSatisfy.1).union(observationRuleSatisfy.1),
-                landmarkSegmentRulesSatisfy.2 + landmarkRulesSatisfy.2 + observationRuleSatisfy.2,
-                landmarkSegmentRulesSatisfy.3 + landmarkRulesSatisfy.3 + observationRuleSatisfy.3)
+        
+        let areaRuleSatisfy = areaRules.reduce((true, Set<Warning>(), 0, 0), { result, next in
+            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3)
+        })
+        
+        
+        return (landmarkSegmentRulesSatisfy.0 && landmarkRulesSatisfy.0 && observationRuleSatisfy.0 && areaRuleSatisfy.0,
+                landmarkSegmentRulesSatisfy.1.union(landmarkRulesSatisfy.1).union(observationRuleSatisfy.1).union(areaRuleSatisfy.1),
+                landmarkSegmentRulesSatisfy.2 + landmarkRulesSatisfy.2 + observationRuleSatisfy.2 + areaRuleSatisfy.2,
+                landmarkSegmentRulesSatisfy.3 + landmarkRulesSatisfy.3 + observationRuleSatisfy.3 + areaRuleSatisfy.3)
     }
     
     func firstIndexOfRule(editedRule: Ruler, ruleClass: RuleClass) -> Int? {
@@ -66,6 +89,10 @@ struct Rules: Identifiable, Hashable, Codable {
                 return observationRules.firstIndex(where: { rule in
                     editedRule.id == rule.id
                 })
+        case .Area:
+            return areaRules.firstIndex(where: { rule in
+                editedRule.id == rule.id
+            })
         }
 
     }
@@ -85,6 +112,11 @@ struct Rules: Identifiable, Hashable, Codable {
                 return observationRules.firstIndex(where: { rule in
                     editedRuleId == rule.id
                 })
+            
+        case .Area:
+            return areaRules.firstIndex(where: { rule in
+                editedRuleId == rule.id
+            })
         }
 
     }
@@ -98,6 +130,8 @@ struct Rules: Identifiable, Hashable, Codable {
                 return landmarkRules[firstIndex]
             case .Observation:
                 return observationRules[firstIndex]
+            case .Area:
+                return areaRules[firstIndex]
             }
         }
         return nil
@@ -114,6 +148,9 @@ struct Rules: Identifiable, Hashable, Codable {
                 landmarkRules[firstIndex] = editedRule as! LandmarkRule
             case .Observation:
                 observationRules[firstIndex] = editedRule as! ObservationRule
+            
+            case .Area:
+                areaRules[firstIndex] = editedRule as! AreaRule
             }
         } else {
             switch ruleClass {
@@ -124,6 +161,8 @@ struct Rules: Identifiable, Hashable, Codable {
                 landmarkRules.append(editedRule as! LandmarkRule)
             case .Observation:
                 observationRules.append(editedRule as! ObservationRule)
+            case .Area:
+                areaRules.append(editedRule as! AreaRule)
             }
         }
         
@@ -140,6 +179,9 @@ struct Rules: Identifiable, Hashable, Codable {
             landmarkRules.append(LandmarkRule(ruleId: ruleId))
         case .Observation:
             observationRules.append(ObservationRule(ruleId: ruleId))
+        case .Area:
+
+            areaRules.append(AreaRule(id: ruleId))
         }
     }
     
@@ -152,6 +194,9 @@ struct Rules: Identifiable, Hashable, Codable {
             landmarkRules.remove(at: firstIndex)
         case .Observation:
             observationRules.remove(at: firstIndex)
+        
+        case .Area:
+            areaRules.remove(at: firstIndex)
         }
     }
     
@@ -170,6 +215,12 @@ struct Rules: Identifiable, Hashable, Codable {
             return observationRules.firstIndex(where: { observationRule in
                 observationRule.id == ruleId
             })
+        
+        case .Area:
+            return areaRules.firstIndex(where: { areaRule in
+                areaRule.id == ruleId
+            })
+            
         }
     }
     
@@ -768,11 +819,11 @@ struct Rules: Identifiable, Hashable, Codable {
     }
     
     mutating func updateRuleLandmarkInArea(ruleId: String,  ruleClass: RuleClass,
-                                           area: [Point2D], imageSize: Point2D, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
+                                           area: [Point2D], imageSize: Point2D, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, isDynamicArea: Bool, width: Double, heightToWidthRatio: Double, id: UUID) {
         
         if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
             landmarkRules[ruleIndex].updateRuleLandmarkInArea(
-                area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
+                area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, isDynamicArea: isDynamicArea, width: width, heightToWidthRatio: heightToWidthRatio, id: id)
         
 
         }
@@ -1101,6 +1152,62 @@ struct Rules: Identifiable, Hashable, Codable {
 
                 }
             }
+    
+    //    --------------
+        
+    
+        
+        func getRuleLandmarkInAreasForAreaRule(ruleId: String, ruleClass: RuleClass) -> [LandmarkInAreaForAreaRule] {
+            if ruleClass == .Area, let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+                
+                return areaRules[ruleIndex].landmarkInArea
+            }
+            return []
+        }
+        
+        func getRuleLandmarkInAreaForAreaRule(ruleId: String, ruleClass: RuleClass, id: UUID) -> LandmarkInAreaForAreaRule {
+            let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+            return areaRules[ruleIndex].landmarkInArea.first(where: { landmarkInArea in
+                landmarkInArea.id == id
+            })!
+        }
+        
+        
+    mutating func addRuleLandmarkInAreaForAreaRule(ruleId: String, ruleClass: RuleClass, landmarks: [Landmark], imageSize: Point2D, isScoreWarning: Bool, area: [Point2D]) {
+            if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+                let landmark = landmarks.first(where: { landmark in
+                    landmark.id == LandmarkType.LeftAnkle.rawValue
+                })!
+                
+                areaRules[ruleIndex].landmarkInArea.append(
+                    LandmarkInAreaForAreaRule(dynamicAreaId: ruleId, landmark: landmark, imageSize: imageSize,
+                                   warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2, isScoreWarning: isScoreWarning), area: area)
+                )
+            }
+        }
+        
+        
+        mutating func removeRuleLandmarkInAreaForAreaRule(ruleId: String, ruleClass: RuleClass, id: UUID) {
+            let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+            areaRules[ruleIndex].landmarkInArea.removeAll(where: { landmarkInArea in
+                landmarkInArea.id == id
+                
+            })
+        }
+        
+        mutating func updateRuleLandmarkInAreaForAreaRule(ruleId: String,  ruleClass: RuleClass,
+                                               area: [Point2D], imageSize: Point2D, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,                                 landmark: Landmark, id: UUID) {
+            
+            if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
+                areaRules[ruleIndex].updateRuleLandmarkInAreaForAreaRule(
+                    area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, landmark: landmark, id: id)
+            
+
+            }
+        }
+    
+    
+        
         
     
     
@@ -1113,6 +1220,10 @@ struct Rules: Identifiable, Hashable, Codable {
             self.transferToLandmarkRules(rule: rule as! LandmarkRule)
         case .Observation:
             self.transferToObservationRules(rule: rule as! ObservationRule)
+        
+        case .Area:
+            self.transferToAreaRules(rule: rule as! AreaRule)
+
         }
         
     }
@@ -1144,6 +1255,16 @@ struct Rules: Identifiable, Hashable, Codable {
             observationRules[index] = rule
         }else {
             observationRules.append(rule)
+        }
+    }
+    
+    mutating func transferToAreaRules(rule: AreaRule) {
+        if let index = areaRules.firstIndex(where: { rule in
+            rule.id == rule.id
+        }) {
+            areaRules[index] = rule
+        }else {
+            areaRules.append(rule)
         }
     }
  

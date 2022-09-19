@@ -281,3 +281,172 @@ struct SetupObservationRuleView: View {
     }
 }
 
+
+struct SetupAreaRuleView: View {
+    @State var clearBackground = false
+    
+    @EnvironmentObject var sportManager: SportsManager
+    @State var showingOptions = false
+    
+    @State var leftTopX = 0.0
+    @State var leftTopY = 0.0
+    @State var rightBottomX = 0.0
+    @State var rightBottomY = 0.0
+    
+    @State var width: Double = 0.1
+    @State var heightToWidthRatio = 1.0
+    
+    var landmarkInAreaTextColor : Color {
+        return (self.leftTopX < self.rightBottomX && self.leftTopY < self.rightBottomY) ? .black : .red
+    }
+    
+    var initArea: [Point2D] {
+        let area = sportManager.getDynamicArea()
+        let imageSize = area.imageSize
+        
+        let firstPoint = Point2D(x: leftTopX*imageSize.width, y: leftTopY * imageSize.height)
+        let secondPoint = Point2D(x: rightBottomX*imageSize.width, y: leftTopY * imageSize.height)
+        let thirdPoint = Point2D(x: rightBottomX*imageSize.width, y: rightBottomY * imageSize.height)
+        let fourthPoint = Point2D(x: leftTopX*imageSize.width, y: rightBottomY * imageSize.height)
+        return [firstPoint, secondPoint, thirdPoint, fourthPoint]
+    }
+    
+    private func updateRemoteData() {
+        if self.leftTopX <= self.rightBottomX && self.leftTopY <= self.rightBottomY {
+            sportManager.updateDynamicArea(width: width, heightToWidthRatio: heightToWidthRatio,
+                                             limitArea: initArea
+            )
+        }
+      
+    }
+    
+
+    var body: some View {
+        VStack {
+            HStack {
+                Text(self.sportManager.currentSportStateRuleId ?? "请选择区域")
+                    .foregroundColor(self.sportManager.currentSportStateRuleId != nil ? .black : .red)
+                Spacer()
+                
+                Button("添加规则") {
+                    showingOptions = true
+                }.confirmationDialog("选择区域规则", isPresented: $showingOptions, titleVisibility: .visible) {
+                    Button(action: {
+                        sportManager.addRuleLandmarkInAreaForAreaRule()
+                    }) {
+                        Text("关节在区域内")
+                    }
+                }
+                
+                Button(action: {
+                    clearBackground.toggle()
+                }) {
+                    Text(clearBackground ? "恢复背景" : "清除背景")
+                }
+            }
+            HStack {
+                HStack {
+                    Text("宽度:\n高宽比:")
+                    VStack {
+                        
+                        TextField("区域宽度", value: $width, formatter: formatter,onEditingChanged: { flag in
+                            if !flag {
+                                updateRemoteData()
+                            }
+
+                        })
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                        
+                        TextField("高宽比", value: $heightToWidthRatio, formatter: formatter,onEditingChanged: { flag in
+                            if !flag {
+                                updateRemoteData()
+                            }
+
+                        })
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                    }
+                }
+                
+                
+                HStack {
+                    
+                    Text("限制区域:\n左上\n右下")
+                    VStack {
+                        HStack {
+                            TextField("leftTopX", value: $leftTopX, formatter: formatter) { flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                                
+                            }
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                            TextField("leftTopY", value: $leftTopY, formatter: formatter) {flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                                
+                            }
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                        }
+                        HStack {
+                            TextField("rightBottomX", value: $rightBottomX, formatter: formatter) {flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                                
+                            }
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                            
+                            TextField("rightBottomY", value: $rightBottomY, formatter: formatter){flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                            }
+                            
+                            .foregroundColor(landmarkInAreaTextColor)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                        }
+                    }
+                }
+            }
+            
+            
+            ScrollView(showsIndicators: false) {
+                VStack {
+                    ForEach(sportManager.getRuleLandmarkInAreasForAreaRule()) { landmarkInArea in
+                        LandmarkInAreaRuleForAreaRuleView(landmarkInArea: landmarkInArea)
+                        Divider()
+                    }
+                }
+                
+                Spacer()
+            }
+            
+            
+            
+        }.padding()
+        
+        .background(BackgroundClearView(clearBackground: $clearBackground))
+        .onAppear(perform: {
+            let area = sportManager.getDynamicArea()
+            let imageSize = area.imageSize
+            leftTopX = area.limitedArea[0].x/imageSize.width
+            leftTopY = area.limitedArea[0].y/imageSize.height
+            rightBottomX = area.limitedArea[2].x/imageSize.width
+            rightBottomY = area.limitedArea[2].y/imageSize.height
+            width = area.width
+            heightToWidthRatio = area.heightToWidthRatio
+
+        })
+    }
+}
+

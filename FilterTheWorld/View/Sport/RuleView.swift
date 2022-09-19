@@ -3,12 +3,14 @@ import SwiftUI
 import AlertToast
 
 
+
 struct RuleView: View {
     @EnvironmentObject var sportManager:SportsManager
     
     @State var selectedLandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
     @State var selectedLandmarkType = LandmarkType.LeftShoulder
     @State var selectedObject = ObjectLabel.POSE.rawValue
+    @State var selectedArea = Areas.NONE.rawValue
     @State var ruleClass = RuleClass.LandmarkSegment
     
     
@@ -58,6 +60,26 @@ struct RuleView: View {
                     }
                 }
                 
+                Picker("选择动态区域", selection: $selectedArea.didSet( { _ in
+                    ruleClass = .Area
+                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedArea, ruleClass: ruleClass)
+                    
+                })) {
+                    ForEach(sportManager.findDynamicAreas()) { area in
+                        Text("动态区域\(area.id)").tag(area.id)
+                    }
+                }
+                
+//                Picker("选择区域", selection: $selectedArea.didSet( { _ in
+//                    ruleClass = .Area
+//                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedArea, ruleClass: ruleClass)
+//                    
+//                })) {
+//                    ForEach(Areas.allCases) { area in
+//                        Text(area.rawValue).tag(area.rawValue)
+//                    }
+//                }
+                
                 
                 Button(action: {
                     if sportManager.setRule() {
@@ -98,6 +120,8 @@ struct RuleView: View {
                 SetupLandmarkRuleView()
             case .Observation:
                 SetupObservationRuleView()
+            case .Area:
+                SetupAreaRuleView()
             }
             
             

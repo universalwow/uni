@@ -130,7 +130,8 @@ extension SportsManager {
     }
     
     func updateSport(editedSport:Sport, sportName: String, sportDescription: String, sportClass: SportClass,
-                     sportPeriod: SportPeriod, sportDiscrete: SportPeriod, noStateWarning: String, isGestureController: Bool) {
+                     sportPeriod: SportPeriod, sportDiscrete: SportPeriod, noStateWarning: String, isGestureController: Bool,
+                     isInteraction: Bool) {
         if let sport = findFirstSport(sport: editedSport) {
             var newSport = sport
             newSport.name = sportName
@@ -140,16 +141,18 @@ extension SportsManager {
             newSport.sportDiscrete = sportDiscrete
             newSport.noStateWarning = noStateWarning
             newSport.isGestureController = isGestureController
-            
+            newSport.isInteraction = isInteraction
             updateSport(sport: newSport)
         }
     }
     
-    func updateSport(editedSport:Sport, scoreTimeLimit: Double, warningDelay: Double) {
+    func updateSport(editedSport:Sport, scoreTimeLimit: Double, interactionScoreCycle: Int, warningDelay: Double) {
         if let sport = findFirstSport(sport: editedSport) {
             var newSport = sport
             newSport.scoreTimeLimit = scoreTimeLimit
+            newSport.interactionScoreCycle = interactionScoreCycle
             newSport.warningDelay = warningDelay
+            
             updateSport(sport: newSport)
         }
     }
@@ -177,10 +180,20 @@ extension SportsManager {
         currentStateId = editedSportState.id
     }
     
+    func addNewDynamicArea(editedSport: Sport, editedSportState: SportState) {
+        self.currentSportId = editedSport.id
+        self.currentStateId = editedSportState.id
+
+        
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
+            sports[sportIndex].addNewSportStateDynamicArea(editedSportState: editedSportState)
+        }
+        
+    }
+    
     func findFirstState() -> SportState? {
         findFirstSport()?.findFirstStateByStateId(stateId: currentStateId!)
     }
-    
     
     
     func findFirstState(sportId: UUID, stateId: Int) -> SportState? {
@@ -202,7 +215,7 @@ extension SportsManager {
     
     
     func deleteSportState(editedSport: Sport, editedSportState: SportState) {
-        if [SportState.startState, SportState.endState, SportState.readyState].contains(where: { state in
+        if [SportState.interAction_1, SportState.interAction_2, SportState.interAction_3, SportState.startState, SportState.endState, SportState.readyState].contains(where: { state in
             state.id == editedSportState.id
         }) {
             return
@@ -275,6 +288,12 @@ extension SportsManager {
         }
     }
     
+    func addSportStateInteractionScoreSequence(sport:Sport, index: Int, scoreState: SportState) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
+            sports[sportIndex].addSportStateInteractionScoreSequence(index: index, scoreState: scoreState)
+        }
+    }
+    
     func addSportStateViolateSequence(sport:Sport, index: Int, violateState: SportState, warning: String) {
         if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].addSportStateViolateSequence(index: index, violateState: violateState, warning: warning)
@@ -284,6 +303,12 @@ extension SportsManager {
     func addSportStateScoreSequence(sport:Sport) {
         if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
             sports[sportIndex].addSportStateScoreSequence()
+        }
+    }
+    
+    func addSportStateInteractionScoreSequence(sport:Sport) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
+            sports[sportIndex].addSportStateInteractionScoreSequence()
         }
     }
     
@@ -304,6 +329,12 @@ extension SportsManager {
     func deleteSportStateFromScoreSequence(sport:Sport, sequenceIndex: Int, stateIndex:Int) {
         if let sportIndex = firstIndexOfSport(editedSportId: sport.id){
             sports[sportIndex].deleteSportStateFromScoreSequence(sequenceIndex: sequenceIndex, stateIndex: stateIndex)
+        }
+    }
+    
+    func deleteSportStateFromInteractionScoreSequence(sport:Sport, sequenceIndex: Int, stateIndex:Int) {
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id){
+            sports[sportIndex].deleteSportStateFromInteractionScoreSequence(sequenceIndex: sequenceIndex, stateIndex: stateIndex)
         }
     }
     
@@ -348,6 +379,10 @@ extension SportsManager {
     
     func findSelectedObjects() -> [Observation] {
         findFirstState()!.objects
+    }
+    
+    func findDynamicAreas() -> [DynamicArea] {
+        return findFirstState()!.dynamicAreas
     }
     
     func findSelectedObjects(sport:Sport) -> [Observation]? {
@@ -848,10 +883,10 @@ extension SportsManager {
     }
     
     func updateRuleLandmarkInArea(area: [Point2D],
-                                  warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID) {
+                                  warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, isDynamicArea: Bool,width: Double, heightToWidthRatio: Double,  id: UUID) {
         let sportIndex = firstIndexOfSport()!
         sports[sportIndex].updateRuleLandmarkInArea(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass,
-                                                    area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id)
+                                                    area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, isDynamicArea: isDynamicArea, width: width, heightToWidthRatio: heightToWidthRatio, id: id)
         
     }
     
@@ -1032,7 +1067,69 @@ extension SportsManager {
                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id)
             
         }
+    
+    //    Area rule---------------------------------
+    
+    func getDynamicArea() -> DynamicArea {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getDynamicArea(stateId: currentStateId!, ruleId: currentSportStateRuleId!)
+    }
+    
+    func updateDynamicArea(width: Double, heightToWidthRatio: Double, limitArea: [Point2D]
+    ) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateDynamicArea(stateId: currentStateId!, ruleId: currentSportStateRuleId!, width: width, heightToWidthRatio: heightToWidthRatio, limitArea: limitArea)
+    }
+
+    
+    func getRuleLandmarkInAreasForAreaRule() -> [LandmarkInAreaForAreaRule] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleLandmarkInAreasForAreaRule(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass)
+    }
+    
+    func getRuleLandmarkInAreasForShowAreaForAreaRule() -> [LandmarkInAreaForAreaRule] {
+        let sportIndex = firstIndexOfSport()!
+        if let currentSportStateRuleId = currentSportStateRuleId, let currentSportStateRuleType = currentSportStateRuleType {
+            return sports[sportIndex].getRuleLandmarkInAreasForAreaRule(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId, ruleType: currentSportStateRuleType, ruleClass: currentSportStateRuleClass)
+        }
+        return []
+        
+    }
+    
+    
+    
+    func getRuleLandmarkInAreaForAreaRule(id: UUID) -> LandmarkInAreaForAreaRule {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleLandmarkInAreaForAreaRule(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass, id: id)
+    }
+    
+    func addRuleLandmarkInAreaForAreaRule() {
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].addRuleLandmarkInAreaForAreaRule(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass)
+        }
+    }
+    
+    func removeRuleLandmarkInAreaForAreaRule(id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].removeRuleLandmarkInAreaForAreaRule(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass, id: id)
+    }
+    
+    func updateRuleLandmarkInAreaForAreaRule(area: [Point2D],
+                                  warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool,
+                                             landmarkType: LandmarkType, id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateRuleLandmarkInAreaForAreaRule(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass,
+                                                               area: area, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, landmarkType: landmarkType, id: id)
+        
+    }
+    
+    
+    
+    
     //    ---------------------------------
+    
+    
+    
     
     func transferRuleTo(sportId: UUID, stateId:Int, ruleType:RuleType, rulesIndex:Int, rule: Ruler
     ) {

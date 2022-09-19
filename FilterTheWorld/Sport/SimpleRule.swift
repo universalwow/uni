@@ -35,7 +35,26 @@ enum RuleClass: String, Identifiable, CaseIterable, Codable, Equatable {
     var id: String {
         self.rawValue
     }
-    case LandmarkSegment, Landmark, Observation
+    case LandmarkSegment, Landmark, Observation, Area
+}
+
+enum Areas: String, Identifiable, CaseIterable, Codable, Equatable {
+    var id: String {
+        self.rawValue
+    }
+    case AREA_1, AREA_2, AREA_3, AREA_4, AREA_5, NONE
+}
+
+
+struct DynamicArea: Identifiable, Codable {
+    var id: String
+    var width: Double = 0.1
+    var heightToWidthRatio: Double = 1
+    //  左上，右下
+    var imageSize: Point2D
+    var limitedArea: [Point2D] = [Point2D.zero, Point2D.zero, Point2D.zero, Point2D.zero]
+    var area: [Point2D] = [Point2D.zero, Point2D.zero, Point2D.zero, Point2D.zero]
+
 }
 
 
@@ -1938,6 +1957,7 @@ extension LandmarkInArea {
     
 }
 
+
 // 过滤有效人
 // MARK: 当前只考虑单区域
 struct LandmarkInArea: Identifiable, Codable {
@@ -1949,6 +1969,13 @@ struct LandmarkInArea: Identifiable, Codable {
     var area: [Point2D]
     
     var warning:Warning
+    
+    var isDynamicArea: Bool?
+    var width: Double?
+    var heightToWidthRatio: Double?
+    //  左上，右下
+    var limitedArea: [Point2D]?
+
     
     init(landmark: Landmark, imageSize: Point2D, warning: Warning) {
         self.landmark = landmark
@@ -1973,6 +2000,55 @@ struct LandmarkInArea: Identifiable, Codable {
         return path.contains(landmark.position.vector2d.toCGPoint)
     }
 }
+
+
+extension LandmarkInAreaForAreaRule {
+    
+    var areaString: String {
+        area.reduce("", { result, next in
+            result + next.roundedString + ","
+        })
+    }
+    
+    var areaToRect: CGRect {
+        CGRect(origin: self.area[0].cgPoint,
+               size: CGSize(width: abs(self.area[2].x - self.area[0].x),
+                            height: abs(self.area[2].y - self.area[0].y)))
+    }
+    
+}
+
+struct LandmarkInAreaForAreaRule: Identifiable, Codable {
+    var id = UUID()
+    var dynamicAreaId: String
+    var landmark: Landmark
+    var imageSize:Point2D
+    
+    //  左上角 顺时针
+    var area: [Point2D]
+    
+    var warning:Warning
+    
+    init(dynamicAreaId: String, landmark: Landmark, imageSize: Point2D, warning: Warning, area: [Point2D]) {
+        self.dynamicAreaId = dynamicAreaId
+        self.landmark = landmark
+        self.imageSize = imageSize
+        self.warning = warning
+        self.area = area
+    }
+    
+    func satisfy(poseMap: PoseMap, frameSize: Point2D) -> Bool {
+        let landmarkPoint = poseMap[landmark.landmarkType]!
+        let path = self.path(frameSize: frameSize)
+        return path.contains(landmarkPoint.vector2d.toCGPoint)
+    }
+    
+    var satisfy: Bool {
+        let path = self.path(frameSize: imageSize)
+        return path.contains(landmark.position.vector2d.toCGPoint)
+    }
+}
+
 
 
 

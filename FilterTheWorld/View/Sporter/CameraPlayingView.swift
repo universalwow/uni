@@ -25,6 +25,7 @@ struct CameraPlayingView: View {
                         ZStack {
                             PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
                             ObjectsViewForSportsGround(objects: imageAnalysis.sportData.frameData.objects, imageSize: uiImage.size, viewSize: geometry.size)
+                            RectViewForSporter(viewSize: geometry.size)
                             SporterView()
                             VStack(alignment: .leading) {
                                 Spacer()
