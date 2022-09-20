@@ -28,9 +28,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         self.landmarkType = LandmarkType(rawValue: ruleId)!
     }
     
-    
-    // 关节点在区域内
-    var landmarkInArea: [LandmarkInArea] = []
+
     // 关节相对自身位移
     
     var distanceToLandmark: [DistanceToLandmark] = []
@@ -43,81 +41,11 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
     
 
     
-    func firstLandmarkInAreaIndexById(id: UUID) -> Int? {
-        landmarkInArea.firstIndex(where: { _landmarkInArea in
-            _landmarkInArea.id == id
-            
-        })
-    }
+
     
-    mutating func generatorArea() {
-        landmarkInArea.indices.forEach({ index in
-            if landmarkInArea[index].isDynamicArea == true {
-                let area = landmarkInArea[index].limitedArea!
-                let widthPercent = landmarkInArea[index].width!
-                let heightToWidthRatio = landmarkInArea[index].heightToWidthRatio!
-
-                let imageSize = landmarkInArea[index].imageSize
-                
-                
-                let centerX = Double.random(in: area[0].x...area[2].x)
-                let centerY = Double.random(in: area[0].y...area[2].y)
-                
-                let width = imageSize.width * widthPercent
-                let height = width * heightToWidthRatio
-                
-                let leftTop = Point2D(x: centerX - width/2, y: centerY - height/2)
-                let rightTop = Point2D(x: centerX + width/2, y: centerY - height/2)
-                let rightBottom = Point2D(x: centerX + width/2, y: centerY + height/2)
-                let leftBottom = Point2D(x: centerX - width/2, y: centerY + height/2)
-                
-                landmarkInArea[index].area = [leftTop, rightTop, rightBottom, leftBottom]
-            }
-            
-        })
-    }
     
-    mutating func updateRuleLandmarkInArea(
-        area: [Point2D],imageSize: Point2D, warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, isDynamicArea: Bool, width: Double, heightToWidthRatio: Double,  id: UUID) {
-            if let landmarkInAreaIndex = self.firstLandmarkInAreaIndexById(id: id) {
-                
-                landmarkInArea[landmarkInAreaIndex].warning.content = warningContent
-                landmarkInArea[landmarkInAreaIndex].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
-                landmarkInArea[landmarkInAreaIndex].warning.delayTime = delayTime
-                landmarkInArea[landmarkInAreaIndex].warning.changeStateClear = changeStateClear
-                
-                landmarkInArea[landmarkInAreaIndex].isDynamicArea = isDynamicArea
-                if isDynamicArea {
-                    landmarkInArea[landmarkInAreaIndex].limitedArea = area
-                    
-                    let centerX = Double.random(in: area[0].x...area[2].x)
-                    let centerY = Double.random(in: area[0].y...area[2].y)
-                    
-                    let width = imageSize.width * width
-                    let height = width * heightToWidthRatio
-                    
-                    let leftTop = Point2D(x: centerX - width/2, y: centerY - height/2)
-                    let rightTop = Point2D(x: centerX + width/2, y: centerY - height/2)
-                    let rightBottom = Point2D(x: centerX + width/2, y: centerY + height/2)
-                    let leftBottom = Point2D(x: centerX - width/2, y: centerY + height/2)
-                    
-                    landmarkInArea[landmarkInAreaIndex].area = [leftTop, rightTop, rightBottom, leftBottom]
-
-                }else {
-                    landmarkInArea[landmarkInAreaIndex].area = area
-                }
-                
-                landmarkInArea[landmarkInAreaIndex].imageSize = imageSize
-                landmarkInArea[landmarkInAreaIndex].width = width
-                landmarkInArea[landmarkInAreaIndex].heightToWidthRatio = heightToWidthRatio
-
-                
-                
-                
-                
-            }
-            
-        }
+    
+    
     
     func firstDistanceToLandmarkIndexById(id: UUID) -> Int? {
         distanceToLandmark.firstIndex(where: { _length in
@@ -246,22 +174,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
     
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
-        let landmarkInAreaSatisfys = landmarkInArea.reduce((true, Set<Warning>(), 0, 0), {result, next in
-            let satisfy = next.satisfy(poseMap: poseMap, frameSize: frameSize)
-            
-            var newWarnings = result.1
-            
-            if next.warning.triggeredWhenRuleMet && satisfy {
-                newWarnings.insert(next.warning)
-            }else if !next.warning.triggeredWhenRuleMet && !satisfy {
-                newWarnings.insert(next.warning)
-            }
-            
-            return (result.0 && satisfy,
-                    newWarnings,
-                    satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
-        })
+        
         
         let distanceToLandmarkSatisfys = distanceToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
             let satisfy = next.satisfy(poseMap: poseMap)
@@ -335,10 +248,10 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         
         
         // 每个规则至少要包含一个条件 且所有条件都必须满足
-        return (landmarkInAreaSatisfys.0 && angleToLandmarkSatisfys.0 && landmarkToStateDistanceSatisfys.0 && landmarkToStateAngleSatisfys.0 && distanceToLandmarkSatisfys.0,
-                landmarkInAreaSatisfys.1.union(angleToLandmarkSatisfys.1).union(landmarkToStateDistanceSatisfys.1).union(landmarkToStateAngleSatisfys.1).union(distanceToLandmarkSatisfys.1),
-                landmarkInAreaSatisfys.2 + angleToLandmarkSatisfys.2 + landmarkToStateDistanceSatisfys.2 + landmarkToStateAngleSatisfys.2  + distanceToLandmarkSatisfys.2,
-                landmarkInAreaSatisfys.3 + angleToLandmarkSatisfys.3 + landmarkToStateDistanceSatisfys.3 + landmarkToStateAngleSatisfys.3  + distanceToLandmarkSatisfys.3
+        return (angleToLandmarkSatisfys.0 && landmarkToStateDistanceSatisfys.0 && landmarkToStateAngleSatisfys.0 && distanceToLandmarkSatisfys.0,
+                angleToLandmarkSatisfys.1.union(landmarkToStateDistanceSatisfys.1).union(landmarkToStateAngleSatisfys.1).union(distanceToLandmarkSatisfys.1),
+                angleToLandmarkSatisfys.2 + landmarkToStateDistanceSatisfys.2 + landmarkToStateAngleSatisfys.2  + distanceToLandmarkSatisfys.2,
+                angleToLandmarkSatisfys.3 + landmarkToStateDistanceSatisfys.3 + landmarkToStateAngleSatisfys.3  + distanceToLandmarkSatisfys.3
         )
     }
     

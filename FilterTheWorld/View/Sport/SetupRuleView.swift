@@ -109,12 +109,7 @@ struct SetupLandmarkRuleView: View {
                 Button("添加规则") {
                                 showingOptions = true
                 }.confirmationDialog("选择关节规则", isPresented: $showingOptions, titleVisibility: .visible) {
-                    Button(action: {
-                        sportManager.addRuleLandmarkInArea()
-                    }) {
-                        Text("关节在区域内")
-                        
-                    }
+
        
                         Button(action: {
                             sportManager.addRuleDistanceToLandmark()
@@ -152,11 +147,6 @@ struct SetupLandmarkRuleView: View {
             ScrollView(showsIndicators: false) {
                 VStack {
 
-                    
-                    ForEach(sportManager.getRuleLandmarkInAreas()) { landmarkInArea in
-                        LandmarkInAreaRuleView(landmarkInArea: landmarkInArea)
-                        Divider()
-                    }
                     
                     ForEach(sportManager.getRuleDistanceToLandmarks()) { distanceToLandmark in
                         DistanceToLandmarkRuleView(distanceToLandmark: distanceToLandmark)
@@ -282,41 +272,25 @@ struct SetupObservationRuleView: View {
 }
 
 
-struct SetupAreaRuleView: View {
+
+struct SetupFixedAreaRuleView: View {
     @State var clearBackground = false
     
     @EnvironmentObject var sportManager: SportsManager
     @State var showingOptions = false
     
-    @State var leftTopX = 0.0
-    @State var leftTopY = 0.0
-    @State var rightBottomX = 0.0
-    @State var rightBottomY = 0.0
-    
     @State var width: Double = 0.1
     @State var heightToWidthRatio = 1.0
+    @State var centerX:Double = 0
+    @State var centerY: Double = 0
     
-    var landmarkInAreaTextColor : Color {
-        return (self.leftTopX < self.rightBottomX && self.leftTopY < self.rightBottomY) ? .black : .red
-    }
+
     
-    var initArea: [Point2D] {
-        let area = sportManager.getDynamicArea()
-        let imageSize = area.imageSize
-        
-        let firstPoint = Point2D(x: leftTopX*imageSize.width, y: leftTopY * imageSize.height)
-        let secondPoint = Point2D(x: rightBottomX*imageSize.width, y: leftTopY * imageSize.height)
-        let thirdPoint = Point2D(x: rightBottomX*imageSize.width, y: rightBottomY * imageSize.height)
-        let fourthPoint = Point2D(x: leftTopX*imageSize.width, y: rightBottomY * imageSize.height)
-        return [firstPoint, secondPoint, thirdPoint, fourthPoint]
-    }
+
     
     private func updateRemoteData() {
-        if self.leftTopX <= self.rightBottomX && self.leftTopY <= self.rightBottomY {
-            sportManager.updateDynamicArea(width: width, heightToWidthRatio: heightToWidthRatio,
-                                             limitArea: initArea
-            )
-        }
+        sportManager.updateFixedArea(width: width, heightToWidthRatio: heightToWidthRatio, centerX: centerX, centerY: centerY)
+        
       
     }
     
@@ -324,7 +298,7 @@ struct SetupAreaRuleView: View {
     var body: some View {
         VStack {
             HStack {
-                Text(self.sportManager.currentSportStateRuleId ?? "请选择区域")
+                Text( self.sportManager.currentSportStateRuleId != nil ? "固定区域\(self.sportManager.currentSportStateRuleId!)" : "请选择区域")
                     .foregroundColor(self.sportManager.currentSportStateRuleId != nil ? .black : .red)
                 Spacer()
                 
@@ -332,7 +306,7 @@ struct SetupAreaRuleView: View {
                     showingOptions = true
                 }.confirmationDialog("选择区域规则", isPresented: $showingOptions, titleVisibility: .visible) {
                     Button(action: {
-                        sportManager.addRuleLandmarkInAreaForAreaRule()
+                        sportManager.addRuleLandmarkInFixedAreaForAreaRule()
                     }) {
                         Text("关节在区域内")
                     }
@@ -345,85 +319,51 @@ struct SetupAreaRuleView: View {
                 }
             }
             HStack {
-                HStack {
-                    Text("宽度:\n高宽比:")
-                    VStack {
-                        
-                        TextField("区域宽度", value: $width, formatter: formatter,onEditingChanged: { flag in
-                            if !flag {
-                                updateRemoteData()
-                            }
-
-                        })
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .keyboardType(.decimalPad)
-                        
-                        TextField("高宽比", value: $heightToWidthRatio, formatter: formatter,onEditingChanged: { flag in
-                            if !flag {
-                                updateRemoteData()
-                            }
-
-                        })
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .keyboardType(.decimalPad)
-                    }
-                }
-                
-                
+                Text("宽度/高宽比\n中心点")
                 HStack {
                     
-                    Text("限制区域:\n左上\n右下")
-                    VStack {
-                        HStack {
-                            TextField("leftTopX", value: $leftTopX, formatter: formatter) { flag in
-                                if !flag {
-                                    updateRemoteData()
-                                }
-                                
-                            }
-                            .foregroundColor(landmarkInAreaTextColor)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
-                            TextField("leftTopY", value: $leftTopY, formatter: formatter) {flag in
-                                if !flag {
-                                    updateRemoteData()
-                                }
-                                
-                            }
-                            .foregroundColor(landmarkInAreaTextColor)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
+                    TextField("区域宽度", value: $width, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            updateRemoteData()
                         }
-                        HStack {
-                            TextField("rightBottomX", value: $rightBottomX, formatter: formatter) {flag in
-                                if !flag {
-                                    updateRemoteData()
-                                }
-                                
-                            }
-                            .foregroundColor(landmarkInAreaTextColor)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
-                            
-                            TextField("rightBottomY", value: $rightBottomY, formatter: formatter){flag in
-                                if !flag {
-                                    updateRemoteData()
-                                }
-                            }
-                            
-                            .foregroundColor(landmarkInAreaTextColor)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.decimalPad)
+
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    
+                    TextField("高宽比", value: $heightToWidthRatio, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            updateRemoteData()
                         }
-                    }
+
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    
+                    TextField("中心X", value: $centerX, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            updateRemoteData()
+                        }
+
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
+                    TextField("中心Y", value: $centerY, formatter: formatter,onEditingChanged: { flag in
+                        if !flag {
+                            updateRemoteData()
+                        }
+
+                    })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.decimalPad)
                 }
             }
             
             
             ScrollView(showsIndicators: false) {
                 VStack {
-                    ForEach(sportManager.getRuleLandmarkInAreasForAreaRule()) { landmarkInArea in
-                        LandmarkInAreaRuleForAreaRuleView(landmarkInArea: landmarkInArea)
+                    ForEach(sportManager.getRuleLandmarkInFixedAreasForAreaRule()) { landmarkInArea in
+                        LandmarkInFixedAreaRuleView(landmarkInArea: landmarkInArea)
                         Divider()
                     }
                 }
@@ -437,16 +377,171 @@ struct SetupAreaRuleView: View {
         
         .background(BackgroundClearView(clearBackground: $clearBackground))
         .onAppear(perform: {
-            let area = sportManager.getDynamicArea()
-            let imageSize = area.imageSize
-            leftTopX = area.limitedArea[0].x/imageSize.width
-            leftTopY = area.limitedArea[0].y/imageSize.height
-            rightBottomX = area.limitedArea[2].x/imageSize.width
-            rightBottomY = area.limitedArea[2].y/imageSize.height
+            let area = sportManager.getFixedArea()!
             width = area.width
             heightToWidthRatio = area.heightToWidthRatio
+            centerX = area.center.x
+            centerY = area.center.y
+
 
         })
     }
 }
+
+struct SetupDynamicAreaRuleView: View {
+    @State var clearBackground = false
+    
+    @EnvironmentObject var sportManager: SportsManager
+    @State var showingOptions = false
+    
+    @State var width: Double = 0.1
+    @State var heightToWidthRatio = 1.0
+
+    
+    @State var leftTopX = 0.0
+    @State var leftTopY = 0.0
+    @State var rightBottomX = 0.0
+    @State var rightBottomY = 0.0
+    
+    
+
+    
+    private func updateRemoteData() {
+        if leftTopX <= rightBottomX && leftTopY <= rightBottomY {
+            sportManager.updateDynamicArea(width: width, heightToWidthRatio: heightToWidthRatio, leftTopX: leftTopX, leftTopY: leftTopY, rightBottomX: rightBottomX, rightBottomY: rightBottomY)
+        }
+       
+    }
+    
+
+    var body: some View {
+        VStack {
+            HStack {
+                Text( self.sportManager.currentSportStateRuleId != nil ? "动态区域\(self.sportManager.currentSportStateRuleId!)" : "请选择区域")
+                    .foregroundColor(self.sportManager.currentSportStateRuleId != nil ? .black : .red)
+                Spacer()
+                
+                Button("添加规则") {
+                    showingOptions = true
+                }.confirmationDialog("选择区域规则", isPresented: $showingOptions, titleVisibility: .visible) {
+                    Button(action: {
+                        sportManager.addRuleLandmarkInDynamicAreaForAreaRule()
+                    }) {
+                        Text("关节在区域内")
+                    }
+                }
+                
+                Button(action: {
+                    clearBackground.toggle()
+                }) {
+                    Text(clearBackground ? "恢复背景" : "清除背景")
+                }
+            }
+            
+            HStack {
+                HStack {
+                    Text("宽度/高宽比\n中心点")
+                    VStack {
+                        HStack {
+                            TextField("区域宽度", value: $width, formatter: formatter,onEditingChanged: { flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+
+                            })
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                            
+                            TextField("高宽比", value: $heightToWidthRatio, formatter: formatter,onEditingChanged: { flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+
+                            })
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                        }
+
+                    }
+                    
+                }
+                
+                HStack {
+                    
+                    Text("限制区域:\n左上\n右下")
+                    VStack {
+                        HStack {
+                            TextField("leftTopX", value: $leftTopX, formatter: formatter) { flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                                
+                            }
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                            TextField("leftTopY", value: $leftTopY, formatter: formatter) {flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                                
+                            }
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                        }
+                        HStack {
+                            TextField("rightBottomX", value: $rightBottomX, formatter: formatter) {flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                                
+                            }
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                            
+                            TextField("rightBottomY", value: $rightBottomY, formatter: formatter){flag in
+                                if !flag {
+                                    updateRemoteData()
+                                }
+                            }
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                        }
+                    }
+                }
+            }
+            
+            
+            
+            ScrollView(showsIndicators: false) {
+                VStack {
+                    ForEach(sportManager.getRuleLandmarkInDynamicAreas()) { landmarkInArea in
+                        LandmarkInDynamicAreaRuleView(landmarkInArea: landmarkInArea)
+                        Divider()
+                    }
+                }
+                
+                Spacer()
+            }
+            
+            
+            
+        }.padding()
+        
+        .background(BackgroundClearView(clearBackground: $clearBackground))
+        .onAppear(perform: {
+            let area = sportManager.getDynamicArea()!
+            width = area.width
+            heightToWidthRatio = area.heightToWidthRatio
+            leftTopX = area.limitedArea[0]
+            leftTopY = area.limitedArea[1]
+            rightBottomX = area.limitedArea[2]
+            rightBottomY = area.limitedArea[3]
+
+
+        })
+    }
+}
+
+
+
 

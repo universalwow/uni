@@ -8,6 +8,7 @@ struct Card {
     var sportPeriod: SportPeriod
     var sportDiscrete: SportPeriod
     var isGestureController: Bool
+    var interactionType: InteractionType
   var backColor: Color = .green
   
     static let `default`: Card = Card(content: "card",
@@ -15,5 +16,6 @@ struct Card {
                                       sportPeriod: .None,
                                       sportDiscrete: .None,
                                       isGestureController: false,
+                                      interactionType: .None,
                                       backColor: .green)
 }

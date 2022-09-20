@@ -68,7 +68,7 @@ struct SportsManagerView: View {
                                              sportClass: sport.sportClass,
                                              sportPeriod: sport.sportPeriod,
                                              sportDiscrete: sport.sportDiscrete ?? .None,
-                                             isGestureController: sport.isGestureController,
+                                             isGestureController: sport.isGestureController, interactionType: sport.interactionType,
                                              backColor: .green))
                         }
                         

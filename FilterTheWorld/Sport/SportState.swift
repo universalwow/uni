@@ -11,7 +11,6 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
   var landmarkSegments :[LandmarkSegment] = []
   var humanPose: HumanPose?
   var objects: [Observation] = []
-  var dynamicAreas: [DynamicArea] = []
   
   // MARK: TO DELETE
   // TODO: 状态对应的规则 时间限制 一定时间内没有切换状态
@@ -46,22 +45,76 @@ extension SportState {
       SportState(id: -1, name: "interAction_1", description: "interAction_1")
     }
     static var interAction_2 : SportState {
-      SportState(id: -2, name: "interAction_2", description: "interAction_2")
+      SportState(id: -2, name: "提交答案", description: "提交答案")
     }
     static var interAction_3 : SportState {
       SportState(id: -3, name: "interAction_3", description: "interAction_3")
     }
+    
+    
+    static var interAction_a : SportState {
+      SportState(id: 0, name: "A", description: "A")
+    }
+    static var interAction_b : SportState {
+      SportState(id: 1, name: "B", description: "B")
+    }
+    static var interAction_c : SportState {
+      SportState(id: 2, name: "C", description: "C")
+    }
+    
+    static var interAction_d : SportState {
+      SportState(id: 3, name: "D", description: "D")
+    }
+    
   
   static var startState : SportState {
-    SportState(id: 1, name: "Start", description: "start")
+    SportState(id: 4, name: "Start", description: "start")
   }
   
   static var endState: SportState {
-    SportState(id: 2, name: "End", description: "end")
+    SportState(id: 5, name: "End", description: "end")
   }
   
     static var readyState: SportState {
-      SportState(id: 3, name: "Ready", description: "Ready")
+      SportState(id: 6, name: "Ready", description: "Ready")
+    }
+    
+    func getFixedAreas() -> Set<String> {
+        var areas: Set<String> = []
+        scoreRules.forEach({ rules in
+            areas.formUnion(
+                rules.fixedAreaRules.map({ fixedAreaRule in
+                fixedAreaRule.id
+            }))
+        })
+        
+        violateRules.forEach({ rules in
+            areas.formUnion(
+                rules.fixedAreaRules.map({ fixedAreaRule in
+                fixedAreaRule.id
+            }))
+        })
+        
+        return areas
+    }
+    
+    func getDynamicAreas() -> Set<String> {
+        var areas: Set<String> = []
+        scoreRules.forEach({ rules in
+            areas.formUnion(
+                rules.dynamicAreaRules.map({ dynamicAreaRule in
+                    dynamicAreaRule.id
+            }))
+        })
+        
+        violateRules.forEach({ rules in
+            areas.formUnion(
+                rules.dynamicAreaRules.map({ dynamicAreaRule in
+                    dynamicAreaRule.id
+            }))
+        })
+        
+        return areas
     }
   
   
@@ -78,55 +131,9 @@ extension SportState {
     }
   }
     
-    mutating func generatorArea() {
-        scoreRules.indices.forEach( { index in
-            scoreRules[index].generatorArea()
-        })
-        
-        violateRules.indices.forEach( { index in
-            violateRules[index].generatorArea()
-        })
-        
-        dynamicAreas.indices.forEach( { index in
-            let areaId = dynamicAreas[index].id
-            generatorArea(areaId: areaId, area: generatorArea(areaId: areaId))
-            
-        })
-    }
-    
-    func areas() -> [LandmarkInArea] {
-        var areas: [LandmarkInArea] = []
-        scoreRules.forEach( { rules in
-            rules.landmarkRules.forEach( { landmarkRule in
-                areas.append(contentsOf: landmarkRule.landmarkInArea)
-            })
-        })
-        
-        violateRules.forEach( { rules in
-            rules.landmarkRules.forEach( { landmarkRule in
-                areas.append(contentsOf: landmarkRule.landmarkInArea)
-            })
-        })
-        return areas
 
-    }
     
-    func getDynamicAreas() -> [LandmarkInAreaForAreaRule] {
-        var areas: [LandmarkInAreaForAreaRule] = []
-        scoreRules.forEach( { rules in
-            rules.areaRules.forEach( { areaRule in
-                areas.append(contentsOf: areaRule.landmarkInArea)
-            })
-        })
-        
-        violateRules.forEach( { rules in
-            rules.areaRules.forEach( { areaRule in
-                areas.append(contentsOf: areaRule.landmarkInArea)
-            })
-        })
-        return areas
-
-    }
+    
   
   func findRulesList(ruleType: RuleType) -> [Rules] {
     switch ruleType {
@@ -261,7 +268,9 @@ extension SportState {
             }
         
 //        MARK: 设置区域被选择
-        case .Area:
+        case .FixedArea:
+            break
+        case .DynamicArea:
             break
             
         case .none:
@@ -309,10 +318,12 @@ extension SportState {
             let lastSatisfyPercent = Double(result.2) / Double(result.3)
             let currentSatisfyPercent = Double(satisfy.2) / Double(satisfy.3)
             
-            if currentSatisfyPercent >= lastSatisfyPercent {
+            if currentSatisfyPercent > lastSatisfyPercent {
                 return (result.0 || satisfy.0, warningSet, satisfy.2, satisfy.3)
-            }else {
-                return (result.0 || satisfy.0, warningSet, result.2, result.3)
+            } else if currentSatisfyPercent < lastSatisfyPercent {
+                return (result.0 || satisfy.0, result.1, result.2, result.3)
+            }else{
+                return (result.0 || satisfy.0, result.1.union(warningSet), result.2, result.3)
             }
         }
     })
@@ -957,70 +968,7 @@ extension SportState {
                 }
             }
     
-//    -------------------
-    
-    
-    func getRuleLandmarkInAreas(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkInArea] {
-        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
-            switch ruleType {
-            case .SCORE:
-                return scoreRules[rulesIndex].getRuleLandmarkInAreas(ruleId: ruleId, ruleClass: ruleClass)
-            case .VIOLATE:
-                return violateRules[rulesIndex].getRuleLandmarkInAreas(ruleId: ruleId, ruleClass: ruleClass)
-            }
-        }
-        
-        return []
-    }
-    
-    func getRuleLandmarkInArea(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkInArea {
-        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
-        switch ruleType {
-        case .SCORE:
-            return scoreRules[rulesIndex].getRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, id: id)
-        case .VIOLATE:
-            return violateRules[rulesIndex].getRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, id: id)
-        }
-    }
 
-    mutating func addRuleLandmarkInArea(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
-        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
-            switch ruleType {
-            case .SCORE:
-                scoreRules[rulesIndex].addRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: true)
-            case .VIOLATE:
-                violateRules[rulesIndex].addRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: false)
-            }
-        }
-    }
-    
-    
-    mutating func removeRuleLandmarkInArea(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
-        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
-        switch ruleType {
-        case .SCORE:
-            scoreRules[rulesIndex].removeRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, id: id)
-        case .VIOLATE:
-            violateRules[rulesIndex].removeRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass, id: id)
-        }
-    }
-    
-    mutating func updateRuleLandmarkInArea(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
-                    area: [Point2D], warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, isDynamicArea: Bool, width: Double, heightToWidthRatio: Double, id: UUID) {
-        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
-            let imageSize = self.image!.imageSize.point2d
-            switch ruleType {
-            case .SCORE:
-                scoreRules[rulesIndex].updateRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass,
-                                                                area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, isDynamicArea: isDynamicArea, width: width, heightToWidthRatio: heightToWidthRatio,  id: id)
-
-            case .VIOLATE:
-                violateRules[rulesIndex].updateRuleLandmarkInArea(ruleId: ruleId, ruleClass: ruleClass,
-                                                                   area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear, isDynamicArea: isDynamicArea, width: width, heightToWidthRatio: heightToWidthRatio,  id: id)
-
-            }
-        }
-    }
 //    -------------------
     
     func getRuleObjectToLandmarks(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [ObjectToLandmark] {
@@ -1352,121 +1300,160 @@ extension SportState {
     
     //    -------------------
     
-    func getDynamicArea(ruleId: String) -> DynamicArea {
-        dynamicAreas.first(where: { dynamicArea in
-            dynamicArea.id == ruleId
-        })!
-    }
 
-
-    func findFirstDynamicAreaIndex(ruleId: String) -> Int? {
-        dynamicAreas.firstIndex(where: { dynamicArea in
-            dynamicArea.id == ruleId
-        })
-    }
     
-    mutating func generatorArea(areaId: String) -> [Point2D] {
-        
-        let areaIndex = findFirstDynamicAreaIndex(ruleId: areaId)!
-        let width = dynamicAreas[areaIndex].width
-        let heightToWidthRatio = dynamicAreas[areaIndex].heightToWidthRatio
-
-        let limitedArea = dynamicAreas[areaIndex].limitedArea
-        let imageSize = dynamicAreas[areaIndex].imageSize
-
-        
-        let centerX = Double.random(in: limitedArea[0].x...limitedArea[2].x)
-        let centerY = Double.random(in: limitedArea[0].y...limitedArea[2].y)
-
-        let _width = imageSize.width * width
-        let height = _width * heightToWidthRatio
-
-        let leftTop = Point2D(x: centerX - _width/2, y: centerY - height/2)
-        let rightTop = Point2D(x: centerX + _width/2, y: centerY - height/2)
-        let rightBottom = Point2D(x: centerX + _width/2, y: centerY + height/2)
-        let leftBottom = Point2D(x: centerX - _width/2, y: centerY + height/2)
-        
-        return [leftTop, rightTop, rightBottom, leftBottom]
-    }
-    
-    mutating func generatorArea(areaId: String, area: [Point2D]) {
+    mutating func generatorFixedArea(areaId: String, area: [Point2D]) {
         
         scoreRules.indices.forEach({ rulesIndex in
-            scoreRules[rulesIndex].generatorArea(areaId: areaId, area: area)
+            scoreRules[rulesIndex].generatorFixedArea(areaId: areaId, area: area)
         })
             
         violateRules.indices.forEach({ rulesIndex in
-            violateRules[rulesIndex].generatorArea(areaId: areaId, area: area)
+            violateRules[rulesIndex].generatorFixedArea(areaId: areaId, area: area)
         })
     }
-mutating func updateDynamicArea(ruleId: String,
-                                 width: Double, heightToWidthRatio: Double, limitArea: [Point2D]) {
     
+    mutating func generatorDynamicArea(areaId: String, area: [Point2D]) {
+        
+        scoreRules.indices.forEach({ rulesIndex in
+            scoreRules[rulesIndex].generatorDynamicArea(areaId: areaId, area: area)
+        })
+            
+        violateRules.indices.forEach({ rulesIndex in
+            violateRules[rulesIndex].generatorDynamicArea(areaId: areaId, area: area)
+        })
+    }
     
-    if let dynamicAreaIndex = findFirstDynamicAreaIndex(ruleId: ruleId) {
-        dynamicAreas[dynamicAreaIndex].width = width
-        dynamicAreas[dynamicAreaIndex].heightToWidthRatio = heightToWidthRatio
-        dynamicAreas[dynamicAreaIndex].limitedArea = limitArea
-        dynamicAreas[dynamicAreaIndex].imageSize = image!.imageSize.point2d
-//        生成区域
-        let area = generatorArea(areaId: ruleId)
-        dynamicAreas[dynamicAreaIndex].area = area
 
-        generatorArea(areaId: ruleId, area: area)
+    
+    
+
+    
+    
+//    ---------------------
+    
+    func getRuleLandmarkInFixedAreasForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkInAreaForAreaRule] {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                return scoreRules[rulesIndex].getRuleLandmarkInFixedAreasForAreaRule(ruleId: ruleId, ruleClass: ruleClass)
+            case .VIOLATE:
+                return violateRules[rulesIndex].getRuleLandmarkInFixedAreasForAreaRule(ruleId: ruleId, ruleClass: ruleClass)
+            }
+        }
+        
+        return []
+    }
+
+func getRuleLandmarkInFixedAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkInAreaForAreaRule {
+    let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+
+    switch ruleType {
+    case .SCORE:
+        return scoreRules[rulesIndex].getRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
+    case .VIOLATE:
+        return violateRules[rulesIndex].getRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
     }
 }
-//        -------------------
+    
+    mutating func addRuleLandmarkInFixedAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fixedArea: [Point2D]) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].addRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: true, area: fixedArea)
+            case .VIOLATE:
+                violateRules[rulesIndex].addRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: false, area: fixedArea)
+            }
+        }
+    }
+    
+    
+    mutating func removeRuleLandmarkInFixedAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+        switch ruleType {
+        case .SCORE:
+            scoreRules[rulesIndex].removeRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        case .VIOLATE:
+            violateRules[rulesIndex].removeRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        }
+    }
+    
+    mutating func updateRuleLandmarkInFixedAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
+                                                      area: [Point2D], warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, landmarkType: LandmarkType, id: UUID) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            let imageSize = self.image!.imageSize.point2d
+            let landmark = humanPose!.landmarks.first(where: { landmark in
+                landmark.id == landmarkType.id
+            })!
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].updateRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass,
+                                                                area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,
+                                                                           landmark: landmark,
+                                                                           id: id)
+
+            case .VIOLATE:
+                violateRules[rulesIndex].updateRuleLandmarkInFixedAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass,
+                                                                   area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,
+                                                                             landmark: landmark,
+                                                                             id: id)
+
+            }
+        }
+    }
+    
+    
+    //    ---------------------
         
-        func getRuleLandmarkInAreasForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkInAreaForAreaRule] {
+        func getRuleLandmarkInDynamicAreasForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkInAreaForAreaRule] {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 switch ruleType {
                 case .SCORE:
-                    return scoreRules[rulesIndex].getRuleLandmarkInAreasForAreaRule(ruleId: ruleId, ruleClass: ruleClass)
+                    return scoreRules[rulesIndex].getRuleLandmarkInDynamicAreasForAreaRule(ruleId: ruleId, ruleClass: ruleClass)
                 case .VIOLATE:
-                    return violateRules[rulesIndex].getRuleLandmarkInAreasForAreaRule(ruleId: ruleId, ruleClass: ruleClass)
+                    return violateRules[rulesIndex].getRuleLandmarkInDynamicAreasForAreaRule(ruleId: ruleId, ruleClass: ruleClass)
                 }
             }
             
             return []
         }
-    
-    func getRuleLandmarkInAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkInAreaForAreaRule {
+
+    func getRuleLandmarkInDynamicAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkInAreaForAreaRule {
         let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
 
         switch ruleType {
         case .SCORE:
-            return scoreRules[rulesIndex].getRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
+            return scoreRules[rulesIndex].getRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
         case .VIOLATE:
-            return violateRules[rulesIndex].getRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
+            return violateRules[rulesIndex].getRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
         }
     }
         
-        mutating func addRuleLandmarkInAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        mutating func addRuleLandmarkInDynamicAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, fixedArea: [Point2D]) {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
-                let area = dynamicAreas.first(where: { dynamicArea in
-                    dynamicArea.id == ruleId
-                })!.area
+
                 switch ruleType {
                 case .SCORE:
-                    scoreRules[rulesIndex].addRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: true, area: area)
+                    scoreRules[rulesIndex].addRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: true, area: fixedArea)
                 case .VIOLATE:
-                    violateRules[rulesIndex].addRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: false, area: area)
+                    violateRules[rulesIndex].addRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, landmarks: humanPose!.landmarks, imageSize: image!.imageSize.point2d, isScoreWarning: false, area: fixedArea)
                 }
             }
         }
         
         
-        mutating func removeRuleLandmarkInAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        mutating func removeRuleLandmarkInDynamicAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
             let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
             switch ruleType {
             case .SCORE:
-                scoreRules[rulesIndex].removeRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
+                scoreRules[rulesIndex].removeRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
             case .VIOLATE:
-                violateRules[rulesIndex].removeRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
+                violateRules[rulesIndex].removeRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass, id: id)
             }
         }
         
-        mutating func updateRuleLandmarkInAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
+        mutating func updateRuleLandmarkInDynamicAreaForAreaRule(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
                                                           area: [Point2D], warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool, landmarkType: LandmarkType, id: UUID) {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 let imageSize = self.image!.imageSize.point2d
@@ -1475,13 +1462,13 @@ mutating func updateDynamicArea(ruleId: String,
                 })!
                 switch ruleType {
                 case .SCORE:
-                    scoreRules[rulesIndex].updateRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass,
+                    scoreRules[rulesIndex].updateRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass,
                                                                     area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,
                                                                                landmark: landmark,
                                                                                id: id)
 
                 case .VIOLATE:
-                    violateRules[rulesIndex].updateRuleLandmarkInAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass,
+                    violateRules[rulesIndex].updateRuleLandmarkInDynamicAreaForAreaRule(ruleId: ruleId, ruleClass: ruleClass,
                                                                        area: area, imageSize: imageSize, warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,
                                                                                  landmark: landmark,
                                                                                  id: id)

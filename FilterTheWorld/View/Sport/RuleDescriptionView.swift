@@ -155,7 +155,7 @@ struct LandmarkInAreaForAreaRuleDescriptionView: View {
     var area:LandmarkInAreaForAreaRule
     var body:some View {
         HStack {
-            Text("关节\(area.landmark.id)在区域\(area.dynamicAreaId):\(area.warning.content)")
+            Text("关节\(area.landmark.id)在区域\(area.areaId):\(area.warning.content)")
             Spacer()
             Text(area.areaString)
             Spacer()
@@ -288,12 +288,6 @@ struct LandmarkRuleDescriptionView: View {
         VStack {
             
             
-            ForEach(rule.landmarkInArea, content: { landmarkInArea in
-                LandmarkInAreaDescriptionView(area: landmarkInArea)
-                Divider()
-                
-            })
-            
             ForEach(rule.distanceToLandmark, content: { distanceToLandmark in
                 DistanceToLandmarkDescriptionView(distanceToLandmark: distanceToLandmark)
                 Divider()
@@ -356,24 +350,34 @@ struct ObservationRuleDescriptionView: View {
     }
 }
 
-struct AreaRuleDescriptionView: View {
-    @Binding var rule:AreaRule
+struct FixedAreaRuleDescriptionView: View {
+    @Binding var rule:FixedAreaRule
     var body : some View {
         VStack {
             
             
-            ForEach(rule.landmarkInArea, content: { landmarkInArea in
+            ForEach(rule.landmarkInFixedArea, content: { landmarkInArea in
                 LandmarkInAreaForAreaRuleDescriptionView(area: landmarkInArea)
                 Divider()
-                
             })
-            
-            
-            
-        
-
             
         }
     }
 }
+
+struct DynamicAreaRuleDescriptionView: View {
+    @Binding var rule:DynamicAreaRule
+    var body : some View {
+        VStack {
+            
+            
+            ForEach(rule.landmarkInDynamicdArea, content: { landmarkInArea in
+                LandmarkInAreaForAreaRuleDescriptionView(area: landmarkInArea)
+                Divider()
+            })
+            
+        }
+    }
+}
+
 

@@ -35,27 +35,64 @@ enum RuleClass: String, Identifiable, CaseIterable, Codable, Equatable {
     var id: String {
         self.rawValue
     }
-    case LandmarkSegment, Landmark, Observation, Area
-}
-
-enum Areas: String, Identifiable, CaseIterable, Codable, Equatable {
-    var id: String {
-        self.rawValue
-    }
-    case AREA_1, AREA_2, AREA_3, AREA_4, AREA_5, NONE
+    case LandmarkSegment, Landmark, Observation, FixedArea, DynamicArea
 }
 
 
-struct DynamicArea: Identifiable, Codable {
+
+
+//struct DynamicArea: Identifiable, Codable {
+//    var id: String
+//    var width: Double = 0.1
+//    var heightToWidthRatio: Double = 1
+//    //  左上，右下
+//    var imageSize: Point2D
+//    var limitedArea: [Point2D] = [Point2D.zero, Point2D.zero, Point2D.zero, Point2D.zero]
+//    var area: [Point2D] = [Point2D.zero, Point2D.zero, Point2D.zero, Point2D.zero]
+//
+//}
+
+struct DynamicAreaForSport: Identifiable, Codable {
     var id: String
     var width: Double = 0.1
     var heightToWidthRatio: Double = 1
     //  左上，右下
-    var imageSize: Point2D
-    var limitedArea: [Point2D] = [Point2D.zero, Point2D.zero, Point2D.zero, Point2D.zero]
+    var limitedArea: [Double] = [Double.zero, Double.zero,Double.zero,Double.zero]
+    // 生成区域
     var area: [Point2D] = [Point2D.zero, Point2D.zero, Point2D.zero, Point2D.zero]
+    
+    var imageSize: Point2D?
+    var content: String?
+    
+    var areaToRect: CGRect {
+        CGRect(origin: self.area[0].cgPoint,
+               size: CGSize(width: abs(self.area[2].x - self.area[0].x),
+                            height: abs(self.area[2].y - self.area[0].y)))
+    }
 
 }
+
+struct FixedAreaForSport: Identifiable, Codable {
+    var id: String
+    var width: Double = 0.1
+    var heightToWidthRatio: Double = 1
+    //  左上，右下
+    var center: Point2D = Point2D.zero
+    // 生成区域
+    var area: [Point2D] = [Point2D.zero, Point2D.zero, Point2D.zero, Point2D.zero]
+    
+    var areaToRect: CGRect {
+        CGRect(origin: self.area[0].cgPoint,
+               size: CGSize(width: abs(self.area[2].x - self.area[0].x),
+                            height: abs(self.area[2].y - self.area[0].y)))
+    }
+    
+    var imageSize: Point2D?
+    var content: String?
+    var selected: Bool? 
+}
+
+
 
 
 
@@ -2020,7 +2057,7 @@ extension LandmarkInAreaForAreaRule {
 
 struct LandmarkInAreaForAreaRule: Identifiable, Codable {
     var id = UUID()
-    var dynamicAreaId: String
+    var areaId: String
     var landmark: Landmark
     var imageSize:Point2D
     
@@ -2029,8 +2066,8 @@ struct LandmarkInAreaForAreaRule: Identifiable, Codable {
     
     var warning:Warning
     
-    init(dynamicAreaId: String, landmark: Landmark, imageSize: Point2D, warning: Warning, area: [Point2D]) {
-        self.dynamicAreaId = dynamicAreaId
+    init(areaId: String, landmark: Landmark, imageSize: Point2D, warning: Warning, area: [Point2D]) {
+        self.areaId = areaId
         self.landmark = landmark
         self.imageSize = imageSize
         self.warning = warning

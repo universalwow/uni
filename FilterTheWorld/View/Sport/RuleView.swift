@@ -10,7 +10,8 @@ struct RuleView: View {
     @State var selectedLandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
     @State var selectedLandmarkType = LandmarkType.LeftShoulder
     @State var selectedObject = ObjectLabel.POSE.rawValue
-    @State var selectedArea = Areas.NONE.rawValue
+    @State var selectedFixedArea = "1"
+    @State var selectedDynamicArea = "1"
     @State var ruleClass = RuleClass.LandmarkSegment
     
     
@@ -59,26 +60,28 @@ struct RuleView: View {
                         Text(object.label).tag(object.label)
                     }
                 }
+
                 
-                Picker("选择动态区域", selection: $selectedArea.didSet( { _ in
-                    ruleClass = .Area
-                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedArea, ruleClass: ruleClass)
+                Picker("选择固定区域", selection: $selectedFixedArea.didSet( { _ in
+                    ruleClass = .FixedArea
+                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedFixedArea, ruleClass: ruleClass)
                     
                 })) {
-                    ForEach(sportManager.findDynamicAreas()) { area in
+                    ForEach(sportManager.findFixedAreasForSport()) { area in
+                        Text("固定区域\(area.id)").tag(area.id)
+                    }
+                }
+                
+                Picker("选择动态区域", selection: $selectedDynamicArea.didSet( { _ in
+                    ruleClass = .DynamicArea
+                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedFixedArea, ruleClass: ruleClass)
+                    
+                })) {
+                    ForEach(sportManager.findDynamicAreasForSport()) { area in
                         Text("动态区域\(area.id)").tag(area.id)
                     }
                 }
                 
-//                Picker("选择区域", selection: $selectedArea.didSet( { _ in
-//                    ruleClass = .Area
-//                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedArea, ruleClass: ruleClass)
-//                    
-//                })) {
-//                    ForEach(Areas.allCases) { area in
-//                        Text(area.rawValue).tag(area.rawValue)
-//                    }
-//                }
                 
                 
                 Button(action: {
@@ -120,8 +123,12 @@ struct RuleView: View {
                 SetupLandmarkRuleView()
             case .Observation:
                 SetupObservationRuleView()
-            case .Area:
-                SetupAreaRuleView()
+            case .FixedArea:
+//                SetupAreaRuleView()
+                SetupFixedAreaRuleView()
+            case .DynamicArea:
+//                SetupAreaRuleView()
+                SetupDynamicAreaRuleView()
             }
             
             

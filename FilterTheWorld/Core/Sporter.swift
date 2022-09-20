@@ -216,46 +216,164 @@ class Sporter: Identifiable {
     }
     
     
+
+
     
-    func generatorArea() {
-        sport.generatorArea()
-    }
-    
-    func areas() -> [LandmarkInArea] {
-        var areas : [LandmarkInArea] = []
-        sport.stateTransForm.filter( { transform in
+    func getFixedAreas() -> [FixedAreaForSport] {
+        var areas : Set<String> = []
+        sport.stateTransForm.filter({ transform in
             transform.from == currentStateTime.stateId
-        }).forEach({ transform in
-            areas.append(contentsOf:
-                            sport.areas(stateId: transform.to)
-            )
+        }).map({ transform in
+            transform.to
+        }).forEach({ stateId in
+            let state = sport.states.first(where: { state in
+                state.id == stateId
+            })!
+            areas.formUnion(state.getFixedAreas())
         })
-        return areas
+        
+//        if sport.interactionType == .MultipleChoice {
+//            areas.insert("问题")
+//        }
+        
+        
+        
+        if sport.interactionType == .MultipleChoice && question != nil {
+            var fixedAreas : [FixedAreaForSport] = []
+            question!.choices.indices.forEach({ index in
+                if self.answer.contains(index) {
+                    sport.fixedAreas[index].selected = true
+                }else{
+                    sport.fixedAreas[index].selected = false
+                }
+                sport.fixedAreas[index].content = question!.choices[index]
+                fixedAreas.append(sport.fixedAreas[index])
+            })
+//                    问题
+            sport.fixedAreas[4].content = question!.question
+            fixedAreas.append(sport.fixedAreas[4])
+            return fixedAreas
+        }
+        
+        return sport.fixedAreas.filter({ area in
+            areas.contains(area.id)
+        })
+        
+        
     }
     
-    func dynamicAreas() -> [LandmarkInAreaForAreaRule] {
-        var areas : [LandmarkInAreaForAreaRule] = []
-        sport.stateTransForm.filter( { transform in
+    func getDynamicAreas() -> [DynamicAreaForSport] {
+        var areas : Set<String> = []
+        sport.stateTransForm.filter({ transform in
             transform.from == currentStateTime.stateId
-        }).forEach({ transform in
-            areas.append(contentsOf:
-                            sport.dynamicAreas(stateId: transform.to)
-            )
+        }).map({ transform in
+            transform.to
+        }).forEach({ stateId in
+            let state = sport.states.first(where: { state in
+                state.id == stateId
+            })!
+            areas.formUnion(state.getDynamicAreas())
         })
-        return areas
+        return sport.dynamicAreas.filter({ area in
+            areas.contains(area.id)
+        })
     }
     
     
+    func generatorDynamicArea() {
+        // 需要更新的areaId
+        var areas : Set<String> = []
+        let stateIds = sport.stateTransForm.filter({ transform in
+            transform.from == currentStateTime.stateId
+        }).map({ transform in
+            transform.to
+        })
+        stateIds.forEach({ stateId in
+            let state = sport.states.first(where: { state in
+                state.id == stateId
+            })!
+            areas.formUnion(state.getDynamicAreas())
+        })
+        
+        areas.forEach({ areaId in
+            
+            let dynamicArea = sport.dynamicAreas.first(where: { dynamicArea in
+                dynamicArea.id == areaId
+            })!
+            let area = sport.generatorDynamicArea(imageSize: dynamicArea.imageSize!, areaId: areaId)
+            sport.updateDynamicArea(areaId: areaId, area: area)
+
+            
+            sport.generatorDynamicArea(areaId: areaId, area: area)
+            
+        })
+    }
     
     var allStateTimeHistory :[ScoreTime] = []
     
     var nextStatePreview = SportState.startState
+    
+    var question: Question?
+    var answer: Set<Int> = []
+    
     var currentStateTime = StateTime(stateId: SportState.startState.id, time: 0, poseMap: [:], object: nil) {
         
         didSet {
             allStateTimeHistory.append(ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object))
             
-            generatorArea()
+            generatorDynamicArea()
+            
+            switch sport.interactionType {
+                
+            case .SingleChoice:
+                break
+            case .MultipleChoice:
+                if currentStateTime.stateId == SportState.interAction_1.id {
+                    answer = []
+                    //多项选择 往框中塞答案
+                    let question = sport.questions.randomElement()!
+                    self.question = question
+    
+                } else if currentStateTime.stateId == SportState.interAction_2.id {
+                    if self.question!.answerIndexs == answer {
+                        if sport.sportClass == .Counter {
+                            interactionScoreTimes.append(
+                                ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
+                            )
+                        }
+                    }
+                    self.question = nil
+                    self.answer = []
+                } else if [SportState.interAction_a.id, SportState.interAction_b.id, SportState.interAction_c.id, SportState.interAction_d.id].contains(currentStateTime.stateId) {
+                    if self.answer.contains(currentStateTime.stateId) {
+                        self.answer.remove(currentStateTime.stateId)
+                    }else {
+                        self.answer.insert(currentStateTime.stateId)
+                    }
+                    
+                }
+                
+                
+            case .SingleTouch:
+                break
+            case .OrdinalTouch:
+                break
+            case .None:
+                break
+            }
+            
+//            if sport.name == "交互" && currentStateTime.stateId == SportState.interAction_1.id {
+//                let question = questions.randomElement()!
+//                question.choices.indices.forEach({ index in
+//                    sport.fixedAreas[index].content = question.choices[index]
+//                })
+//                sport.fixedAreas[question.choices.count].content = question.question
+//
+//            }else {
+//                sport.fixedAreas.indices.forEach({ index in
+//                    sport.fixedAreas[index].content = nil
+//                })
+//            }
             
             if currentStateTime.stateId == SportState.startState.id {
                 stateTimeHistory = [currentStateTime]
@@ -315,7 +433,7 @@ class Sporter: Identifiable {
                                     ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
                                 )
 
-                            }else {
+                            } else {
                                 interactionScoreTimes.append(contentsOf: timerScoreTimes)
                             }
 
@@ -346,7 +464,8 @@ class Sporter: Identifiable {
                 return
             }
             
-            if sport.isInteraction == true && scoreTimes.count % sport.interactionScoreCycle! == 0 {
+            if sport.interactionType != InteractionType.None && scoreTimes.count % sport.interactionScoreCycle! == 0 {
+//                切换到交互状态
                 currentStateTime = StateTime(stateId: -1, time: scoreTimes.last!.time, poseMap: scoreTimes.last!.poseMap, object: scoreTimes.last?.object)
             }
 //            stateTimeHistory = [stateTimeHistory.last!]
@@ -986,7 +1105,6 @@ class Sporter: Identifiable {
             }
             
         })
-        
         
         allCurrentFrameWarnings.remove(Warning(content: "", triggeredWhenRuleMet: true, delayTime: 0.0))
         updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)

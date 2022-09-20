@@ -60,6 +60,7 @@ struct SportsGroundView: View {
                                         sportPeriod: sport.sportPeriod,
                                         sportDiscrete: sport.sportDiscrete ?? .None,
                                         isGestureController: sport.isGestureController,
+                                        interactionType: sport.interactionType,
                                         backColor: .green))
                                     .matchedGeometryEffect(id: sportIndex, in: ns)
                                     
@@ -68,7 +69,7 @@ struct SportsGroundView: View {
                         }
                         .padding([.top, .horizontal], 10)
                         .background(
-                            Rectangle().stroke(currentState == 3 ? Color.yellow : Color.red , lineWidth: 10)
+                            Rectangle().stroke(currentState == 6 ? Color.yellow : Color.red , lineWidth: 10)
                                 .matchedGeometryEffect(id: selection, in: ns, isSource: false)
                         )
                         Text("成绩数:\(sportGround.sporters.first?.scoreTimes.count ?? -1)/项目索引:\(self.selection)/阻塞帧:\(imageAnalysis.cachedFrames.count)").font(.largeTitle)
@@ -178,7 +179,6 @@ struct SportsGroundView: View {
                         DispatchQueue.main.async {
                             sportGround.play(poseMap: poses.first!.landmarksMaps, object: nil, targetObject: nil, frameSize: imageAnalysis.sportData.frame.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
                             self.sportGround.objectWillChange.send()
-
                             
                             let afterPlayScoreTimes = sportGround.sporters[0].scoreTimes
                             currentState = sportGround.sporters[0].currentStateTime.stateId
@@ -193,36 +193,36 @@ struct SportsGroundView: View {
                                     return
                                 }
                                 
-            //                    4：左 5： 右 6：上 7：下 8：进入
+            //                    7：左 8： 右 9：上 10：下 11：进入
                                 
                                 let sportSize = sportGround.sports.count
                                 var currentIndex = selection
                                 print("stateId \(stateId) - currentIndex \(currentIndex)")
 
-                                if stateId == 4 {
+                                if stateId == 7 {
                                     if currentIndex > 0 {
                                         currentIndex = currentIndex - 1
                                         lastScoreTime = scoreTime
                                     }
-                                } else if stateId == 5 {
+                                } else if stateId == 8 {
                                     if currentIndex < sportSize - 1 {
                                         currentIndex = currentIndex + 1
                                         lastScoreTime = scoreTime
 
                                     }
-                                } else if stateId == 6 {
+                                } else if stateId == 9 {
                                     if currentIndex - 4 >= 0 {
                                         currentIndex = currentIndex - 4
                                         lastScoreTime = scoreTime
 
                                     }
-                                } else if stateId == 7 {
+                                } else if stateId == 10 {
                                     if currentIndex + 4 <= sportSize - 1 {
                                         currentIndex = currentIndex + 4
                                         lastScoreTime = scoreTime
 
                                     }
-                                } else if stateId == 8 {
+                                } else if stateId == 11 {
                                     selectionSubmited = self.selection
                                 }
                                 

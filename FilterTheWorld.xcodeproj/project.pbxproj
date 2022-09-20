@@ -77,7 +77,7 @@
 		95986F3528406CEE0090B22C /* ObjectToLandmarkRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95986F3428406CEE0090B22C /* ObjectToLandmarkRuleView.swift */; };
 		959A61E627D610E600B2818B /* LandmarkInArea+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959A61E527D610E600B2818B /* LandmarkInArea+Extension.swift */; };
 		959D11E628D3EEEF003AA444 /* GenerateAreaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959D11E528D3EEEF003AA444 /* GenerateAreaView.swift */; };
-		959D11E828D6EFF5003AA444 /* AreaRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959D11E728D6EFF5003AA444 /* AreaRule.swift */; };
+		959D11E828D6EFF5003AA444 /* FixedAreaRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959D11E728D6EFF5003AA444 /* FixedAreaRule.swift */; };
 		95A3E60427E2DDEC0005E364 /* Warning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A3E60327E2DDEC0005E364 /* Warning.swift */; };
 		95A9921B283C81AB00F79FB1 /* BackgroundClearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921A283C81AB00F79FB1 /* BackgroundClearView.swift */; };
 		95A9921D283CDFF200F79FB1 /* LandmarkSegmentLengthRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A9921C283CDFF200F79FB1 /* LandmarkSegmentLengthRuleView.swift */; };
@@ -120,6 +120,7 @@
 		95E79E3327A13D0600AC36E1 /* ImageAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E2F27A13D0600AC36E1 /* ImageAnalysis.swift */; };
 		95E79E3427A13D0600AC36E1 /* LineRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */; };
 		95E79E3527A13D0600AC36E1 /* SportsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E79E3127A13D0600AC36E1 /* SportsManager.swift */; };
+		95ECC66828D85A1200C9C7A4 /* ChoiceQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95ECC66728D85A1200C9C7A4 /* ChoiceQuestion.swift */; };
 		95EE17D2283B8A4B0089CE04 /* SetupRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */; };
 		95F4853528B28156004753C6 /* ObjectToStateDistanceRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F4853428B28156004753C6 /* ObjectToStateDistanceRuleView.swift */; };
 		95F4853728B719F6004753C6 /* LandmarkToStateAngleRuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95F4853628B719F6004753C6 /* LandmarkToStateAngleRuleView.swift */; };
@@ -213,7 +214,7 @@
 		95986F3428406CEE0090B22C /* ObjectToLandmarkRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectToLandmarkRuleView.swift; sourceTree = "<group>"; };
 		959A61E527D610E600B2818B /* LandmarkInArea+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LandmarkInArea+Extension.swift"; sourceTree = "<group>"; };
 		959D11E528D3EEEF003AA444 /* GenerateAreaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerateAreaView.swift; sourceTree = "<group>"; };
-		959D11E728D6EFF5003AA444 /* AreaRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AreaRule.swift; sourceTree = "<group>"; };
+		959D11E728D6EFF5003AA444 /* FixedAreaRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixedAreaRule.swift; sourceTree = "<group>"; };
 		95A3E60327E2DDEC0005E364 /* Warning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warning.swift; sourceTree = "<group>"; };
 		95A9921A283C81AB00F79FB1 /* BackgroundClearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundClearView.swift; sourceTree = "<group>"; };
 		95A9921C283CDFF200F79FB1 /* LandmarkSegmentLengthRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkSegmentLengthRuleView.swift; sourceTree = "<group>"; };
@@ -255,6 +256,7 @@
 		95E79E2F27A13D0600AC36E1 /* ImageAnalysis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageAnalysis.swift; sourceTree = "<group>"; };
 		95E79E3027A13D0600AC36E1 /* LineRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineRecognizer.swift; sourceTree = "<group>"; };
 		95E79E3127A13D0600AC36E1 /* SportsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SportsManager.swift; sourceTree = "<group>"; };
+		95ECC66728D85A1200C9C7A4 /* ChoiceQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoiceQuestion.swift; sourceTree = "<group>"; };
 		95EE17D1283B8A4B0089CE04 /* SetupRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupRuleView.swift; sourceTree = "<group>"; };
 		95F4853428B28156004753C6 /* ObjectToStateDistanceRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectToStateDistanceRuleView.swift; sourceTree = "<group>"; };
 		95F4853628B719F6004753C6 /* LandmarkToStateAngleRuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkToStateAngleRuleView.swift; sourceTree = "<group>"; };
@@ -298,6 +300,7 @@
 		18D775BF22AD944300AE281E /* FilterTheWorld */ = {
 			isa = PBXGroup;
 			children = (
+				95ECC66628D859DC00C9C7A4 /* Questions */,
 				957573442851933E000447D1 /* Doc */,
 				954AA31A289BBB34001BEAAF /* FilterTheWorld.entitlements */,
 				95A9921E283CE08900F79FB1 /* Tool */,
@@ -540,12 +543,20 @@
 				9545751227BD1B1500129153 /* StandAndJump.swift */,
 				954385AC28A35DBF0067AB31 /* LandmarkSegmentRule.swift */,
 				954385AE28A36BB10067AB31 /* LandmarkRule.swift */,
-				959D11E728D6EFF5003AA444 /* AreaRule.swift */,
+				959D11E728D6EFF5003AA444 /* FixedAreaRule.swift */,
 				9554A31D28A39A6E00BFFCE6 /* ObservationRule.swift */,
 				9554A31F28A3A01B00BFFCE6 /* Rules.swift */,
 				9554A32128A3B9D900BFFCE6 /* Ruler.swift */,
 			);
 			path = Sport;
+			sourceTree = "<group>";
+		};
+		95ECC66628D859DC00C9C7A4 /* Questions */ = {
+			isa = PBXGroup;
+			children = (
+				95ECC66728D85A1200C9C7A4 /* ChoiceQuestion.swift */,
+			);
+			path = Questions;
 			sourceTree = "<group>";
 		};
 		98A745781EE7110026A865CB /* Frameworks */ = {
@@ -801,7 +812,7 @@
 				95E79E1127A13C9700AC36E1 /* ObjectRecognizer.swift in Sources */,
 				95E79E1727A13CBE00AC36E1 /* Point3D.swift in Sources */,
 				95E79E2A27A13CED00AC36E1 /* FileManager.swift in Sources */,
-				959D11E828D6EFF5003AA444 /* AreaRule.swift in Sources */,
+				959D11E828D6EFF5003AA444 /* FixedAreaRule.swift in Sources */,
 				951FB32F2839E57700A62931 /* RuleView.swift in Sources */,
 				958F8C322760560500F6DF48 /* FaceRecognizer.swift in Sources */,
 				9503DF3B289E069200595514 /* ChildViewSizeReader.swift in Sources */,
@@ -826,6 +837,7 @@
 				950F555727EB04AC00480F17 /* yolov5-pipeline.mlmodel in Sources */,
 				95E79E2927A13CED00AC36E1 /* CGImage+Extension.swift in Sources */,
 				95BF354B27A16D81006F5D80 /* VideoManager.swift in Sources */,
+				95ECC66828D85A1200C9C7A4 /* ChoiceQuestion.swift in Sources */,
 				951ABE44283A3344009AB8F6 /* UniScrollView.swift in Sources */,
 				95435E582845ABD0007139A6 /* VideoAnalysorView.swift in Sources */,
 				9506B87A284A19E600AFF749 /* Date+Extension.swift in Sources */,

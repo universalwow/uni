@@ -161,7 +161,7 @@ struct SportView: View {
     @State var noStateWarning = ""
     @State var violateSequenceWarning = ""
     @State var isGestureController = false
-    @State var isInteraction = false
+    @State var interactionType = InteractionType.None
     @State var interactionScoreCycle = 1
     
 
@@ -184,7 +184,7 @@ struct SportView: View {
                                  sportDiscrete: sportDiscrete,
                                  noStateWarning: noStateWarning,
                                  isGestureController: isGestureController,
-                                 isInteraction: isInteraction
+                                 interactionType: interactionType
         )
     }
     
@@ -193,13 +193,17 @@ struct SportView: View {
         VStack {
             HStack {
                 Text("基础信息")
-                Text(":左/4 右/5 上/6 下/7 进入/8").opacity(isGestureController ? 0.8 : 0)
+                Text(":左/7 右/8 上/9 下/10 进入/11").opacity(isGestureController ? 0.8 : 0)
                 Spacer()
-                Toggle(isOn: $isInteraction.didSet { _ in
+                Text("交互属性")
+                Picker("交互属性", selection: $interactionType.didSet({ _ in
                     updateBasicMessage()
-                }, label: {
-                    Text("交互项目?").frame(maxWidth: .infinity, alignment: .trailing)
-                })
+                    
+                })) {
+                    ForEach(InteractionType.allCases) { _interactionType in
+                        Text(_interactionType.rawValue).tag(_interactionType)
+                    }
+                }
                 Toggle(isOn: $isGestureController.didSet { _ in
                     updateBasicMessage()
                 }, label: {
@@ -210,7 +214,7 @@ struct SportView: View {
                 
             }
             
-            if isInteraction {
+            if interactionType != .None {
                 HStack {
                     Text("切换周期:")
                     TextField("切换周期:", value: $interactionScoreCycle, formatter: formatter, onEditingChanged: { flag in
@@ -489,14 +493,6 @@ struct SportView: View {
                                         .foregroundColor(sportManager.keyFrameSetted(sport: sport, state: state) ? Color.green : Color.blue)
                                 }
                                 
-                                Button(action: {
-                                    sportManager.addNewDynamicArea(editedSport: sport, editedSportState: state)
-                                    
-                                    //                            self.editRuleFlag = true
-                                    
-                                }) {
-                                    Text("添加动态区域")
-                                }
                                 
                                 Button(action: {
                                     sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
@@ -641,23 +637,23 @@ struct SportView: View {
                                 }.background(Color.yellow)
                             }
                             
-                            ForEach(scoreRules.areaRules) { rule in
+                            ForEach(scoreRules.fixedAreaRules) { rule in
                                 Divider()
                                 VStack {
                                     HStack {
-                                        Text("规则: \(rule.id)")
+                                        Text("规则:固定区域\(rule.id)")
                                         Spacer()
                                         
                                         Button(action: {
-                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Area)
-                                            ruleClass = .Area
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .FixedArea)
+                                            ruleClass = .FixedArea
 
                                             self.showSetupRule = true
                                         }) {
                                             Text("修改")
                                         }
                                         Button(action: {
-                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Area)
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .FixedArea)
                                         }) {
                                             Text("删除")
                                         }
@@ -666,7 +662,36 @@ struct SportView: View {
                                     }.padding([.top], StaticValue.padding)
                                        
                                     TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    AreaRuleDescriptionView(rule: Binding.constant(rule))
+                                    FixedAreaRuleDescriptionView(rule: Binding.constant(rule))
+                                }.background(Color.yellow)
+                            }
+                            
+                            ForEach(scoreRules.dynamicAreaRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则:动态区域\(rule.id)")
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .DynamicArea)
+                                            ruleClass = .DynamicArea
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .DynamicArea)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    DynamicAreaRuleDescriptionView(rule: Binding.constant(rule))
                                 }.background(Color.yellow)
                             }
                         }
@@ -995,8 +1020,11 @@ struct SportView: View {
             case .Observation:
                 SetupObservationRuleView()
             
-            case .Area:
-                SetupAreaRuleView()
+            case .FixedArea:
+//                SetupAreaRuleView()
+                SetupFixedAreaRuleView()
+            case .DynamicArea:
+                SetupDynamicAreaRuleView()
             }
             
             
@@ -1019,8 +1047,7 @@ struct SportView: View {
                 self.warningDelay = sport.warningDelay
                 self.noStateWarning = sport.noStateWarning
                 self.isGestureController = sport.isGestureController
-                
-                self.isInteraction = sport.isInteraction ?? false
+                self.interactionType = sport.interactionType
                 self.interactionScoreCycle = sport.interactionScoreCycle ?? 1
             }
         }

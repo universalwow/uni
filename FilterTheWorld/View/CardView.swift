@@ -28,6 +28,7 @@ struct CardView: View {
               Text("周期:\(card.sportPeriod.rawValue)")
               Text("连续性:\(card.sportDiscrete.rawValue)")
               Text("手势控制:\(card.isGestureController.description)")
+              Text("游戏类型:\(card.interactionType.rawValue)")
           }.foregroundColor(color(sportClass: card.sportClass))
       }.aspectRatio(2/3, contentMode: .fit)
     }

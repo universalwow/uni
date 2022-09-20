@@ -32,38 +32,22 @@ struct RectView: View {
     var viewSize:CGSize
     
     var body: some View {
-        let landmarkInAreas = sportManager.getRuleLandmarkInAreasForShowArea()
-        let landmarkInAreasForAreaRule = sportManager.getRuleLandmarkInAreasForShowAreaForAreaRule()
 
-        ZStack {
-            ForEach(landmarkInAreas, content: { landmarkInArea in
-                let rect = landmarkInArea.areaToRect.rectToFit(imageSize: landmarkInArea.imageSize.cgSize, viewSize: viewSize)
+        
+            if let fixedArea = sportManager.getFixedArea() {
+                let imageSize = sportManager.findFirstState()!.image!.imageSize
+                let rect = fixedArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
                 Rectangle()
-                    .stroke(landmarkInArea.satisfy ? .gray : .red, lineWidth: 2)
+                    .stroke(.red, lineWidth: 2)
                     .frame(width: rect.width, height: rect.height)
                     .position(rect.center)
                     .overlay(content: {
-                        Text("\(landmarkInArea.landmark.id)")
+                        Text("固定区域\(fixedArea.id)")
                             .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
-                            .foregroundColor(landmarkInArea.satisfy ? .gray : .red)
+                            .foregroundColor(.red)
                     })
-                
-            })
+            }
             
-            ForEach(landmarkInAreasForAreaRule, content: { landmarkInArea in
-                let rect = landmarkInArea.areaToRect.rectToFit(imageSize: landmarkInArea.imageSize.cgSize, viewSize: viewSize)
-                Rectangle()
-                    .stroke(landmarkInArea.satisfy ? .gray : .red, lineWidth: 2)
-                    .frame(width: rect.width, height: rect.height)
-                    .position(rect.center)
-                    .overlay(content: {
-                        Text("\(landmarkInArea.landmark.id)")
-                            .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
-                            .foregroundColor(landmarkInArea.satisfy ? .gray : .red)
-                    })
-                
-            })
-        }
     }
 }
 
@@ -74,33 +58,36 @@ struct RectViewForSporter: View {
     var viewSize:CGSize
     
     var body: some View {
-        let landmarkInAreas = sportGround.areas()
-        let dynamicLandmarkInAreas = sportGround.dynamicAreas()
+        let fixedAreas = sportGround.fixedAreas()
+        let dynamicAreas = sportGround.dynamicAreas()
+        
         ZStack {
-            Text("区域数目\(landmarkInAreas.count)/\(dynamicLandmarkInAreas.count)")
-            ForEach(landmarkInAreas.indices, id: \.self,content: { landmarkInAreaIndex in
-                let landmarkInArea = landmarkInAreas[landmarkInAreaIndex]
-                let rect = landmarkInArea.areaToRect.rectToFit(imageSize: landmarkInArea.imageSize.cgSize, viewSize: viewSize)
+            Text("区域数目(静/动):\(fixedAreas.count)/\(dynamicAreas.count)\n当前答案:\(sportGround.getAnswer())")
+            
+            ForEach(fixedAreas, content: { fixedArea in
+
+                let rect = fixedArea.areaToRect.rectToFit(imageSize: fixedArea.imageSize!.cgSize, viewSize: viewSize)
                 Rectangle()
-                    .stroke(.red, lineWidth: 2)
+                    .stroke(fixedArea.selected == true ? .green : .red, lineWidth: 2)
                     .frame(width: rect.width, height: rect.height)
                     .position(rect.center)
                     .overlay(content: {
-                        Text("\(landmarkInArea.landmark.id)")
+                        Text("\(fixedArea.content ?? "")")
                             .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
                             .foregroundColor(.red)
                     })
                 
             })
             
-            ForEach(dynamicLandmarkInAreas, content: { landmarkInArea in
-                let rect = landmarkInArea.areaToRect.rectToFit(imageSize: landmarkInArea.imageSize.cgSize, viewSize: viewSize)
+            ForEach(dynamicAreas, content: { dynamicArea in
+
+                let rect = dynamicArea.areaToRect.rectToFit(imageSize: dynamicArea.imageSize!.cgSize, viewSize: viewSize)
                 Rectangle()
                     .stroke(.red, lineWidth: 2)
                     .frame(width: rect.width, height: rect.height)
                     .position(rect.center)
                     .overlay(content: {
-                        Text("\(landmarkInArea.landmark.id) - \(landmarkInArea.dynamicAreaId)")
+                        Text("\(dynamicArea.content ?? "")")
                             .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
                             .foregroundColor(.red)
                     })

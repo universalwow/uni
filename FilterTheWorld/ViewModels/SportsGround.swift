@@ -15,24 +15,35 @@ class SportsGround: ObservableObject {
         warnings = []
     }
     
-    func areas() -> [LandmarkInArea]  {
-        var areas: [LandmarkInArea] = []
+    
+
+    
+    func fixedAreas() -> [FixedAreaForSport] {
+        var areas: [FixedAreaForSport] = []
         sporters.forEach( { sporter in
             areas.append(contentsOf:
-                            sporter.areas()
+                            sporter.getFixedAreas()
             )
         } )
         return areas
     }
     
-    func dynamicAreas() -> [LandmarkInAreaForAreaRule]  {
-        var areas: [LandmarkInAreaForAreaRule] = []
+    func dynamicAreas() -> [DynamicAreaForSport] {
+        var areas: [DynamicAreaForSport] = []
         sporters.forEach( { sporter in
             areas.append(contentsOf:
-                            sporter.dynamicAreas()
+                            sporter.getDynamicAreas()
             )
         } )
         return areas
+    }
+    
+    func getAnswer() -> String {
+        var answers : Set<Int> = []
+        sporters.forEach { sporter in
+            answers.formUnion(sporter.answer)
+        }
+        return answers.description
     }
     
     func addSporter(sport: Sport) {
