@@ -139,10 +139,7 @@ struct SporterView: View {
                         Text("\(sporter.scoreTimes.count)/\(sporter.interactionScoreTimes.count)").padding()
                             .background(Capsule().fill(Color.green))
                     }
-                    
-                    
-                    
-                    
+
                 }.foregroundColor(.white)
             }
             Spacer()

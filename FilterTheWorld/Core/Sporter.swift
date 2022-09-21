@@ -238,10 +238,12 @@ class Sporter: Identifiable {
         
         
         
-        if sport.interactionType == .MultipleChoice && question != nil {
+        if [InteractionType.MultipleChoice,
+            InteractionType.SingleChoice].contains(sport.interactionType)
+             && question != nil {
             var fixedAreas : [FixedAreaForSport] = []
             question!.choices.indices.forEach({ index in
-                if self.answer.contains(index) {
+                if self.answerSet.contains(index) {
                     sport.fixedAreas[index].selected = true
                 }else{
                     sport.fixedAreas[index].selected = false
@@ -254,6 +256,8 @@ class Sporter: Identifiable {
             fixedAreas.append(sport.fixedAreas[4])
             return fixedAreas
         }
+        
+        
         
         return sport.fixedAreas.filter({ area in
             areas.contains(area.id)
@@ -274,6 +278,25 @@ class Sporter: Identifiable {
             })!
             areas.formUnion(state.getDynamicAreas())
         })
+        
+        if [InteractionType.OrdinalTouch].contains(sport.interactionType) && orderTouchStart == true
+              {
+            var dynamicAreas : [DynamicAreaForSport] = []
+            (0..<sport.dynamicAreaNumber!).forEach( { index in
+                sport.dynamicAreas[index].content = "\(index + 1)"
+
+                if self.answerSet.contains(index) {
+                    sport.dynamicAreas[index].selected = true
+                }else{
+                    sport.dynamicAreas[index].selected = false
+                }
+                dynamicAreas.append(sport.dynamicAreas[index])
+
+            })
+
+            return dynamicAreas
+        }
+        
         return sport.dynamicAreas.filter({ area in
             areas.contains(area.id)
         })
@@ -302,10 +325,7 @@ class Sporter: Identifiable {
             })!
             let area = sport.generatorDynamicArea(imageSize: dynamicArea.imageSize!, areaId: areaId)
             sport.updateDynamicArea(areaId: areaId, area: area)
-
-            
             sport.generatorDynamicArea(areaId: areaId, area: area)
-            
         })
     }
     
@@ -314,28 +334,27 @@ class Sporter: Identifiable {
     var nextStatePreview = SportState.startState
     
     var question: Question?
-    var answer: Set<Int> = []
+    var answerSet: Set<Int> = []
+    
+    var orderTouchStart = false
+
     
     var currentStateTime = StateTime(stateId: SportState.startState.id, time: 0, poseMap: [:], object: nil) {
         
         didSet {
             allStateTimeHistory.append(ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object))
             
-            generatorDynamicArea()
             
             switch sport.interactionType {
                 
             case .SingleChoice:
-                break
-            case .MultipleChoice:
                 if currentStateTime.stateId == SportState.interAction_1.id {
-                    answer = []
-                    //多项选择 往框中塞答案
+                    answerSet = []
                     let question = sport.questions.randomElement()!
                     self.question = question
     
                 } else if currentStateTime.stateId == SportState.interAction_2.id {
-                    if self.question!.answerIndexs == answer {
+                    if self.question!.answerIndexs == answerSet {
                         if sport.sportClass == .Counter {
                             interactionScoreTimes.append(
                                 ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
@@ -343,21 +362,82 @@ class Sporter: Identifiable {
                         }
                     }
                     self.question = nil
-                    self.answer = []
+                    self.answerSet = []
                 } else if [SportState.interAction_a.id, SportState.interAction_b.id, SportState.interAction_c.id, SportState.interAction_d.id].contains(currentStateTime.stateId) {
-                    if self.answer.contains(currentStateTime.stateId) {
-                        self.answer.remove(currentStateTime.stateId)
+                    if self.answerSet.contains(currentStateTime.stateId) {
+                        self.answerSet.remove(currentStateTime.stateId)
                     }else {
-                        self.answer.insert(currentStateTime.stateId)
+                        // 单选只有一个答案
+                        self.answerSet = [currentStateTime.stateId]
+                    }
+                }
+            case .MultipleChoice:
+                if currentStateTime.stateId == SportState.interAction_1.id {
+                    answerSet = []
+                    //多项选择 往框中塞答案
+                    let question = sport.questions.randomElement()!
+                    self.question = question
+    
+                } else if currentStateTime.stateId == SportState.interAction_2.id {
+                    if self.question!.answerIndexs == answerSet {
+                        if sport.sportClass == .Counter {
+                            interactionScoreTimes.append(
+                                ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
+                            )
+                        }
+                    }
+                    self.question = nil
+                    self.answerSet = []
+                } else if [SportState.interAction_a.id, SportState.interAction_b.id, SportState.interAction_c.id, SportState.interAction_d.id].contains(currentStateTime.stateId) {
+                    if self.answerSet.contains(currentStateTime.stateId) {
+                        self.answerSet.remove(currentStateTime.stateId)
+                    }else {
+                        self.answerSet.insert(currentStateTime.stateId)
                     }
                     
                 }
                 
                 
             case .SingleTouch:
-                break
+                generatorDynamicArea()
             case .OrdinalTouch:
-                break
+                
+                if currentStateTime.stateId == SportState.interAction_1.id {
+                    self.answerSet = []
+                    orderTouchStart = true
+                    generatorDynamicArea()
+
+                } else if [SportState.interAction_a.id, SportState.interAction_b.id, SportState.interAction_c.id, SportState.interAction_d.id].contains(currentStateTime.stateId) {
+                    self.answerSet.insert(currentStateTime.stateId)
+                    if self.answerSet.count == sport.dynamicAreaNumber {
+                        if sport.sportClass == .Counter {
+                            interactionScoreTimes.append(
+                                ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
+                            )
+                            
+                            
+                        }
+                        currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                        orderTouchStart = false
+                    }
+                    if self.answerSet.count == 1 {
+                        if self.answerSet != [SportState.interAction_a.id] {
+                            currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                            orderTouchStart = false
+                        }
+                    }else if self.answerSet.count == 2 {
+                        if self.answerSet != [SportState.interAction_a.id, SportState.interAction_b.id] {
+                            currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                            orderTouchStart = false
+                        }
+                    } else if self.answerSet.count == 3 {
+                        if self.answerSet != [SportState.interAction_a.id, SportState.interAction_b.id, SportState.interAction_c.id] {
+                            currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                            orderTouchStart = false
+                        }
+                    }
+                }
+                
             case .None:
                 break
             }

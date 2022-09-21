@@ -68,17 +68,17 @@ struct RuleView: View {
                     
                 })) {
                     ForEach(sportManager.findFixedAreasForSport()) { area in
-                        Text("固定区域\(area.id)").tag(area.id)
+                        Text(area.id).tag(area.id)
                     }
                 }
                 
                 Picker("选择动态区域", selection: $selectedDynamicArea.didSet( { _ in
                     ruleClass = .DynamicArea
-                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedFixedArea, ruleClass: ruleClass)
+                    sportManager.setCurrentSportStateRule(objectLabel: self.selectedDynamicArea, ruleClass: ruleClass)
                     
                 })) {
                     ForEach(sportManager.findDynamicAreasForSport()) { area in
-                        Text("动态区域\(area.id)").tag(area.id)
+                        Text(area.id).tag(area.id)
                     }
                 }
                 

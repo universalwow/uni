@@ -283,13 +283,14 @@ struct SetupFixedAreaRuleView: View {
     @State var heightToWidthRatio = 1.0
     @State var centerX:Double = 0
     @State var centerY: Double = 0
+    @State var content: String = ""
     
 
     
 
     
     private func updateRemoteData() {
-        sportManager.updateFixedArea(width: width, heightToWidthRatio: heightToWidthRatio, centerX: centerX, centerY: centerY)
+        sportManager.updateFixedArea(width: width, heightToWidthRatio: heightToWidthRatio, centerX: centerX, centerY: centerY, content: content)
         
       
     }
@@ -298,9 +299,16 @@ struct SetupFixedAreaRuleView: View {
     var body: some View {
         VStack {
             HStack {
-                Text( self.sportManager.currentSportStateRuleId != nil ? "固定区域\(self.sportManager.currentSportStateRuleId!)" : "请选择区域")
+                Text( self.sportManager.currentSportStateRuleId != nil ? "\(self.sportManager.currentSportStateRuleId!)" : "请选择区域")
                     .foregroundColor(self.sportManager.currentSportStateRuleId != nil ? .black : .red)
                 Spacer()
+                
+                TextField("区域内容", text: $content) { flag in
+                    if !flag {
+                        updateRemoteData()
+                    }
+                    
+                }
                 
                 Button("添加规则") {
                     showingOptions = true
@@ -382,7 +390,7 @@ struct SetupFixedAreaRuleView: View {
             heightToWidthRatio = area.heightToWidthRatio
             centerX = area.center.x
             centerY = area.center.y
-
+            content = area.content ?? ""
 
         })
     }
@@ -403,12 +411,12 @@ struct SetupDynamicAreaRuleView: View {
     @State var rightBottomX = 0.0
     @State var rightBottomY = 0.0
     
-    
+    @State var content = ""
 
     
     private func updateRemoteData() {
         if leftTopX <= rightBottomX && leftTopY <= rightBottomY {
-            sportManager.updateDynamicArea(width: width, heightToWidthRatio: heightToWidthRatio, leftTopX: leftTopX, leftTopY: leftTopY, rightBottomX: rightBottomX, rightBottomY: rightBottomY)
+            sportManager.updateDynamicArea(width: width, heightToWidthRatio: heightToWidthRatio, leftTopX: leftTopX, leftTopY: leftTopY, rightBottomX: rightBottomX, rightBottomY: rightBottomY, content: content)
         }
        
     }
@@ -417,9 +425,16 @@ struct SetupDynamicAreaRuleView: View {
     var body: some View {
         VStack {
             HStack {
-                Text( self.sportManager.currentSportStateRuleId != nil ? "动态区域\(self.sportManager.currentSportStateRuleId!)" : "请选择区域")
+                Text( self.sportManager.currentSportStateRuleId != nil ? "\(self.sportManager.currentSportStateRuleId!)" : "请选择区域")
                     .foregroundColor(self.sportManager.currentSportStateRuleId != nil ? .black : .red)
                 Spacer()
+                
+                TextField("区域内容", text: $content) { flag in
+                    if !flag {
+                        updateRemoteData()
+                    }
+                    
+                }
                 
                 Button("添加规则") {
                     showingOptions = true
@@ -536,6 +551,7 @@ struct SetupDynamicAreaRuleView: View {
             leftTopY = area.limitedArea[1]
             rightBottomX = area.limitedArea[2]
             rightBottomY = area.limitedArea[3]
+            content = area.content ?? ""
 
 
         })

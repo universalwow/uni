@@ -63,6 +63,7 @@ struct DynamicAreaForSport: Identifiable, Codable {
     
     var imageSize: Point2D?
     var content: String?
+    var selected: Bool?
     
     var areaToRect: CGRect {
         CGRect(origin: self.area[0].cgPoint,

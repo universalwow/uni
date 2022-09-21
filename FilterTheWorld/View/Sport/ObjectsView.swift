@@ -33,7 +33,7 @@ struct RectView: View {
     
     var body: some View {
 
-        
+        ZStack {
             if let fixedArea = sportManager.getFixedArea() {
                 let imageSize = sportManager.findFirstState()!.image!.imageSize
                 let rect = fixedArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
@@ -42,11 +42,29 @@ struct RectView: View {
                     .frame(width: rect.width, height: rect.height)
                     .position(rect.center)
                     .overlay(content: {
-                        Text("固定区域\(fixedArea.id)")
+                        Text("\(fixedArea.id)")
                             .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
                             .foregroundColor(.red)
                     })
             }
+            if let dynamicArea = sportManager.getDynamicArea() {
+                let imageSize = sportManager.findFirstState()!.image!.imageSize
+                let rect = dynamicArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
+                Rectangle()
+                    .stroke(.red, lineWidth: 2)
+                    .frame(width: rect.width, height: rect.height)
+                    .position(rect.center)
+                    .overlay(content: {
+                        Text("\(dynamicArea.id)")
+                            .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
+                            .foregroundColor(.red)
+                    })
+
+            }
+        }
+            
+        
+        
             
     }
 }
@@ -83,7 +101,7 @@ struct RectViewForSporter: View {
 
                 let rect = dynamicArea.areaToRect.rectToFit(imageSize: dynamicArea.imageSize!.cgSize, viewSize: viewSize)
                 Rectangle()
-                    .stroke(.red, lineWidth: 2)
+                    .stroke(dynamicArea.selected == true ? .green : .red, lineWidth: 2)
                     .frame(width: rect.width, height: rect.height)
                     .position(rect.center)
                     .overlay(content: {

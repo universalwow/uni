@@ -1305,8 +1305,8 @@ struct Rules: Identifiable, Hashable, Codable {
     }
     
     mutating func transferToFixedAreaRules(rule: FixedAreaRule) {
-        if let index = fixedAreaRules.firstIndex(where: { rule in
-            rule.id == rule.id
+        if let index = fixedAreaRules.firstIndex(where: { fixedAreaRule in
+            fixedAreaRule.id == rule.id
         }) {
             fixedAreaRules[index] = rule
         }else {
@@ -1315,8 +1315,8 @@ struct Rules: Identifiable, Hashable, Codable {
     }
     
     mutating func transferToDynamicAreaRules(rule: DynamicAreaRule) {
-        if let index = dynamicAreaRules.firstIndex(where: { rule in
-            rule.id == rule.id
+        if let index = dynamicAreaRules.firstIndex(where: { dynamicAreaRule in
+            dynamicAreaRule.id == rule.id
         }) {
             dynamicAreaRules[index] = rule
         }else {

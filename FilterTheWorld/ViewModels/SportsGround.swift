@@ -41,7 +41,7 @@ class SportsGround: ObservableObject {
     func getAnswer() -> String {
         var answers : Set<Int> = []
         sporters.forEach { sporter in
-            answers.formUnion(sporter.answer)
+            answers.formUnion(sporter.answerSet)
         }
         return answers.description
     }

@@ -131,7 +131,7 @@ extension SportsManager {
     
     func updateSport(editedSport:Sport, sportName: String, sportDescription: String, sportClass: SportClass,
                      sportPeriod: SportPeriod, sportDiscrete: SportPeriod, noStateWarning: String, isGestureController: Bool,
-                     interactionType: InteractionType) {
+                     interactionType: InteractionType, dynamicAreaNumber: Int) {
         if let sport = findFirstSport(sport: editedSport) {
             var newSport = sport
             newSport.name = sportName
@@ -142,6 +142,7 @@ extension SportsManager {
             newSport.noStateWarning = noStateWarning
             newSport.isGestureController = isGestureController
             newSport.interactionType = interactionType
+            newSport.dynamicAreaNumber = dynamicAreaNumber
             updateSport(sport: newSport)
         }
     }
@@ -1043,17 +1044,17 @@ extension SportsManager {
     }
 
     
-    func updateFixedArea(width: Double, heightToWidthRatio: Double, centerX: Double, centerY: Double
+    func updateFixedArea(width: Double, heightToWidthRatio: Double, centerX: Double, centerY: Double, content: String
     ) {
         let sportIndex = firstIndexOfSport()!
-        sports[sportIndex].updateFixedArea(stateId: currentStateId!, ruleId: currentSportStateRuleId!, width: width, heightToWidthRatio: heightToWidthRatio, centerX: centerX, centerY: centerY)
+        sports[sportIndex].updateFixedArea(stateId: currentStateId!, ruleId: currentSportStateRuleId!, width: width, heightToWidthRatio: heightToWidthRatio, centerX: centerX, centerY: centerY, content: content)
     }
     
     func updateDynamicArea(width: Double, heightToWidthRatio: Double,
-                           leftTopX: Double, leftTopY: Double, rightBottomX: Double, rightBottomY: Double
+                           leftTopX: Double, leftTopY: Double, rightBottomX: Double, rightBottomY: Double, content: String
     ) {
         let sportIndex = firstIndexOfSport()!
-        sports[sportIndex].updateDynamicArea(stateId: currentStateId!, ruleId: currentSportStateRuleId!, width: width, heightToWidthRatio: heightToWidthRatio, leftTopX: leftTopX, leftTopY: leftTopY, rightBottomX: rightBottomX, rightBottomY: rightBottomY)
+        sports[sportIndex].updateDynamicArea(stateId: currentStateId!, ruleId: currentSportStateRuleId!, width: width, heightToWidthRatio: heightToWidthRatio, leftTopX: leftTopX, leftTopY: leftTopY, rightBottomX: rightBottomX, rightBottomY: rightBottomY, content: content)
     }
 
     

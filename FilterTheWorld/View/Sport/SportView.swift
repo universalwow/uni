@@ -163,7 +163,7 @@ struct SportView: View {
     @State var isGestureController = false
     @State var interactionType = InteractionType.None
     @State var interactionScoreCycle = 1
-    
+    @State var dynamicAreaNumber = 3
 
     
     
@@ -184,7 +184,8 @@ struct SportView: View {
                                  sportDiscrete: sportDiscrete,
                                  noStateWarning: noStateWarning,
                                  isGestureController: isGestureController,
-                                 interactionType: interactionType
+                                 interactionType: interactionType,
+                                 dynamicAreaNumber: dynamicAreaNumber
         )
     }
     
@@ -224,6 +225,18 @@ struct SportView: View {
                         
                     }).textFieldStyle(RoundedBorderTextFieldStyle())
                         .keyboardType(.numberPad)
+                    if interactionType == .OrdinalTouch {
+                        Text("动态框数:")
+                        TextField("动态框数:", value: $dynamicAreaNumber, formatter: formatter, onEditingChanged: { flag in
+                            if !flag {
+                                updateBasicMessage()
+                            }
+                            
+                        }).textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.numberPad)
+                    }
+                    
+                    
                 }
             }
             
@@ -641,7 +654,7 @@ struct SportView: View {
                                 Divider()
                                 VStack {
                                     HStack {
-                                        Text("规则:固定区域\(rule.id)")
+                                        Text("规则:\(rule.id)")
                                         Spacer()
                                         
                                         Button(action: {
@@ -670,7 +683,7 @@ struct SportView: View {
                                 Divider()
                                 VStack {
                                     HStack {
-                                        Text("规则:动态区域\(rule.id)")
+                                        Text("规则:\(rule.id)")
                                         Spacer()
                                         
                                         Button(action: {

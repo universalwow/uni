@@ -131,6 +131,7 @@ struct Sport: Identifiable, Hashable, Codable {
     
     var interactionScoreCycle: Int? = 1
     
+    var dynamicAreaNumber: Int? = 3
     var interactionType = InteractionType.None
     
     var questions: [Question] = [
@@ -138,27 +139,27 @@ struct Sport: Identifiable, Hashable, Codable {
         Question(question: "1+1=?", choices: ["1", "2", "3"], answers: ["2"])
     ]
     
-    var fixedAreas = [FixedAreaForSport(id: "A"),
-                      FixedAreaForSport(id: "B"),
-                      FixedAreaForSport(id: "C"),
-                      FixedAreaForSport(id: "D"),
-                      FixedAreaForSport(id: "问题"),
-                      FixedAreaForSport(id: "6"),
-                      FixedAreaForSport(id: "7"),
-                      FixedAreaForSport(id: "8"),
-                      FixedAreaForSport(id: "9")
+    var fixedAreas = [FixedAreaForSport(id: "固定区域(A)"),
+                      FixedAreaForSport(id: "固定区域(B)"),
+                      FixedAreaForSport(id: "固定区域(C)"),
+                      FixedAreaForSport(id: "固定区域(D)"),
+                      FixedAreaForSport(id: "固定区域(问题)"),
+                      FixedAreaForSport(id: "固定区域(1)"),
+                      FixedAreaForSport(id: "固定区域(2)"),
+                      FixedAreaForSport(id: "固定区域(3)"),
+                      FixedAreaForSport(id: "固定区域(4)")
     ]
     
     var dynamicAreas: [DynamicAreaForSport] = [
-        DynamicAreaForSport(id: "A"),
-        DynamicAreaForSport(id: "B"),
-        DynamicAreaForSport(id: "C"),
-        DynamicAreaForSport(id: "D"),
-        DynamicAreaForSport(id: "问题"),
-        DynamicAreaForSport(id: "6"),
-        DynamicAreaForSport(id: "7"),
-        DynamicAreaForSport(id: "8"),
-        DynamicAreaForSport(id: "9")
+        DynamicAreaForSport(id: "动态区域(A)"),
+        DynamicAreaForSport(id: "动态区域(B)"),
+        DynamicAreaForSport(id: "动态区域(C)"),
+        DynamicAreaForSport(id: "动态区域(D)"),
+        DynamicAreaForSport(id: "动态区域(问题)"),
+        DynamicAreaForSport(id: "动态区域(1)"),
+        DynamicAreaForSport(id: "动态区域(2)"),
+        DynamicAreaForSport(id: "动态区域(3)"),
+        DynamicAreaForSport(id: "动态区域(4)")
     ]
     
     var sportDescription: SportDescription {
@@ -1187,14 +1188,14 @@ extension Sport {
 
     
     mutating func updateFixedArea(
-        stateId: Int, ruleId: String, width: Double, heightToWidthRatio: Double, centerX: Double, centerY: Double) {
+        stateId: Int, ruleId: String, width: Double, heightToWidthRatio: Double, centerX: Double, centerY: Double, content: String) {
         
             if let areaIndex = findFirstFixedAreaIndex(areaId: ruleId) {
                 fixedAreas[areaIndex].width = width
                 fixedAreas[areaIndex].heightToWidthRatio = heightToWidthRatio
                 fixedAreas[areaIndex].center.x = centerX
                 fixedAreas[areaIndex].center.y = centerY
-                
+                fixedAreas[areaIndex].content = content
                 let state = findFirstStateByStateId(stateId: stateId)!
                 let imageSize = state.image!.imageSize
 
@@ -1208,24 +1209,24 @@ extension Sport {
     }
     
     mutating func updateDynamicArea(areaId: String, area: [Point2D]) {
-        if let areaIndex = findFirstFixedAreaIndex(areaId: areaId) {
+        if let areaIndex = findFirstDynamicAreaIndex(areaId: areaId) {
             dynamicAreas[areaIndex].area = area
         }
     }
     
     mutating func updateDynamicArea(
         stateId: Int, ruleId: String, width: Double, heightToWidthRatio: Double,
-        leftTopX: Double, leftTopY: Double, rightBottomX: Double, rightBottomY: Double
+        leftTopX: Double, leftTopY: Double, rightBottomX: Double, rightBottomY: Double, content: String
     ) {
         
-            if let areaIndex = findFirstFixedAreaIndex(areaId: ruleId) {
+            if let areaIndex = findFirstDynamicAreaIndex(areaId: ruleId) {
                 dynamicAreas[areaIndex].width = width
                 dynamicAreas[areaIndex].heightToWidthRatio = heightToWidthRatio
                 dynamicAreas[areaIndex].limitedArea[0] = leftTopX
                 dynamicAreas[areaIndex].limitedArea[1] = leftTopY
                 dynamicAreas[areaIndex].limitedArea[2] = rightBottomX
                 dynamicAreas[areaIndex].limitedArea[3] = rightBottomY
-
+                dynamicAreas[areaIndex].content = content
                 
                 let state = findFirstStateByStateId(stateId: stateId)!
                 let imageSize = state.image!.imageSize
