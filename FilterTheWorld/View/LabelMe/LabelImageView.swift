@@ -81,7 +81,7 @@ struct LabelImageView: View {
                 .overlay{
                     GeometryReader { geometry in
                         ZStack {
-                            PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
+                            PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size, showAngle: true)
                             ObjectsViewForSportsGround(objects: imageAnalysis.objects, imageSize: uiImage.size, viewSize: geometry.size)
                             SporterView()
 //                                    .clipped()

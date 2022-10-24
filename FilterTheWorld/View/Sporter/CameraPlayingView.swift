@@ -55,17 +55,11 @@ struct CameraPlayingView: View {
         })
         .onChange(of: imageAnalysis.sportData.frame, perform: { _ in
             let poses = imageAnalysis.sportData.frameData.poses
-            let ropes = imageAnalysis.sportData.frameData.objects.filter{ object in
-                object.label == ObjectLabel.BASKETBALL.rawValue
-            }
-            
-            let human = imageAnalysis.sportData.frameData.objects.filter{ object in
-                object.label == ObjectLabel.POSE.rawValue
-            }
+
             
             if !sportGround.sporters.isEmpty && !poses.isEmpty {
                 
-                sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: human.first, frameSize: uiImage.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                sportGround.play(poseMap: poses.first!.landmarksMaps, objects: imageAnalysis.sportData.frameData.objects, frameSize: uiImage.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
                 self.sportGround.objectWillChange.send()
 
             }

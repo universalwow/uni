@@ -32,23 +32,28 @@ struct RectView: View {
     var viewSize:CGSize
     
     var body: some View {
+        let fixedAreas = sportManager.getFixedAreas()
+        let imageSize = sportManager.findFirstState()!.image!.imageSize
 
         ZStack {
-            if let fixedArea = sportManager.getFixedArea() {
-                let imageSize = sportManager.findFirstState()!.image!.imageSize
+            
+            
+            
+            ForEach(fixedAreas, content: { fixedArea in
+
                 let rect = fixedArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
                 Rectangle()
-                    .stroke(.red, lineWidth: 2)
+                    .stroke(fixedArea.selected == true ? .green : .red, lineWidth: 2)
                     .frame(width: rect.width, height: rect.height)
                     .position(rect.center)
                     .overlay(content: {
-                        Text("\(fixedArea.id)")
+                        Text("\(fixedArea.content ?? "")")
                             .position(x: rect.center.x, y: rect.center.y - rect.height/2 - 10)
                             .foregroundColor(.red)
                     })
-            }
+                
+            })
             if let dynamicArea = sportManager.getDynamicArea() {
-                let imageSize = sportManager.findFirstState()!.image!.imageSize
                 let rect = dynamicArea.areaToRect.rectToFit(imageSize: imageSize, viewSize: viewSize)
                 Rectangle()
                     .stroke(.red, lineWidth: 2)

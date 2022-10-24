@@ -41,13 +41,22 @@ struct ContentView: View {
             
             
             
+//
+//            VStack {
+//
+//                LabelImageView().padding()
+//            }
+//            .tabItem{
+//                Text("图片标注")
+//            }
             
+
             VStack {
-                
-                LabelImageView().padding()
+
+                StandAndJumpSetting().padding()
             }
             .tabItem{
-                Text("图片标注")
+                Text("立定跳远")
             }
             
             VStack {

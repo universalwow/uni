@@ -25,6 +25,8 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
     var passingRate:Double?
     var keepTime:Double?
     
+    var directToStateId:Int?
+    
     
 //    var isScoreState:
   
@@ -283,7 +285,7 @@ extension SportState {
   
 
   
-    func rulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func rulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
     
     var rules : [Rules] = []
     switch ruleType {
@@ -296,7 +298,7 @@ extension SportState {
     return rules.reduce((false, Set<Warning>(), 0, 0), { result, next in
         // 每一组条件全部满足
 
-        let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+        let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
         
         
         
@@ -862,7 +864,7 @@ extension SportState {
                                                 toLandmarkSegmentType: LandmarkTypeSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
-                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
+                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 switch ruleType {
                 case .SCORE:
@@ -875,7 +877,7 @@ extension SportState {
                                                                      toLandmarkSegmentType: toLandmarkSegmentType,
                                                                      toAxis: toAxis,
                                                                      lowerBound: lowerBound, upperBound: upperBound,
-                                                                     warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!)
+                                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy)
                 case .VIOLATE:
                     violateRules[rulesIndex].updateRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass,
                                                                        fromAxis: fromAxis,
@@ -886,7 +888,7 @@ extension SportState {
                                                                        toLandmarkSegmentType: toLandmarkSegmentType,
                                                                        toAxis: toAxis,
                                                                        lowerBound: lowerBound, upperBound: upperBound,
-                                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!)
+                                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy)
                 }
             }
         }

@@ -181,6 +181,8 @@ extension SportsManager {
         currentStateId = editedSportState.id
     }
     
+    
+    
 
     
     func findFirstState() -> SportState? {
@@ -239,6 +241,8 @@ extension SportsManager {
         }
     }
     
+    
+    
     func updateSportState(image: UIImage, objects: [Observation]) {
         if let state = findFirstState() {
             var newState = state
@@ -255,6 +259,14 @@ extension SportsManager {
         return false
     }
     
+    func updateSportState(sport: Sport, state: SportState, directToState: SportState) {
+        
+        
+        if let sportIndex = firstIndexOfSport(editedSportId: sport.id) {
+            
+            sports[sportIndex].updateSportState(editedSportState: state, directToState: directToState)
+        }
+    }
     
     func addSportStatetransform(sport: Sport, fromSportState: SportState, toSportState: SportState) {
         
@@ -790,7 +802,7 @@ extension SportsManager {
                                            toLandmarkSegmentType: LandmarkTypeSegment,
                                            toAxis: CoordinateAxis,
                                            lowerBound: Double, upperBound: Double,
-                                           warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
+                                           warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
         let sportIndex = firstIndexOfSport()!
         sports[sportIndex].updateRuleLandmarkToStateDistance(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass,
                                                              fromAxis: fromAxis,
@@ -800,7 +812,7 @@ extension SportsManager {
                                                              toLandmarkSegmentType: toLandmarkSegmentType,
                                                              toAxis: toAxis,
                                                              lowerBound: lowerBound, upperBound: upperBound,
-                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id)
+                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, defaultSatisfy: defaultSatisfy)
         
     }
     
@@ -1036,6 +1048,11 @@ extension SportsManager {
     func getFixedArea() -> FixedAreaForSport? {
         let sportIndex = firstIndexOfSport()!
         return sports[sportIndex].getFixedArea(ruleId: currentSportStateRuleId)
+    }
+    
+    func getFixedAreas() -> [FixedAreaForSport] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getFixedAreas()
     }
     
     func getDynamicArea() -> DynamicAreaForSport? {

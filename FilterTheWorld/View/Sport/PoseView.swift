@@ -10,8 +10,8 @@ struct LandmarkView: View {
     var body: some View {
         ForEach(pose.landmarks) { landmark in
             Circle()
-                .fill(pose.isSelected ? Color.yellow : Color.red)
-                .frame(width: 5)
+                .fill(pose.isSelected ? Color.yellow : Color.white)
+                .frame(width: 6)
                 .position(landmark.pointToFit(imageSize: imageSize, viewSize: viewSize))
         }
     }
@@ -35,14 +35,34 @@ struct PoseView: View {
     var pose: HumanPose
     var imageSize: CGSize
     var viewSize: CGSize
+    var showAngle:Bool = true
+    
+    
+    func lineWidth(landmarkSegment: LandmarkSegment) -> CGFloat {
+        let startLandmarkType = landmarkSegment.startLandmark.landmarkType
+        let endLandmarkType = landmarkSegment.endLandmark.landmarkType
+        
+        if (LandmarkType.leftBodyLines + LandmarkType.rightBodyLines + LandmarkType.otherLines)
+            .contains(where: { landmarkTypes in
+            landmarkTypes.contains(startLandmarkType) && landmarkTypes.contains(endLandmarkType)
+        }) {
+            return 3
+        }
+        
+        return 1
+    }
     
     var body: some View {
         ForEach(pose.landmarkSegments) { landmarkSegment in
             Group {
+                
                 LandmarkSegmentView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
-                    .stroke(landmarkSegment.color, lineWidth: 2)
+                    
+                    .stroke(landmarkSegment.color, lineWidth: lineWidth(landmarkSegment: landmarkSegment))
+                
+                
                 LandmarkSegmentAngleView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
-                    .foregroundColor(.yellow)
+                    .foregroundColor(.yellow).opacity(showAngle ? 1 : 0)
             }
   
             
@@ -171,11 +191,12 @@ struct PosesViewForSportsGround: View {
     var poses: [HumanPose]?
     var imageSize: CGSize
     var viewSize: CGSize
+    var showAngle: Bool = true
     var body: some View {
         if let poses = poses {
             ForEach(poses) { pose in
                 ZStack {
-                    PoseView(pose: pose, imageSize: imageSize, viewSize: viewSize)
+                    PoseView(pose: pose, imageSize: imageSize, viewSize: viewSize, showAngle: showAngle)
                     LandmarkView(pose: pose, imageSize: imageSize, viewSize: viewSize)
                 }
             }

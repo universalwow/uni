@@ -19,6 +19,7 @@ struct LandmarkToStateDistanceRuleView: View {
     
     @State var toStateId = SportState.startState.id
     @State var isRelativeToExtremeDirection = false
+    @State var defaultSatisfy = false
     @State var extremeDirection = ExtremeDirection.MinX
 
     @State var lowerBound: Double = 0.0
@@ -59,7 +60,7 @@ struct LandmarkToStateDistanceRuleView: View {
                                                toLandmarkSegmentType: toLandmarkSegmentType,
                                                toAxis: toAxis,
                                                lowerBound: lowerBound, upperBound: upperBound,
-                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: landmarkToStateDistance.id)
+                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: landmarkToStateDistance.id, defaultSatisfy: defaultSatisfy)
 
     }
     
@@ -202,6 +203,12 @@ struct LandmarkToStateDistanceRuleView: View {
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .keyboardType(.decimalPad)
                         
+                        Toggle(isOn: $defaultSatisfy.didSet { _ in
+                            updateRemoteData()
+                        }, label: {
+                            Text("默认满足").frame(maxWidth: .infinity, alignment: .trailing)
+                        })
+                        
                     }
                     
                 }
@@ -223,6 +230,7 @@ struct LandmarkToStateDistanceRuleView: View {
             extremeDirection = length.extremeDirection
             lowerBound = length.lowerBound
             upperBound = length.upperBound
+            defaultSatisfy = length.defaultSatisfy ?? true
             
         }
     }

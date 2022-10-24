@@ -49,3 +49,101 @@ struct LinesView: Shape {
 }
 
 
+struct MoveableCircle: View {
+    @Binding var location: CGPoint
+    let color: Color
+    let imageSize:CGSize
+    let viewSize:CGSize
+    
+    @GestureState private var startLocation: CGPoint? = nil // 1
+    @GestureState private var fingerLocation: CGPoint? = nil
+
+    var fingerDrag: some Gesture {
+          DragGesture()
+              .updating($fingerLocation) { (value, fingerLocation, transaction) in
+                  fingerLocation = value.location
+              }
+      }
+    
+        var simpleDrag: some Gesture {
+            DragGesture()
+                .onChanged { value in
+                    var newLocation = startLocation ?? location // 3
+                    newLocation.x += value.translation.width
+                    newLocation.y += value.translation.height
+                    self.location = newLocation
+                    print("location \(self.location)")
+                }.updating($startLocation) { (value, startLocation, transaction) in
+                    startLocation = startLocation ?? location // 2
+                    print("location 1\(self.startLocation)")
+
+                }
+        }
+    
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(color)
+                .frame(width: 20, height: 20)
+                .position(location.pointToFit(imageSize: imageSize, viewSize: viewSize))
+                .gesture(
+                    simpleDrag.simultaneously(with: fingerDrag)
+                )
+            
+            
+            if let fingerLocation = fingerLocation {
+                            Circle()
+                                .stroke(Color.green, lineWidth: 2)
+                                .frame(width: 44, height: 44)
+                                .position(fingerLocation)
+                        }
+        }
+    
+    }
+}
+
+
+struct QuadrangleView: View {
+    
+    @Binding var leftTop: CGPoint
+    @Binding var rightTop: CGPoint
+    @Binding var rightBottom: CGPoint
+    @Binding var leftBottom: CGPoint
+
+     let imageSize:CGSize
+     let viewSize:CGSize
+    
+    
+    
+    var body: some View {
+        ZStack {
+            MoveableCircle(location: $leftTop, color: .red, imageSize: imageSize, viewSize: viewSize)
+            MoveableCircle(location: $rightTop, color: .yellow, imageSize: imageSize, viewSize: viewSize)
+            MoveableCircle(location: $rightBottom, color: .green, imageSize: imageSize, viewSize: viewSize)
+            MoveableCircle(location: $leftBottom, color: .blue, imageSize: imageSize, viewSize: viewSize)
+            Quadrangle(points: [leftTop, rightTop, rightBottom, leftBottom], imageSize: imageSize, viewSize: viewSize)
+                .stroke(lineWidth: 2)
+        }
+        
+    }
+    
+}
+
+
+struct Quadrangle: Shape {
+   let points:[CGPoint]
+    let imageSize:CGSize
+    let viewSize:CGSize
+   func path(in rect: CGRect) -> Path {
+       var path = Path()
+       path.move(to: points[0].pointToFit(imageSize: imageSize, viewSize: viewSize))
+       points[1..<points.count].forEach{ point in
+           path.addLine(to: point.pointToFit(imageSize: imageSize, viewSize: viewSize))
+       }
+       path.addLine(to: points[0].pointToFit(imageSize: imageSize, viewSize: viewSize))
+       return path
+   }
+}
+
+

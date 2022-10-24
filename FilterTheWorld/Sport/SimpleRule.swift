@@ -266,6 +266,7 @@ struct LandmarkToStateDistance: Identifiable, Codable {
     var lowerBound:Double = 0
     var upperBound:Double = 0
     
+    
     var toStateId:Int {
         didSet {
             if toStateId != oldValue {
@@ -308,6 +309,7 @@ struct LandmarkToStateDistance: Identifiable, Codable {
     
     var isRelativeToExtremeDirection = false
     var extremeDirection: ExtremeDirection = .MinX
+    var defaultSatisfy: Bool? = true
     
     init(toStateId: Int, fromLandmarkToAxis: LandmarkToAxis, toLandmarkToAxis: LandmarkToAxis, toLandmarkSegmentToAxis: LandmarkSegmentToAxis, warning: Warning) {
         self.toStateId = toStateId
@@ -383,8 +385,9 @@ struct LandmarkToStateDistance: Identifiable, Codable {
                                        toSegment: toSegment)
 
             
-        }else {
-            return true
+        } else {
+//            MARK: 默认为什么最好可以设置
+            return defaultSatisfy ?? true
         }
     }
     

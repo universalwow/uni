@@ -214,16 +214,16 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             
         }
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
         let objectToLandmarkSatisfys = objectToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
-            let selectedObject = [object, targetObject].first(where: { _object in
-                _object?.label == next.fromPosition.id
+            let selectedObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
             })
             
             if selectedObject != nil {
-                satisfy = next.satisfy(poseMap: poseMap, object: selectedObject!!)
+                satisfy = next.satisfy(poseMap: poseMap, object: selectedObject!)
             }
             
             var newWarnings = result.1
@@ -242,16 +242,16 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         let objectToObjectSatisfys = objectToObject.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
             
-            let selectedFromObject = [object, targetObject].first(where: { _object in
-                _object?.label == next.fromPosition.id
+            let selectedFromObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
             })
             
-            let selectedToObject = [object, targetObject].first(where: { _object in
-                _object?.label == next.toPosition.id
+            let selectedToObject = objects.first(where: { _object in
+                _object.label == next.toPosition.id
             })
             
             if selectedFromObject != nil && selectedToObject != nil {
-                satisfy = next.satisfy(poseMap: poseMap, fromObject: selectedFromObject!!, toObject: selectedToObject!!)
+                satisfy = next.satisfy(poseMap: poseMap, fromObject: selectedFromObject!, toObject: selectedToObject!)
             }
 
             
@@ -271,12 +271,12 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         let objectToStateDistanceSatisfys = objectToStateDistance.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
             
-            let selectedObject = [object, targetObject].first(where: { _object in
-                _object?.label == next.fromPosition.id
+            let selectedObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
             })
             
             if selectedObject != nil {
-                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!!)
+                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!)
             }
             
 
@@ -297,12 +297,12 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         let objectToStateAngleSatisfys = objectToStateAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false
             
-            let selectedObject = [object, targetObject].first(where: { _object in
-                _object?.label == next.fromPosition.id
+            let selectedObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
             })
             
             if selectedObject != nil {
-                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!!)
+                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!)
             }
             
 //            if let object = object {

@@ -112,14 +112,14 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                                                     toLandmarkSegment: LandmarkSegment,
                                                     toAxis: CoordinateAxis,
                                                     lowerBound: Double, upperBound: Double,
-                                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
+                                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
         if let index = self.firstLandmarkToStateDistanceIndexById(id: id) {
             
             landmarkToStateDistance[index].warning.content = warningContent
             landmarkToStateDistance[index].warning.triggeredWhenRuleMet = triggeredWhenRuleMet
             landmarkToStateDistance[index].warning.delayTime = delayTime
             landmarkToStateDistance[index].warning.changeStateClear = changeStateClear
-
+            landmarkToStateDistance[index].defaultSatisfy = defaultSatisfy
             landmarkToStateDistance[index].lowerBound = lowerBound
             landmarkToStateDistance[index].upperBound = upperBound
             
@@ -172,7 +172,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             
         }
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
         
         

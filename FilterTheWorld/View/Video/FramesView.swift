@@ -108,6 +108,10 @@ struct FramesView: View {
                            buttons: buttons)
     }
     
+    var frameCount: Int {
+        return self.videoManager.allFrames.count > 50 ? self.videoManager.allFrames.count : 50
+    }
+    
     var body: some View {
         VStack {
             if let frame = self.videoManager.frame {
@@ -131,13 +135,19 @@ struct FramesView: View {
             
             Spacer()
             
+            
             TrackableScrollView([.horizontal], showIndicators: false, contentOffset: $scrollViewContentOffset) {
                 HStack(spacing: 0) {
-                    ForEach(videoManager.allFrames.indices, id: \.self) {frameIndex in
-                        Image(uiImage: UIImage(cgImage: videoManager.allFrames[frameIndex]))
-                            .resizable()
-                            .scaledToFit()
+                    if self.videoManager.allFrames.count > 0 {
+                        ForEach(0..<self.frameCount, id: \.self) {frameIndex in
+                            Image(uiImage: UIImage(cgImage: videoManager.allFrames[frameIndex % self.videoManager.allFrames.count]))
+                                .resizable()
+                                .scaledToFit()
+                        }
+                    }else {
+                        EmptyView()
                     }
+                    
                     
                 }
                 

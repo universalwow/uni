@@ -164,6 +164,8 @@ struct SportView: View {
     @State var interactionType = InteractionType.None
     @State var interactionScoreCycle = 1
     @State var dynamicAreaNumber = 3
+    @State var directToState = SportState.endState
+
 
     
     
@@ -494,7 +496,17 @@ struct SportView: View {
                                 Text("\(state.name)/\(state.id)")
                                 Spacer()
                                 
-                                
+                                Text("直接转换为状态:\(state.directToStateId ?? -100)")
+                                Picker("状态", selection: $directToState.didSet( { _ in
+                                    
+                                    sportManager.updateSportState(sport: sport, state: state, directToState: directToState)
+                                    
+                                    
+                                })) {
+                                    ForEach(sport.allStates) { state in
+                                        Text(state.name).tag(state)
+                                    }
+                                }
                                 
                                 Button(action: {
                                     
@@ -823,6 +835,63 @@ struct SportView: View {
                                     TransferToOtherRulesView(sport: $sport, rule: rule)
                                     ObservationRuleDescriptionView(rule: Binding.constant(rule))
                                 }.background(Color.gray)
+                            }
+                            
+                            ForEach(scoreRules.fixedAreaRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则:\(rule.id)")
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .FixedArea)
+                                            ruleClass = .FixedArea
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .FixedArea)
+                                        }) {
+                                            Text("删除")
+                                        }
+                                        
+                                        
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    FixedAreaRuleDescriptionView(rule: Binding.constant(rule))
+                                }.background(Color.yellow)
+                            }
+                            
+                            ForEach(scoreRules.dynamicAreaRules) { rule in
+                                Divider()
+                                VStack {
+                                    HStack {
+                                        Text("规则:\(rule.id)")
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .DynamicArea)
+                                            ruleClass = .DynamicArea
+
+                                            self.showSetupRule = true
+                                        }) {
+                                            Text("修改")
+                                        }
+                                        Button(action: {
+                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .DynamicArea)
+                                        }) {
+                                            Text("删除")
+                                        }
+
+                                    }.padding([.top], StaticValue.padding)
+                                       
+                                    TransferToOtherRulesView(sport: $sport, rule: rule)
+                                    DynamicAreaRuleDescriptionView(rule: Binding.constant(rule))
+                                }.background(Color.yellow)
                             }
                         }
                     }

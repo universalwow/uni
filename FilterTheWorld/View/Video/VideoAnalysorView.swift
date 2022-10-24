@@ -61,6 +61,8 @@ struct VideoAnalysorView: View {
     
     @State var currentSportIndex: Int = 0
     
+    @State var showAngle = true
+    
     var secondToStandardedTime:String {
         if self.frameWidth > 0 && self.scrollOffset >= 0.0 {
             let second = Double(self.scrollOffset/self.frameWidth)
@@ -84,7 +86,7 @@ struct VideoAnalysorView: View {
                 .overlay{
                     GeometryReader { geometry in
                         ZStack {
-                            PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
+                            PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size, showAngle: showAngle)
                             ObjectsViewForSportsGround(objects: imageAnalysis.sportData.frameData.objects, imageSize: uiImage.size, viewSize: geometry.size)
                             RectViewForSporter(viewSize: geometry.size)
                             SporterView()
@@ -294,19 +296,13 @@ struct VideoAnalysorView: View {
                                     let uiImage = UIImage(cgImage: videoManager.frame!, scale: 1,orientation: orientation).fixedOrientation()!
                                     imageAnalysis.imageAnalysis(image: uiImage, request: nil, currentTime: self.scrollOffset/self.frameWidth)
                                     let poses = imageAnalysis.sportData.frameData.poses
-                                    let ropes = imageAnalysis.sportData.frameData.objects.filter{ object in
-                                        object.label == ObjectLabel.BASKETBALL.rawValue
-                                    }
+                                 
                                     
-                                    let human = imageAnalysis.sportData.frameData.objects.filter{ object in
-                                        object.label == ObjectLabel.POSE.rawValue
-                                    }
-                                    
-                                    print("--------------object\(ropes)")
+//                                    print("--------------object\(ropes)")
                                     
                                     if !sportGround.sporters.isEmpty && !poses.isEmpty {
                                         
-                                        sportGround.play(poseMap: poses.first!.landmarksMaps, object: ropes.first, targetObject: human.first, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
+                                        sportGround.play(poseMap: poses.first!.landmarksMaps, objects: imageAnalysis.sportData.frameData.objects, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
                                         self.sportGround.objectWillChange.send()
                                     }
                                 }
@@ -342,6 +338,12 @@ struct VideoAnalysorView: View {
                     }
                 }) {
                     Text("停止")
+                }
+                
+                Button(action: {
+                    self.showAngle.toggle()
+                }) {
+                    Text(self.showAngle ? "隐藏角度" : "显示角度")
                 }
             }.padding()
         }

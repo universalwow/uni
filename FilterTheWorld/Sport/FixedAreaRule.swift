@@ -57,7 +57,7 @@ struct FixedAreaRule: Identifiable, Hashable, Codable, Ruler {
         }
     
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
         let landmarkInFixedAreaSatisfys = landmarkInFixedArea.reduce((true, Set<Warning>(), 0, 0), {result, next in
             let satisfy = next.satisfy(poseMap: poseMap, frameSize: frameSize)
@@ -145,7 +145,7 @@ struct DynamicAreaRule: Identifiable, Hashable, Codable, Ruler {
         }
     
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
         let landmarkInDynamicAreaSatisfys = landmarkInDynamicdArea.reduce((true, Set<Warning>(), 0, 0), {result, next in
             let satisfy = next.satisfy(poseMap: poseMap, frameSize: frameSize)

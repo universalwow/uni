@@ -65,7 +65,7 @@ class CameraViewModel: ObservableObject {
 //      self.recognizer = FaceRecognizer()
 //      self.initObjectDetector()
 //      self.initPoseDetector()
-      self.objectDetectorYOLO = ObjectRecoginzerYOLO(yoloModelName: "yolov5-pipeline")
+      self.objectDetectorYOLO = ObjectRecoginzerYOLO(yoloModelName: "yolov5-pipeline-basketball")
 
       self.setupSubscriptions()
       print("init................")

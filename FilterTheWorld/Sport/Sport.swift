@@ -457,6 +457,13 @@ extension Sport {
     }
   }
     
+    mutating func updateSportState(editedSportState: SportState, directToState: SportState) {
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          states[index].directToStateId = directToState.id
+      
+      }
+    }
+    
     mutating func updateSportState(editedSportState: SportState, checkCycle: Double, passingRate: Double, keepTime: Double) {
       if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
           states[index].checkCycle = checkCycle
@@ -808,7 +815,7 @@ extension Sport {
                                                 toLandmarkSegmentType: LandmarkTypeSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
-                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID) {
+                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
             
             
             
@@ -830,7 +837,7 @@ extension Sport {
                                                            toLandmarkSegmentType: toLandmarkSegmentType,
                                                            toAxis: toAxis,
                                                            lowerBound: lowerBound, upperBound: upperBound,
-                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
+                                                                   warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, defaultSatisfy: defaultSatisfy)
 
             }
         }
@@ -1102,6 +1109,12 @@ extension Sport {
     func getFixedArea(ruleId: String?) -> FixedAreaForSport? {
         return fixedAreas.first(where: { area in
             area.id == ruleId
+        })
+    }
+    
+    func getFixedAreas() -> [FixedAreaForSport] {
+        return fixedAreas.filter({ area in
+            area.content != "" || area.content != nil
         })
     }
     

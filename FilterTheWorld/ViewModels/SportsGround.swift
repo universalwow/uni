@@ -78,12 +78,12 @@ class SportsGround: ObservableObject {
         })
     }
     
-    func play(poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D, currentTime: Double) {
+    func play(poseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
         sporters.indices.forEach { sporterIndex in
             if sportersReport[sporterIndex].startTime < 0 {
                 sportersReport[sporterIndex].startTime = currentTime
             }
-            sporters[sporterIndex].play(poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize, currentTime: currentTime)
+            sporters[sporterIndex].play(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             
        
 //            if sporters[sporterIndex].scoreTimes 
@@ -92,11 +92,21 @@ class SportsGround: ObservableObject {
                     self.warnings.append(newWarning)
                 }
             })
+            
             self.sporters[sporterIndex].noDelayWarnings.forEach({ newWarning in
+                print("warning... 11 \(newWarning.content)")
+
                 if !self.warnings.contains(newWarning) {
                     self.warnings.append(newWarning)
+                    print("warning... 12 \(self.warnings)")
+
                 }
+                self.sporters[sporterIndex].noDelayWarnings.remove(newWarning)
+                
             })
+            
+//            self.sporters[sporterIndex].noDelayWarnings = []
+
 
         }
     }

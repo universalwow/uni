@@ -37,10 +37,10 @@ struct Rules: Identifiable, Hashable, Codable {
         })
     }
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, object: Observation?, targetObject: Observation?, frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int) {
         
         let landmarkSegmentRulesSatisfy = landmarkSegmentRules.reduce((true, Set<Warning>(), 0, 0), { result, next in
-            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
             return (result.0 && satisfy.0,
                     result.1.union(satisfy.1),
                     result.2 + satisfy.2,
@@ -48,7 +48,7 @@ struct Rules: Identifiable, Hashable, Codable {
         })
         
         let landmarkRulesSatisfy = landmarkRules.reduce((true, Set<Warning>(), 0, 0), { result, next in
-            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
             return (result.0 && satisfy.0,
                     result.1.union(satisfy.1),
                     result.2 + satisfy.2,
@@ -56,7 +56,7 @@ struct Rules: Identifiable, Hashable, Codable {
         })
         
         let observationRuleSatisfy = observationRules.reduce((true, Set<Warning>(), 0, 0), { result, next in
-            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
             return (result.0 && satisfy.0,
                     result.1.union(satisfy.1),
                     result.2 + satisfy.2,
@@ -65,7 +65,7 @@ struct Rules: Identifiable, Hashable, Codable {
         
         
         let fixedAreaRuleSatisfy = fixedAreaRules.reduce((true, Set<Warning>(), 0, 0), { result, next in
-            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
             return (result.0 && satisfy.0,
                     result.1.union(satisfy.1),
                     result.2 + satisfy.2,
@@ -73,7 +73,7 @@ struct Rules: Identifiable, Hashable, Codable {
         })
         
         let dynamicAreaRuleSatisfy = dynamicAreaRules.reduce((true, Set<Warning>(), 0, 0), { result, next in
-            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object, targetObject: targetObject, frameSize: frameSize)
+            let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
             return (result.0 && satisfy.0,
                     result.1.union(satisfy.1),
                     result.2 + satisfy.2,
@@ -724,7 +724,7 @@ struct Rules: Identifiable, Hashable, Codable {
                                                 toLandmarkSegmentType: LandmarkTypeSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
-                                                warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID, humanPose: HumanPose)  {
+                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID, humanPose: HumanPose, defaultSatisfy: Bool)  {
             let fromLandmark = humanPose.landmarks.first(where: { landmark in
                 landmark.id == ruleId
             })!
@@ -746,7 +746,7 @@ struct Rules: Identifiable, Hashable, Codable {
                                                                    toLandmarkSegment: toLandmarkSegment,
                                                                   toAxis: toAxis,
                                                                   lowerBound: lowerBound, upperBound: upperBound,
-                                                                  warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id)
+                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, defaultSatisfy: defaultSatisfy)
             
 
             }

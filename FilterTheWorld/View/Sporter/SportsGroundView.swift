@@ -177,7 +177,7 @@ struct SportsGroundView: View {
                     if !sportGround.sporters.isEmpty && !poses.isEmpty {
                         
                         DispatchQueue.main.async {
-                            sportGround.play(poseMap: poses.first!.landmarksMaps, object: nil, targetObject: nil, frameSize: imageAnalysis.sportData.frame.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                            sportGround.play(poseMap: poses.first!.landmarksMaps, objects: [], frameSize: imageAnalysis.sportData.frame.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
                             self.sportGround.objectWillChange.send()
                             
                             let afterPlayScoreTimes = sportGround.sporters[0].scoreTimes

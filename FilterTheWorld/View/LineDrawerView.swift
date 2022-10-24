@@ -12,16 +12,21 @@ import Foundation
 
 
 struct LineDrawerView: View {
+    
+    @Binding var leftTop: CGPoint
+    @Binding var rightTop: CGPoint
+    @Binding var rightBottom: CGPoint
+    @Binding var leftBottom: CGPoint
+    var image: UIImage
+    @State var imageSize: CGSize = CGSize()
+
+    
     @State var points : String = ""
     @State var preProcessImage: UIImage?
     @State var contouredImage: UIImage?
     @State var transformImage:UIImage?
-    @State var imageSize: CGSize = CGSize()
     
-    @State var leftTop   = CGPoint(x: 900, y:  2449)
-    @State   var rightTop    = CGPoint(x: 2060, y:  2462)
-    @State var leftBottom  = CGPoint(x: 200, y:  2932)
-        let rightBottom = CGPoint(x: 3935, y:  2949)
+ 
     
     @State var lines :[[CGPoint]] = []
     
@@ -30,7 +35,7 @@ struct LineDrawerView: View {
             
             Text("Contours: \(self.points)")
 
-            Image("IMG_1475")
+            Image(uiImage: image)
             .resizable()
             .scaledToFit()
 //            .overlay(
@@ -53,7 +58,7 @@ struct LineDrawerView: View {
                     )
             }
             
-            if let image = transformImage{
+            if let image = transformImage {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
@@ -72,7 +77,7 @@ struct LineDrawerView: View {
                     
                     DispatchQueue.global(qos: .background).async {
                         var minWidth: Float = 100
-                        let sourceImage = UIImage.init(named: "IMG_1475")!
+                        let sourceImage = image
                         var inputImage = CIImage.init(cgImage: sourceImage.cgImage!, options: [.applyOrientationProperty:true]).oriented(.downMirrored)
 
                         let contourRequest = VNDetectContoursRequest.init()
@@ -87,32 +92,54 @@ struct LineDrawerView: View {
 //                            for
                             for innerIndex in (1..<20) {
                                 var width : Float = 10000
+                                if self.lines.count >= 20 {
+                                    let result1 = self.lines[1..<18]
+                                    let result2 = self.lines[3..<20]
+                                    let zipResult = zip(result1, result2).reduce([0.0,0.0]) { result, next in
+                                        
+                                        let firstMinY = next.0[0].y
+                                        let firstMaxY = next.0[1].y
+                                        let secondMinY = next.1[0].y
+                                        let secondMaxY = next.1[1].y
+                                        
+                                        return [firstMinY - secondMinY + result[0], firstMaxY - secondMaxY + result[1]]
+                            
+                                    }
+                                    
+
+                                    self.rightTop = CGPoint(x: rightTop.x, y: rightTop.y - zipResult[0]/9)
+                                    self.rightBottom = CGPoint(x: rightBottom.x, y: rightBottom.y - zipResult[1]/9)
+          
+                                }
                                 
-                                
-                                
-                                var initDirection: Float?
+                                var initDirection: Float? 
                                 while true {
                                     detectVisionContours(inputImage: inputImage, contourRequest: contourRequest, leftTop: leftTop, rightTop: rightTop, leftBottom: leftBottom, rightBottom: rightBottom)
-                                    let result = self.lines[0...self.lines.count/2].reduce([0.0,0.0]) { result, next in
-                                        [next[2].x + result[0], next[2].y + result[1]]
-                                    }
-                                    width = result[0].float/Float(self.lines.count)
-                                    minWidth = min(width, minWidth)
                                     
-                                    let direction = result[1].float/Float(self.lines.count)
-                                    if initDirection == nil {
-                                        initDirection = direction
-                                    }
-                                    
-                                    self.points = "count \(self.lines.count) width \(width) direction \(direction)"
-                                    
-                                    if let _initDirection =  initDirection {
-                                        if direction * _initDirection < 0 {
-                                            break
+                                    if self.lines.count >= 5 {
+                                        var result = self.lines[0...self.lines.count/2].reduce([0.0,0.0]) { result, next in
+                                            [next[2].x + result[0], next[2].y + result[1]]
                                         }
+                                        width = result[0].float/Float(self.lines.count)
+                                        minWidth = min(width, minWidth)
+                                        
+                                        let direction = result[1].float/Float(self.lines.count)
+                                        if initDirection == nil {
+                                            initDirection = direction
+                                        }
+                                        
+                                        self.points = "count \(self.lines.count) width \(width) direction \(direction)"
+                                        
+                                        if let _initDirection =  initDirection {
+                                            if direction * _initDirection < 0 {
+                                                break
+                                            }
+                                        }
+                                        
+                                        self.leftTop = CGPoint(x: leftTop.x - CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: leftTop.y)
                                     }
                                     
-                                    self.leftTop = CGPoint(x: leftTop.x - CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: leftTop.y)
+                                    
                                 }
                                 
                                 
@@ -125,26 +152,36 @@ struct LineDrawerView: View {
 
                                 while true {
                                     detectVisionContours(inputImage: inputImage, contourRequest: contourRequest, leftTop: leftTop, rightTop: rightTop, leftBottom: leftBottom, rightBottom: rightBottom)
-                                    let result = self.lines[self.lines.count/2...self.lines.count-1].reduce([0.0,0.0]) { result, next in
-                                        [next[2].x + result[0], next[2].y + result[1]]
-                                    }
-                                    width = result[0].float/Float(self.lines.count)
-                                    minWidth = min(width, minWidth)
-                                    let direction = result[1].float/Float(self.lines.count)
-                                    if initDirection == nil {
-                                        initDirection = direction
-                                    }
                                     
-                                    
-                                    self.points = "count \(self.lines.count) width \(width) direction \(direction)"
-                                    
-                                    if let _initDirection =  initDirection {
-                                        if direction * _initDirection < 0 {
-                                            break
+                                    if self.lines.count >= 5 {
+                
+
+//                                        self.rightTop = CGPoint(x: rightTop.x, y: rightTop.y + firstMinY - secondMinY)
+//                                        self.rightBottom = CGPoint(x: rightBottom.x, y: rightBottom.y - (firstMaxY - secondMaxY))
+                                        
+                                        let result = self.lines[self.lines.count/2...self.lines.count-1].reduce([0.0,0.0]) { result, next in
+                                            [next[2].x + result[0], next[2].y + result[1]]
                                         }
+                                        width = result[0].float/Float(self.lines.count)
+                                        minWidth = min(width, minWidth)
+                                        let direction = result[1].float/Float(self.lines.count)
+                                        if initDirection == nil {
+                                            initDirection = direction
+                                        }
+                                        
+                                        
+                                        self.points = "count \(self.lines.count) width \(width) direction \(direction)"
+                                        
+                                        if let _initDirection =  initDirection {
+                                            if direction * _initDirection < 0 {
+                                                break
+                                            }
+                                        }
+                                        
+                                        self.rightTop = CGPoint(x: rightTop.x - CGFloat(log10(width))*CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: rightTop.y)
+                                        
                                     }
                                     
-                                    self.rightTop = CGPoint(x: rightTop.x - CGFloat(log10(width))*CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: rightTop.y)
                                     
                                 }
                                 
@@ -152,6 +189,8 @@ struct LineDrawerView: View {
                                     print("return 1 \(index)/\(innerIndex)")
                                     return
                                 }
+                                
+                                
                             }
                             
                         }
@@ -343,11 +382,8 @@ struct LineDrawerView: View {
             }
             
             self.lines = lineList.filter{ele in
-                
-                return (ele.1.max()! - ele.1.min()!) > 100
+                return (ele.1.max()! - ele.1.min()!) > 80
                 && (ele.0.max()! - ele.0.min()!) < 1000
-                
-                
             }.map{ele in
                 
                 let minX = ele.0.min()!

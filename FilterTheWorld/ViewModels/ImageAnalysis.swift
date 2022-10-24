@@ -57,7 +57,7 @@ class ImageAnalysis : ObservableObject {
         DispatchQueue.global(qos: .userInteractive).async {
             self.faceRecognizer = FaceRecognizer()
             self.poseRecognizer = PoseRecognizer()
-            self.objectDetectorYOLO = ObjectRecoginzerYOLO(yoloModelName: "yolov5-pipeline-basketball")
+            self.objectDetectorYOLO = ObjectRecoginzerYOLO(yoloModelName: "yolov5-pipeline")
             
             self.setupSubscriptions()
             DispatchQueue.main.async {
