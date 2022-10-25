@@ -167,15 +167,14 @@ struct SportsGroundView: View {
                     
                 })
                 .onChange(of: imageAnalysis.sportData.frame, perform: { _ in
-                    if selectionSubmited != nil {
+                    if selectionSubmited != nil && !cameraIsOn {
                         return
                     }
                     let poses = imageAnalysis.sportData.frameData.poses
                     
                     print("sportGround- \(selectionSubmited ?? -1)")
                     
-                    if !sportGround.sporters.isEmpty && !poses.isEmpty {
-                        
+                    if !sportGround.sporters.isEmpty && !poses.isEmpty && sportGround.sporters[0].sport.isGestureController == true {
                         DispatchQueue.main.async {
                             sportGround.play(poseMap: poses.first!.landmarksMaps, objects: [], frameSize: imageAnalysis.sportData.frame.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
                             self.sportGround.objectWillChange.send()
