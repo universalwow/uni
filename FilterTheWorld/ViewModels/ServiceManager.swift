@@ -20,7 +20,7 @@ struct SportFile: Codable {
 class ServiceManager: NSObject, ObservableObject {
     
     struct StaticValue {
-        static let IP = "192.168.0.102"
+        static let IP = "192.168.1.173"
     }
   @Published var loginState: LoginResponse?
   

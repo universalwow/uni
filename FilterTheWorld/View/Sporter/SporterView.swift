@@ -151,3 +151,34 @@ struct SporterView: View {
         }.padding()
     }
 }
+
+
+struct SporterViewForStandAndJump: View {
+    @EnvironmentObject var standAndJumpSetter: StandAndJumpSetter
+    var body: some View {
+        VStack {
+            if let sport = standAndJumpSetter.sport {
+                HStack{
+                    
+                    Text("\(sport.state.rawValue):\(sport.poseList.count)").padding()
+                        .background(Capsule().fill(Color.green))
+                    Spacer()
+                    HStack {
+                        Text("\(sport.leftDownPoint.point2D.roundedString)-\(standAndJumpSetter.leftDownPosition)")
+                            .padding()
+                            .background(Capsule().fill(Color.green))
+                        Text("\(sport.rightDownPoint.point2D.roundedString)-\(standAndJumpSetter.rightDownPosition)").padding()
+                            .background(Capsule().fill(Color.green))
+                    }
+
+                }.foregroundColor(.white)
+            }
+            Spacer()
+            WarningTest()
+//                .background(Color.green)
+                .padding([.bottom], 20)
+                .opacity(0.5)
+            
+        }.padding()
+    }
+}

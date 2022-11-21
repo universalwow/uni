@@ -420,15 +420,15 @@ struct LandmarkToStateDistance: Identifiable, Codable {
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
             
         case (.XY, .X):
-            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: toLandmarkToAxis.landmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceX
             
         case (.XY, .Y):
-            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: toLandmarkToAxis.landmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distanceY
             
         case (.XY, .XY):
-            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: fromLandmarkToAxis.landmark.position.vector2d)
+            length = fromLandmarkToAxis.landmark.position.vector2d.distance(to: toLandmarkToAxis.landmark.position.vector2d)
             bound = length/toLandmarkSegmentToAxis.landmarkSegment.distance
         }
         

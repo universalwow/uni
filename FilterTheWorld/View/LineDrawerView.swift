@@ -5,13 +5,15 @@ import SwiftUI
 import Vision
 import CoreImage
 import CoreImage.CIFilterBuiltins
-import PerspectiveTransform
 //import GPUImage
 
 import Foundation
 
 
+
 struct LineDrawerView: View {
+    
+    @EnvironmentObject var standAndJumper: StandAndJumpSetter
     
     @Binding var leftTop: CGPoint
     @Binding var rightTop: CGPoint
@@ -26,9 +28,25 @@ struct LineDrawerView: View {
     @State var contouredImage: UIImage?
     @State var transformImage:UIImage?
     
+    @State var stop = false
+    
+    
  
     
     @State var lines :[[CGPoint]] = []
+    
+    @State var outputImageSize = CGRect.init()
+    
+//    @State var direction:Direction = .LEFT
+    
+    
+    var factor : Double {
+        
+        if leftTop.x < rightTop.x {
+            return 1
+        }
+        return -1
+    }
     
     var body: some View {
         VStack {
@@ -45,6 +63,18 @@ struct LineDrawerView: View {
 //                }
 //            )
 
+            if let image = transformImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .opacity(0.6)
+            }
+            
+            if let image = contouredImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            }
 
             if let image = preProcessImage{
                 Image(uiImage: image)
@@ -58,22 +88,14 @@ struct LineDrawerView: View {
                     )
             }
             
-            if let image = transformImage {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .opacity(0.6)
-            }
+       
 
-//
-//            if let image = contouredImage{
-//                Image(uiImage: image)
-//                    .resizable()
-//                    .scaledToFit()
-//            }
+
+   
             
             HStack {
                 Button("find contour", action: {
+                    self.stop = false
                     
                     DispatchQueue.global(qos: .background).async {
                         var minWidth: Float = 100
@@ -92,32 +114,33 @@ struct LineDrawerView: View {
 //                            for
                             for innerIndex in (1..<20) {
                                 var width : Float = 10000
-                                if self.lines.count >= 20 {
-                                    let result1 = self.lines[1..<18]
-                                    let result2 = self.lines[3..<20]
-                                    let zipResult = zip(result1, result2).reduce([0.0,0.0]) { result, next in
-                                        
-                                        let firstMinY = next.0[0].y
-                                        let firstMaxY = next.0[1].y
-                                        let secondMinY = next.1[0].y
-                                        let secondMaxY = next.1[1].y
-                                        
-                                        return [firstMinY - secondMinY + result[0], firstMaxY - secondMaxY + result[1]]
-                            
-                                    }
-                                    
-
-                                    self.rightTop = CGPoint(x: rightTop.x, y: rightTop.y - zipResult[0]/9)
-                                    self.rightBottom = CGPoint(x: rightBottom.x, y: rightBottom.y - zipResult[1]/9)
-          
-                                }
+//                                if self.lines.count >= 20 {
+//                                    let result1 = self.lines[1..<18]
+//                                    let result2 = self.lines[3..<20]
+//                                    let zipResult = zip(result1, result2).reduce([0.0,0.0]) { result, next in
+//
+//                                        let firstMinY = next.0[0].y
+//                                        let firstMaxY = next.0[1].y
+//                                        let secondMinY = next.1[0].y
+//                                        let secondMaxY = next.1[1].y
+//
+//                                        return [firstMinY - secondMinY + result[0], firstMaxY - secondMaxY + result[1]]
+//
+//                                    }
+//
+//
+//                                    self.rightTop = CGPoint(x: rightTop.x, y: rightTop.y -
+//                                                            zipResult[0]/9 )
+//                                    self.rightBottom = CGPoint(x: rightBottom.x, y: rightBottom.y - zipResult[1]/9)
+//
+//                                }
                                 
                                 var initDirection: Float? 
-                                while true {
+                                while true && !self.stop {
                                     detectVisionContours(inputImage: inputImage, contourRequest: contourRequest, leftTop: leftTop, rightTop: rightTop, leftBottom: leftBottom, rightBottom: rightBottom)
                                     
                                     if self.lines.count >= 5 {
-                                        var result = self.lines[0...self.lines.count/2].reduce([0.0,0.0]) { result, next in
+                                        let result = self.lines[0...self.lines.count/2].reduce([0.0,0.0]) { result, next in
                                             [next[2].x + result[0], next[2].y + result[1]]
                                         }
                                         width = result[0].float/Float(self.lines.count)
@@ -136,21 +159,21 @@ struct LineDrawerView: View {
                                             }
                                         }
                                         
-                                        self.leftTop = CGPoint(x: leftTop.x - CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: leftTop.y)
+                                        self.leftTop = CGPoint(x: leftTop.x - CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1))*factor, y: leftTop.y)
                                     }
                                     
                                     
                                 }
                                 
                                 
-                                if index > 0 && width <= minWidth + 1 {
+                                if index > 0 && width <= minWidth + 2 {
                                     print("return 0 \(index)/\(innerIndex)")
                                     return
                                 }
                                 
                                 initDirection = nil
 
-                                while true {
+                                while true && !self.stop {
                                     detectVisionContours(inputImage: inputImage, contourRequest: contourRequest, leftTop: leftTop, rightTop: rightTop, leftBottom: leftBottom, rightBottom: rightBottom)
                                     
                                     if self.lines.count >= 5 {
@@ -178,19 +201,15 @@ struct LineDrawerView: View {
                                             }
                                         }
                                         
-                                        self.rightTop = CGPoint(x: rightTop.x - CGFloat(log10(width))*CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1)), y: rightTop.y)
+                                        self.rightTop = CGPoint(x: rightTop.x - CGFloat(log10(width))*CGFloat(log2f(abs(direction)*2+1))*CGFloat(direction/(abs(direction)+1))*factor, y: rightTop.y)
                                         
                                     }
-                                    
-                                    
                                 }
                                 
-                                if index > 0 && width <= minWidth + 1 {
+                                if index > 0 && width <= minWidth + 2 {
                                     print("return 1 \(index)/\(innerIndex)")
                                     return
                                 }
-                                
-                                
                             }
                             
                         }
@@ -201,6 +220,35 @@ struct LineDrawerView: View {
                     
                     
                 })
+                
+                Button(action: {
+                    self.stop = true
+                    setTransform()
+                    
+                    
+                }, label: {
+                    Text("Stop")
+                })
+                
+                Button(action: {
+                    let maxWidthLine = self.lines.max(by: { leftLine, rightLine in
+                        leftLine[2].x < rightLine[2].x
+                    })!
+                    
+                    let index = self.lines.firstIndex(where: { line in
+                        line[0].x == maxWidthLine[0].x
+                        
+                    })!
+                    DispatchQueue.main.async {
+                        self.lines.remove(at: index)
+                        setTransform()
+                    }
+                    
+                    
+                    
+                }, label: {
+                    Text("清除无效线段")
+                })
             }
 
             
@@ -208,43 +256,37 @@ struct LineDrawerView: View {
             .padding()
     }
     
+    
+    func setTransform() {
+              let start = Perspective(
+                  leftTop,
+                  rightTop,
+                  rightBottom,
+                  leftBottom
+              )
+              
+        print("outputImageSize... \(outputImageSize.width) \(outputImageSize.height)")
+              let destination = Perspective(
+                  CGPoint(x: 0,y: 0),
+                  CGPoint(x: outputImageSize.width,y: 0),
+                  CGPoint(x: outputImageSize.width,y: outputImageSize.height),
+                  CGPoint(x: 0, y: outputImageSize.height)
+              )
+
+            let fullTransform = start.projectiveTransform(destination: destination)
+              
+                standAndJumper.setTransForm(transform: fullTransform)
+                standAndJumper.setLines(lines: self.lines)
+    }
+    
     func applyperspectiveTransform(ciImage: CIImage, leftTop: CGPoint, rightTop: CGPoint,leftBottom: CGPoint,rightBottom: CGPoint ) -> CIImage
     {
         
-        let start = Perspective(
-            leftTop,
-            rightTop,
-            rightBottom,
-            leftBottom
-        )
         
-        let destination = Perspective(
-            CGPoint(x: 100,y: 50),
-            CGPoint(x: 150,y: 50),
-            CGPoint(x: 150,y: 150),
-            CGPoint(x: 100, y: 150)
-        )
+//        let transform = CATransform3DGetAffineTransform(fullTransform)
+//        let inverted =  transform.inverted()
         
-//
-//
-//
-        let fullTransform = start.projectiveTransform(destination: destination)
-        
-        
-        let rows =
-        float3x3(rows: [
-            simd_float3(fullTransform.m11.float,      fullTransform.m21.float, fullTransform.m41.float),
-            simd_float3(     fullTransform.m12.float, fullTransform.m22.float, fullTransform.m42.float),
-            simd_float3(     fullTransform.m14.float,      fullTransform.m24.float, fullTransform.m44.float)
-            ])
-                
-        let scaledVector = rows * simd_float3(x: 1444, y: 91, z: 1)
-//        print("fullTransform \(fullTransform)")
-        
-//        print("scaledVector \(scaledVector/scaledVector.z )")
-        let transform = CATransform3DGetAffineTransform(fullTransform)
-        
-//        print("current point \(leftTop.applying(transform))/\(rightTop.applying( transform))/\(rightBottom.applying( transform))/\(leftBottom.applying(transform))")
+//        print("current point \(leftTop) \(leftTop.applying(transform))/\(rightTop.applying( transform))/\(rightBottom.applying( transform))/\(leftBottom.applying(transform))")
         let outCiImage = ciImage.applyingFilter("CIPerspectiveCorrection",
            parameters: [
             "inputTopLeft": CIVector(cgPoint: leftTop),
@@ -255,9 +297,14 @@ struct LineDrawerView: View {
         
         
         
-//        print("outCiImage---------------\(ciImage.extent)/\(outCiImage.extent)")
-        
-        
+        print("outCiImage---------------\(ciImage.extent)/\(outCiImage.extent)")
+        self.outputImageSize = outCiImage.extent
+
+                      
+//              let scaledVector = rows * simd_float3(x: Float(rightBottom.x), y: Float(rightBottom.y), z: 1)
+      //        print("fullTransform \(fullTransform)")
+              
+//              print("current point scaledVector \(scaledVector/scaledVector.z )")
 
 
         return outCiImage
@@ -333,20 +380,43 @@ struct LineDrawerView: View {
                 let noiseReductionFilter = CIFilter.gaussianBlur()
                 noiseReductionFilter.radius = 0.5
                 noiseReductionFilter.inputImage = transform
-                
+                let noiseImage = noiseReductionFilter.outputImage!
 
                 let blackAndWhite = BlackWhiteFilter()
-                blackAndWhite.inputImage = noiseReductionFilter.outputImage!
+                blackAndWhite.inputImage = noiseImage
                 let filteredImage = blackAndWhite.outputImage!
+                
+                let morphologyRectangleMinimumFilter = CIFilter.morphologyRectangleMinimum()
+                morphologyRectangleMinimumFilter.inputImage = filteredImage
+                morphologyRectangleMinimumFilter.width = 4
+                morphologyRectangleMinimumFilter.height = 10
+//                return morphologyRectangleMinimumFilter.outputImage
+                let morphologyImage = morphologyRectangleMinimumFilter.outputImage!
+
+                _inputImage = morphologyImage
+                
+//                let morphologyMinimumFilter = CIFilter.morphologyMinimum()
+//                morphologyMinimumFilter.inputImage = filteredImage
+//                morphologyMinimumFilter.radius = 3
+//                let morphologyImage = morphologyMinimumFilter.outputImage!
+//
+//                _inputImage = morphologyImage
+
+
+                DispatchQueue.main.async {
+                    if let cgimg = context.createCGImage(morphologyImage, from: morphologyImage.extent) {
+                        let aaa = UIImage(cgImage: cgimg)
+                        self.contouredImage = aaa
+                    }
+                }
+                
             
-                _inputImage = filteredImage
                 DispatchQueue.main.async {
                     if let cgimg = context.createCGImage(filteredImage, from: filteredImage.extent) {
                         let aaa = UIImage(cgImage: cgimg)
                         self.preProcessImage = aaa
                     }
                 }
-                
             }
 
             let requestHandler = VNImageRequestHandler.init(ciImage: _inputImage, options: [:])
@@ -383,7 +453,7 @@ struct LineDrawerView: View {
             
             self.lines = lineList.filter{ele in
                 return (ele.1.max()! - ele.1.min()!) > 80
-                && (ele.0.max()! - ele.0.min()!) < 1000
+                && (ele.1.max()! - ele.1.min()!) < 1000
             }.map{ele in
                 
                 let minX = ele.0.min()!
@@ -404,10 +474,11 @@ struct LineDrawerView: View {
                         CGPoint(x: maxX - minX, y: maxXY - minXY)]
             }.sorted{ _left, _right in
                 _left[0].x < _right[0].x
-                
             }
             
-            let ciContext = CIContext.init()
+
+            
+//            let ciContext = CIContext.init()
             
 //            self.contouredImage = drawContours(contoursObservation: contoursObservation, sourceImage: ciContext.createCGImage(inputImage, from: inputImage.extent)!)
 

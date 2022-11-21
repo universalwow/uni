@@ -38,6 +38,7 @@ struct AppMain: App {
     @StateObject var imageAnalysor = ImageAnalysis()
     @StateObject var sportGround = SportsGround()
     @StateObject var cameraSporter = CameraViewModel()
+    @StateObject var standAndJumper = StandAndJumpSetter()
     
     
     //  let test = TestPublishedStruct()
@@ -49,6 +50,7 @@ struct AppMain: App {
                 .environmentObject(imageAnalysor)
                 .environmentObject(sportGround)
                 .environmentObject(cameraSporter)
+                .environmentObject(standAndJumper)
         }
     }
 }

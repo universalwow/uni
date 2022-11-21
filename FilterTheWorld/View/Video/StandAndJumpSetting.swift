@@ -30,7 +30,7 @@ struct StandAndJumpSetting: View {
     
     @StateObject var videoManager = VideoManager()
     @EnvironmentObject var imageAnalysis:ImageAnalysis
-    @EnvironmentObject var sportGround: SportsGround
+    @EnvironmentObject var standAndJumpSetter: StandAndJumpSetter
     
     @State var leftTop = CGPoint(x: 50, y: 50)
     @State var rightTop = CGPoint(x: 500, y: 50)
@@ -89,9 +89,9 @@ struct StandAndJumpSetting: View {
                             GeometryReader { geometry in
                                 ZStack {
                                     PosesViewForSportsGround(poses: imageAnalysis.sportData.frameData.poses, imageSize: uiImage.size, viewSize: geometry.size)
-                                    ObjectsViewForSportsGround(objects: imageAnalysis.sportData.frameData.objects, imageSize: uiImage.size, viewSize: geometry.size)
-                                    RectViewForSporter(viewSize: geometry.size)
-                                    SporterView()
+//                                    ObjectsViewForSportsGround(objects: imageAnalysis.sportData.frameData.objects, imageSize: uiImage.size, viewSize: geometry.size)
+//                                    RectViewForSporter(viewSize: geometry.size)
+                                    SporterViewForStandAndJump()
                                     QuadrangleView(
                                         leftTop: $leftTop,
                                         rightTop: $rightTop,
@@ -211,36 +211,22 @@ struct StandAndJumpSetting: View {
                     
                 }
                 HStack {
-                    Picker("选择项目", selection: $currentSportIndex) {
-                        ForEach(sportGround.sports.indices, id: \.self) { sportIndex in
-                            Text("\(sportGround.sports[sportIndex].name)/\(sportGround.sports[sportIndex].sportClass.rawValue)/\(sportGround.sports[sportIndex].sportPeriod.rawValue)").tag(sportIndex)
-                        }
-                    }
+                    
                     
                     Button(action: {
-                        if self.stopAnalysis {
-                            sportGround.updateSports()
-
+                        self.scrollViewContentOffset = 0.0
+                        videoManager.getFrame(time: self.scrollOffset/self.frameWidth)
+                        imageAnalysis.reinit()
+                        if let frame = self.videoManager.frame {
+                            imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: self.scrollOffset/self.frameWidth)
                         }
-                    }) {
-                        Text("更新")
-                    }
-                    
-                    Button(action: {
-                        if !sportGround.sports.isEmpty {
-                            print("运动员准备")
-                            self.stopAnalysis = true
-                            self.scrollViewContentOffset = 0.0
-                            videoManager.getFrame(time: self.scrollOffset/self.frameWidth)
-                            imageAnalysis.reinit()
-                            if let frame = self.videoManager.frame {
-                                imageAnalysis.imageAnalysis(image: UIImage(cgImage: frame, scale: 1,orientation: orientation).fixedOrientation()!, request: nil, currentTime: self.scrollOffset/self.frameWidth)
-                            }
-                            
-
-                            sportGround.addSporter(sport: sportGround.sports[currentSportIndex])
-                            
-                        }
+                        
+                        standAndJumpSetter.setSport(jumpArea: [leftTop, rightTop, rightBottom, leftBottom].map {
+                            point in
+                            point.point2d
+                        })
+                        
+                        
                     }) {
                         Text("准备")
                     }
@@ -298,26 +284,18 @@ struct StandAndJumpSetting: View {
                                     
                                     Thread.sleep(forTimeInterval: 1/self.framesPerSeconds)
                                     
-                                    
+    
                                     videoManager.getFrame(time: self.scrollOffset/self.frameWidth)
                                     DispatchQueue.main.async {
                                         let uiImage = UIImage(cgImage: videoManager.frame!, scale: 1,orientation: orientation).fixedOrientation()!
                                         imageAnalysis.imageAnalysis(image: uiImage, request: nil, currentTime: self.scrollOffset/self.frameWidth)
                                         let poses = imageAnalysis.sportData.frameData.poses
-//                                        let ropes = imageAnalysis.sportData.frameData.objects.filter{ object in
-//                                            object.label == ObjectLabel.BASKETBALL.rawValue
-//                                        }
-//
-//                                        let human = imageAnalysis.sportData.frameData.objects.filter{ object in
-//                                            object.label == ObjectLabel.POSE.rawValue
-//                                        }
+
                                         
-//                                        print("--------------object\(ropes)")
-                                        
-                                        if !sportGround.sporters.isEmpty && !poses.isEmpty {
+                                        if standAndJumpSetter.sport != nil {
                                             
-                                            sportGround.play(poseMap: poses.first!.landmarksMaps, objects: imageAnalysis.sportData.frameData.objects, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
-                                            self.sportGround.objectWillChange.send()
+                                            standAndJumpSetter.play(humanPoses: poses)
+                                            self.standAndJumpSetter.objectWillChange.send()
                                         }
                                     }
                                     
@@ -332,7 +310,6 @@ struct StandAndJumpSetting: View {
                                 DispatchQueue.main.async {
                                     if !self.stopAnalysis {
                                         self.stopAnalysis = true
-                                        sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
                                         self.scrollViewContentOffset = 0
                                     }
                                 }
@@ -348,7 +325,6 @@ struct StandAndJumpSetting: View {
                     Button(action: {
                         if !self.stopAnalysis {
                             self.stopAnalysis = true
-                            sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
                         }
                     }) {
                         Text("停止")

@@ -118,7 +118,12 @@ class SportsGround: ObservableObject {
 }
 
 
+
+
 extension SportsGround {
+    
+  
+    
     static var allSports: [Sport] {
 //        MARK: 此处加载的项目 从服务端加载时去掉图片等大资源。提升存储和网络效率
         let files = Storage.allFiles(.documents).filter{ url in
@@ -127,11 +132,16 @@ extension SportsGround {
         }.map{ url -> Sport in
 //            print(url)
             return Storage.retrieve(url: url, as: Sport.self)
-        }.sorted(by: { (first, second) in
+        }
+            .sorted(by: { (first, second) in
+                
             if first.name == second.name {
                 return first.sportClass.rawValue <= second.sportClass.rawValue
             }
-            return first.name <= second.name
+                let pinyin1 = first.name.transformToPinyin()
+                let pinyin2 = second.name.transformToPinyin()
+                
+            return pinyin1 <= pinyin2
             
         })
         print("files \(files.count)")
@@ -159,7 +169,11 @@ extension SportsGround {
             if first.name == second.name {
                 return first.sportClass.rawValue <= second.sportClass.rawValue
             }
-            return first.name < second.name
+            
+            let pinyin1 = first.name.transformToPinyin()
+            let pinyin2 = second.name.transformToPinyin()
+            
+            return pinyin1 < pinyin2
             
         })
     }

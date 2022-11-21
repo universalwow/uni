@@ -17,9 +17,7 @@ struct SportsGroundView: View {
     @State private var cameraIsOn = false
     
 
-    @State var controlSport: Sport? = SportsGround.allSports.first(where: { sport in
-        sport.isGestureController
-    })
+    @State var controlSport: Sport?
     
     var body: some View {
         
