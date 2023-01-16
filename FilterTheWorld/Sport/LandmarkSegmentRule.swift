@@ -4,9 +4,6 @@ import Foundation
 
 
 
-
-
-
 struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
     static func == (lhs: LandmarkSegmentRule, rhs: LandmarkSegmentRule) -> Bool {
         lhs.id == rhs.id

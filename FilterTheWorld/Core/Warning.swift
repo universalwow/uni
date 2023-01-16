@@ -18,6 +18,4 @@ struct Warning: Codable, Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(content)
     }
-    
-
 }

@@ -131,7 +131,7 @@ struct VideoAnalysorView: View {
             
             HStack {
                 HStack {
-                    Text("时间:\(secondToStandardedTime)")
+                    Text("时间:\(secondToStandardedTime)/\(scrollViewContentOffset)")
                     Text("缓存:\(imageAnalysis.cachedFrames.count)")
                 }
                 Spacer()
@@ -337,14 +337,27 @@ struct VideoAnalysorView: View {
                         sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
                     }
                 }) {
-                    Text("停止")
+                    Text(self.stopAnalysis ? "停止" : "运行")
                 }
+                
+                Button(action: {
+                    if !self.stopAnalysis {
+                        self.stopAnalysis = true
+                        sportGround.saveSportReport(endTime: self.scrollOffset/self.frameWidth)
+                    }
+                }) {
+                    Text(self.stopAnalysis ? "停止" : "运行")
+                }
+                
+                
                 
                 Button(action: {
                     self.showAngle.toggle()
                 }) {
                     Text(self.showAngle ? "隐藏角度" : "显示角度")
                 }
+                
+                
             }.padding()
         }
         .padding()

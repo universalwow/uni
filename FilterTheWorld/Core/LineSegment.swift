@@ -40,6 +40,15 @@ struct LandmarkSegment: Hashable, Identifiable, Equatable,  Codable {
     var angleRange:Range<Int>?
     
     
+    var isEmpty: Bool {
+        if startLandmark.isEmpty || endLandmark.isEmpty {
+            return true
+        }
+        
+        return false
+    }
+    
+    
     static func initValue() -> LandmarkSegment {
         LandmarkSegment(
             startLandmark: Landmark(position: Point3D(), landmarkType: LandmarkType.LeftShoulder),

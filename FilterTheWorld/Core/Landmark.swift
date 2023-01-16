@@ -144,6 +144,13 @@ struct Landmark: Equatable, Identifiable, Hashable, Codable {
 }
 
 extension Landmark {
+    var isEmpty: Bool {
+        if position.isEmpty {
+            return true
+        }
+        return false
+    }
+    
     func pointToFit(imageSize: CGSize,
                     viewSize: CGSize) -> CGPoint {
         let imageRatio = 1.0/imageSize.ratio()

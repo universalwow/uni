@@ -653,6 +653,7 @@ class Sporter: Identifiable {
                 }
         
                 timer.invalidate()
+                cancelableWarningMap.removeValue(forKey: warning.warning)
                 
             }
         return timer

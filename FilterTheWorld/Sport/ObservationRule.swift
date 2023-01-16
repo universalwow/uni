@@ -21,6 +21,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
         self.objectLabel = objectLabel
     }
     
+//    TODO: 基于物体的规则添加0值
     init(ruleId: String) {
         self.id = ruleId
         self.objectLabel = ObjectLabel(rawValue: ruleId)!

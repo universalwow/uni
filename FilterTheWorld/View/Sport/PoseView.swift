@@ -60,12 +60,10 @@ struct PoseView: View {
                     
                     .stroke(landmarkSegment.color, lineWidth: lineWidth(landmarkSegment: landmarkSegment))
                 
-                
-                LandmarkSegmentAngleView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
-                    .foregroundColor(.yellow).opacity(showAngle ? 1 : 0)
+//
+//                LandmarkSegmentAngleView(landmarkSegment: landmarkSegment, imageSize: imageSize, viewSize: viewSize)
+//                    .foregroundColor(.yellow).opacity(showAngle ? 1 : 0)
             }
-  
-            
         }
     }
 }

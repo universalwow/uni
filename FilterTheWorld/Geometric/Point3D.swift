@@ -25,6 +25,13 @@ extension Point3D {
   var point2D: Point2D {
     Point2D(x: x, y: y)
   }
+    
+    var isEmpty:Bool {
+        if (x < 0.001 && y < 0.001) {
+            return true
+        }
+        return false
+    }
 }
 
 extension Double {

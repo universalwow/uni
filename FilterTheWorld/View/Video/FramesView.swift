@@ -36,11 +36,26 @@ struct FramesView: View {
     
     @State private var scrollViewContentOffset = CGFloat(0) // Content offset available to use
     
+    @State private var selectedPosition = 0.0
+    
     @State private var selectedPoseIndex = -1
     
     @State private var showSelectorAction = false
     
     @State private var orientation = UIImage.Orientation.up
+    
+    var secondToStandardedTime:String {
+        if self.frameWidth > 0 && self.scrollViewContentOffset >= 0.0 {
+            let second = Double(self.scrollViewContentOffset/self.frameWidth)
+            let minutes = Int(floor(second/60))
+            let seconds = Int(floor(second - CGFloat(minutes*60)))
+            let macroSeconds = Int((second - floor(second)) * 1000)
+            return "\(minutes):\(seconds).\(macroSeconds)"
+        }else {
+            return "00:00.000"
+        }
+        
+    }
     
     var poseSelector: some View {
         VStack {
@@ -156,7 +171,7 @@ struct FramesView: View {
             
             HStack {
                 Text("当前视频: \(self.videoUrl?.path ?? "nil")")
-                Text("当前位置  \(self.scrollViewContentOffset)")
+                Text("当前位置  \(self.secondToStandardedTime)/\(self.scrollViewContentOffset)")
                 
             }
             HStack {
@@ -219,6 +234,14 @@ struct FramesView: View {
                 }) {
                     Text("选择人/框")
                 }
+                
+                TextField("选择位置", value: $selectedPosition, format: .number).textFieldStyle(.roundedBorder).padding()
+                
+                Button(action: {
+                    videoManager.getFrame(time: self.selectedPosition/self.frameWidth)
+                }, label: {
+                    Text("提交位置")
+                })
                 
                 
                 

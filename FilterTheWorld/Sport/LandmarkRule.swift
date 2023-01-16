@@ -39,14 +39,6 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
     var landmarkToStateAngle: [LandmarkToStateAngle] = []
     
     
-
-    
-
-    
-    
-    
-    
-    
     func firstDistanceToLandmarkIndexById(id: UUID) -> Int? {
         distanceToLandmark.firstIndex(where: { _length in
             _length.id == id
