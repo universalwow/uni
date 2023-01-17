@@ -6,7 +6,6 @@ struct CardView: View {
     
     func color(sportClass: SportClass) -> Color {
         switch sportClass {
-            
         case .Counter:
             return .red
         case .Timer:
@@ -15,6 +14,8 @@ struct CardView: View {
             return .blue
         case .None:
             return .white
+        case .TimeRanger:
+            return .purple
         }
     }
     

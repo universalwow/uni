@@ -1,6 +1,16 @@
 
 import Foundation
 
+struct TimeRange: Identifiable, Codable {
+    var id: Int = -1
+    var startTime: Double
+    var endTime:Double
+    
+    var range: Range<Double> {
+        startTime..<endTime
+    }
+}
+
 
 struct SportState: Identifiable, Equatable, Hashable, Codable {
   
@@ -26,6 +36,10 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
     var keepTime:Double?
     
     var directToStateId:Int?
+    
+    var checkTimeRanges:[TimeRange]? = []
+    
+    
     
     
 //    var isScoreState:

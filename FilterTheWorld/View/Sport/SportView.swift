@@ -64,6 +64,68 @@ struct TransferToOtherRulesView: View {
     }
 }
 
+struct StateTimeRangeView: View {
+    @EnvironmentObject var sportManager: SportsManager
+
+    var sport:Sport
+    @Binding var state:SportState
+    
+    @State var lowerBound = 1.0
+    @State var upperBound = 2.0
+    
+    var body: some View {
+        
+        VStack{
+            HStack {
+                Text("时间范围列表:")
+                Spacer()
+                HStack {
+                    Text("开始时间(s):")
+                    TextField("开始时间", value: $lowerBound, formatter: formatter, onEditingChanged: { _ in
+                        
+                    }).textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                }
+                
+                HStack {
+                    Text("结束时间(s):")
+                    TextField("结束时间", value: $upperBound, formatter: formatter, onEditingChanged: { _ in
+                        
+                    }).textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                }
+                
+                Button(action: {
+                    sportManager.updateSport(editedSport: sport, state: state)
+                    
+                }, label: {Text("清空")})
+                Button(action: {
+                    if lowerBound < upperBound {
+                        sportManager.updateSport(editedSport: sport, state: state, lowerBound: lowerBound, upperBound: upperBound)
+
+                    }
+                    
+                }, label: {Text("添加")})
+            }
+            
+            ForEach(state.checkTimeRanges ?? []) { timeRange in
+                HStack {
+                    Text("Index:\(timeRange.id) Start/End:\(timeRange.startTime)-\(timeRange.endTime)")
+                    Spacer()
+                    Button(action: {
+                        sportManager.deleteSport(editedSport: sport, state: state, timeRangeId: timeRange.id)
+                    }, label: {
+                        Text("删除")
+                    })
+                }
+                
+            }
+        }
+
+    }
+    
+}
+
 
 
 struct StateTimerView: View {
@@ -496,7 +558,7 @@ struct SportView: View {
                                 Text("\(state.name)/\(state.id)")
                                 Spacer()
                                 
-                                Text("直接转换为状态:\(state.directToStateId ?? -100)")
+                                Text("TO状态:\(state.directToStateId ?? -100)")
                                 Picker("状态", selection: $directToState.didSet( { _ in
                                     
                                     sportManager.updateSportState(sport: sport, state: state, directToState: directToState)
@@ -546,6 +608,11 @@ struct SportView: View {
                             if [SportClass.Timer, SportClass.TimeCounter].contains(sportClass) {
                                 StateTimerView(sport: sport, state: state)
                             }
+                            
+                            if [SportClass.TimeRanger].contains(sportClass) {
+                                StateTimeRangeView(sport: sport, state: Binding.constant(state))
+                            }
+                            
                             
                         }
                         .padding([.vertical])

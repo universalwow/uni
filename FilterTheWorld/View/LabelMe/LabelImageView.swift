@@ -124,7 +124,7 @@ struct LabelImageView: View {
             
             HStack {
                 HStack {
-                    Text("时间:\(secondToStandardedTime)/\(scrollViewContentOffset)")
+                    Text("\(secondToStandardedTime)/\(scrollViewContentOffset)")
                     Text("缓存:\(imageAnalysis.cachedFrames.count)")
                 }
                 Spacer()

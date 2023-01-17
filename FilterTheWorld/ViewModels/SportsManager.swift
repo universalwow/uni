@@ -166,6 +166,26 @@ extension SportsManager {
         }
     }
     
+    func updateSport(editedSport:Sport, state: SportState) {
+        
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
+            sports[sportIndex].updateSportState(editedSportState: state)
+        }
+    }
+    
+    func updateSport(editedSport:Sport, state: SportState, lowerBound: Double, upperBound: Double) {
+        
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
+            sports[sportIndex].updateSportState(editedSportState: state, lowerBound: lowerBound, upperBound: upperBound)
+        }
+    }
+    
+    func deleteSport(editedSport:Sport, state: SportState, timeRangeId: Int) {
+        
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
+            sports[sportIndex].deleteSportState(editedSportState: state, timeRangeId: timeRangeId)
+        }
+    }
     
     func deleteSport(editedSport: Sport) {
         if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {

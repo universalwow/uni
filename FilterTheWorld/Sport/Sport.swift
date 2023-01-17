@@ -29,6 +29,8 @@ enum SportPeriod: String, Codable, CaseIterable, Identifiable {
             return [.CompletePeriod, .HarfPeriod]
         case .None:
             return Self.allCases
+        case .TimeRanger:
+            return [.None]
         }
     }
     
@@ -42,6 +44,9 @@ enum SportPeriod: String, Codable, CaseIterable, Identifiable {
             return [.Continuous, .Discrete]
         case .None:
             return Self.allCases
+        case .TimeRanger:
+            return [.None]
+            
         }
     }
 }
@@ -53,6 +58,7 @@ enum SportClass: String, Codable, CaseIterable, Identifiable {
     case Counter
     case Timer
     case TimeCounter
+    case TimeRanger
     case None
 }
 
@@ -471,8 +477,40 @@ extension Sport {
           states[index].keepTime = keepTime
       }
     }
+    
+    mutating func updateSportState(editedSportState: SportState) {
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          states[index].checkTimeRanges = []
+      }
+    }
+    
+    mutating func updateSportState(editedSportState: SportState, lowerBound: Double, upperBound: Double) {
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          if states[index].checkTimeRanges == nil || states[index].checkTimeRanges!.isEmpty {
+              states[index].checkTimeRanges = []
+              states[index].checkTimeRanges!.append(TimeRange(id: 1, startTime: lowerBound, endTime: upperBound))
+          }else {
+              let nextId = states[index].checkTimeRanges!.max(by: { (_left, _right) -> Bool in
+                  
+                  return _left.id < _right.id
+              })!.id + 1
+              states[index].checkTimeRanges!.append(TimeRange(id: nextId, startTime: lowerBound, endTime: upperBound))
+          }
+          
+      }
+    }
   
-  
+    mutating func deleteSportState(editedSportState: SportState, timeRangeId: Int) {
+        
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          if let timeRangeIndex = states[index].checkTimeRanges!.firstIndex(where: { timeRange in
+              return timeRange.id == timeRangeId
+          }) {
+              states[index].checkTimeRanges!.remove(at: timeRangeIndex)
+          }
+          
+      }
+    }
 
   
   mutating func deleteRules(editedSportState: SportState, editedRulesId: UUID, ruleType: RuleType) {

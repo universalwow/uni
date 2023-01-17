@@ -495,7 +495,7 @@ class Sporter: Identifiable {
           
                         if allStateSatisfy {
                             // 检查状态改变后是否满足多帧条件 决定是否计分
-                            if sport.sportClass == .Counter {
+                            if [SportClass.Counter,SportClass.TimeRanger].contains(sport.sportClass) {
                                 scoreTimes.append(
                                     ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
                                 )
@@ -850,13 +850,145 @@ class Sporter: Identifiable {
             case .TimeCounter:
                 
                 playTimeCounter(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
-                
+            case .TimeRanger:
+                playTimeRanger(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             case .None: break
+        
             
         }
         
 
         
+    }
+    
+    // 时间区间内项目流程
+    
+    func playTimeRanger(poseMap:PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+        // 如果返回顺序错误 则丢弃
+        if lastTime > currentTime {
+            return
+        }
+        
+//      收集最低点和最高点
+        if !sport.selectedLandmarkTypes.isEmpty {
+            updateCurrentStateLandmarkBounds(poseMap: poseMap, landmarkTypes: sport.selectedLandmarkTypes)
+        }
+        
+        if !sport.collectedObjects.isEmpty {
+            updateCurrentStateObjectBounds(objects: objects, objectLabels: sport.collectedObjects)
+        }
+        
+        
+        // 3秒没切换状态 则重置状态为开始
+////        MARK: 添加重置为开始条件 当前太粗暴
+        var allCurrentFrameWarnings : Set<Warning> = []
+        
+        let allHasRuleStates = sport.states.filter({ state in
+            return state.checkTimeRanges != nil && !state.checkTimeRanges!.isEmpty
+        })
+        
+//        let violateRulesTransformSatisfy = allHasRuleStates.map { state -> (Bool, Set<Warning>, Int, Int) in
+//
+//            if let toState = sport.findFirstStateByStateId(stateId: state.id) {
+//                let satisfy = toState.rulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+//                return satisfy
+//            }
+//            return (false, [], 0, 0)
+//
+//        }
+//        // 违规逻辑 1.如果只有一个转换 则直接给提醒 2.如果有多个转换, 提示符合条多的那一个
+//        // 如果有满足条件的违规 则清空
+//
+//        if violateRulesTransformSatisfy.count == 1 {
+//            allCurrentFrameWarnings = allCurrentFrameWarnings.union(violateRulesTransformSatisfy[0].1)
+//        } else if violateRulesTransformSatisfy.count > 1 {
+//            let allRulesSatisfySorted = violateRulesTransformSatisfy.sorted(by: {($0).2 >= ($1).2})
+//            if allRulesSatisfySorted.count > 1 && allRulesSatisfySorted[0].2 > allRulesSatisfySorted[1].2 && !allRulesSatisfySorted[0].0 {
+//                allCurrentFrameWarnings = allCurrentFrameWarnings.union(allRulesSatisfySorted[0].1)
+//            }
+//
+//            allRulesSatisfySorted.filter{ (_, warnings, _ , _) in
+//                warnings.contains(where: { warning in
+//                    warning.triggeredWhenRuleMet
+//                })
+//            }.forEach({ (_, warnings, _ , _) in
+//                allCurrentFrameWarnings = allCurrentFrameWarnings.union(warnings)
+//            }
+//            )
+//
+//        }
+//
+//        if violateRulesTransformSatisfy.contains(where: { (satisfy, warnings, _, _) in
+//            satisfy && !warnings.contains(where: { warning in
+//                warning.triggeredWhenRuleMet
+//            })
+//        }) {
+//            allCurrentFrameWarnings = allCurrentFrameWarnings.filter({ warning in
+//                warning.changeStateClear == false
+//            })        }
+//
+////        计分逻辑 状态未切换时判断
+        
+        let scoreRulesTransformSatisfy = allHasRuleStates.filter{ state in
+            state.checkTimeRanges!.contains(where: { timeRange in
+                timeRange.range.contains(currentTime)
+            })
+        }.map { state -> (Bool, Set<Warning>, Int, Int) in
+            
+            if let toState = sport.findFirstStateByStateId(stateId: state.id), currentStateTime.stateId != state.id {
+                                
+                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+                if satisfy.0  {
+                    currentStateTime = StateTime(stateId: toState.id, time: currentTime, poseMap: poseMap, object:  objects.first(where: { object in
+                        object.label != ObjectLabel.POSE.rawValue
+                        
+                    }))
+                }
+                return satisfy
+            }
+            return (false, [], 0, 0)
+            
+        }
+        
+//        区分是否为满足时提醒和不满足时提醒
+        if scoreRulesTransformSatisfy.count == 1 {
+            allCurrentFrameWarnings = allCurrentFrameWarnings.union(scoreRulesTransformSatisfy[0].1)
+        } else if scoreRulesTransformSatisfy.count > 1 {
+            let allRulesSatisfySorted = scoreRulesTransformSatisfy.sorted(by: {($0).2 >= ($1).2})
+            if allRulesSatisfySorted.count > 1 && allRulesSatisfySorted[0].2 > allRulesSatisfySorted[1].2 && !allRulesSatisfySorted[0].0 {
+                allCurrentFrameWarnings = allCurrentFrameWarnings.union(allRulesSatisfySorted[0].1)
+            }
+            
+
+            allRulesSatisfySorted.filter{ (_, warnings, _ , _) in
+                warnings.contains(where: { warning in
+
+                    warning.triggeredWhenRuleMet
+                })
+            }.forEach({ (satisfy, warnings, _ , _) in
+                allCurrentFrameWarnings = allCurrentFrameWarnings.union(warnings)
+            }
+            )
+        }
+        
+        if scoreRulesTransformSatisfy.contains(where: { (satisfy, warnings, _, _) in
+            satisfy && !warnings.contains(where: { warning in
+                warning.triggeredWhenRuleMet
+            })
+        }) {
+            allCurrentFrameWarnings = allCurrentFrameWarnings.filter({ warning in
+                warning.changeStateClear == false
+            })        }
+        
+
+        
+        allCurrentFrameWarnings.remove(Warning(content: "", triggeredWhenRuleMet: true, delayTime: 0.0))
+        updateWarnings(currentTime: currentTime, allCurrentFrameWarnings: allCurrentFrameWarnings)
+        
+        if currentTime > lastTime {
+            lastTime = currentTime
+        }
+
     }
     
     // 计时类项目流程
@@ -885,6 +1017,7 @@ class Sporter: Identifiable {
         //如果有一个状态满足
         
         let allRulesSatisfy = allHasRuleStates.map({state -> (Bool, Set<Warning>, Int, Int) in
+            
             let satisfy = state.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
             if satisfy.0 {
 //                如果不包含该状态 则建立计时器
@@ -894,7 +1027,6 @@ class Sporter: Identifiable {
                     }))
                 }
             }
-
             
             if self.inCheckingStatesTimer.keys.contains(state.name) {
                 if self.inCheckingStateHistory.keys.contains(state.name) {
