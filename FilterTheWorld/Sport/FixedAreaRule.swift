@@ -20,7 +20,6 @@ struct FixedAreaRule: Identifiable, Hashable, Codable, Ruler {
     var landmarkInFixedArea: [LandmarkInAreaForAreaRule] = []
 
     
-    
     func firstLandmarkInFixedAreaIndexById(id: UUID) -> Int? {
         landmarkInFixedArea.firstIndex(where: { _landmarkInArea in
             _landmarkInArea.id == id
@@ -73,7 +72,31 @@ struct FixedAreaRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
+        })
+        
+        return landmarkInFixedAreaSatisfys
+    }
+    
+    func allSatisfyWithScore(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let landmarkInFixedAreaSatisfys = landmarkInFixedArea.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(poseMap: poseMap, frameSize: frameSize)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1,
+                    result.4 + [satisfy.1]
+            )
         })
         
         return landmarkInFixedAreaSatisfys
@@ -161,7 +184,31 @@ struct DynamicAreaRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
+        })
+        
+        return landmarkInDynamicAreaSatisfys
+    }
+    
+    func allSatisfyWithScore(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let landmarkInDynamicAreaSatisfys = landmarkInDynamicdArea.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(poseMap: poseMap, frameSize: frameSize)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1,
+                    result.4 + [satisfy.1]
+                )
         })
         
         return landmarkInDynamicAreaSatisfys

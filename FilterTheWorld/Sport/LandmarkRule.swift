@@ -166,8 +166,6 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
     
     func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
-        
-        
         let distanceToLandmarkSatisfys = distanceToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
             let satisfy = next.satisfy(poseMap: poseMap)
             
@@ -182,7 +180,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let angleToLandmarkSatisfys = angleToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -199,7 +197,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         
@@ -218,7 +216,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let landmarkToStateAngleSatisfys = landmarkToStateAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -235,7 +233,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         
@@ -246,6 +244,90 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                 angleToLandmarkSatisfys.3 + landmarkToStateDistanceSatisfys.3 + landmarkToStateAngleSatisfys.3  + distanceToLandmarkSatisfys.3
         )
     }
+    
+    func allSatisfyWithScore(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let distanceToLandmarkSatisfys = distanceToLandmark.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let angleToLandmarkSatisfys = angleToLandmark.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        
+        
+        let landmarkToStateDistanceSatisfys = landmarkToStateDistance.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let landmarkToStateAngleSatisfys = landmarkToStateAngle.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        
+        // 每个规则至少要包含一个条件 且所有条件都必须满足
+        return (angleToLandmarkSatisfys.0 && landmarkToStateDistanceSatisfys.0 && landmarkToStateAngleSatisfys.0 && distanceToLandmarkSatisfys.0,
+                angleToLandmarkSatisfys.1.union(landmarkToStateDistanceSatisfys.1).union(landmarkToStateAngleSatisfys.1).union(distanceToLandmarkSatisfys.1),
+                angleToLandmarkSatisfys.2 + landmarkToStateDistanceSatisfys.2 + landmarkToStateAngleSatisfys.2  + distanceToLandmarkSatisfys.2,
+                angleToLandmarkSatisfys.3 + landmarkToStateDistanceSatisfys.3 + landmarkToStateAngleSatisfys.3  + distanceToLandmarkSatisfys.3,
+                angleToLandmarkSatisfys.4 + landmarkToStateDistanceSatisfys.4 + landmarkToStateAngleSatisfys.4  + distanceToLandmarkSatisfys.4
+        )
+    }
+    
+    
     
     
     

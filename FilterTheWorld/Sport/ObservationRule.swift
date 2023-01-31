@@ -237,7 +237,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let objectToObjectSatisfys = objectToObject.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -266,7 +266,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let objectToStateDistanceSatisfys = objectToStateDistance.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -292,7 +292,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let objectToStateAngleSatisfys = objectToStateAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -322,7 +322,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         // 每个规则至少要包含一个条件 且所有条件都必须满足
@@ -335,6 +335,133 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
                 objectToLandmarkSatisfys.3 + objectToObjectSatisfys.3 + objectToStateDistanceSatisfys.3
                 + objectToStateAngleSatisfys.3)
     }
+    
+    
+    func allSatisfyWithScore(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let objectToLandmarkSatisfys = objectToLandmark.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            var satisfy = (false, 0.0)
+            let selectedObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
+            })
+            
+            if selectedObject != nil {
+                satisfy = next.satisfyWithScore(poseMap: poseMap, object: selectedObject!)
+            }
+            
+            var newWarnings = result.1
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let objectToObjectSatisfys = objectToObject.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            var satisfy = (false, 0.0)
+            
+            let selectedFromObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
+            })
+            
+            let selectedToObject = objects.first(where: { _object in
+                _object.label == next.toPosition.id
+            })
+            
+            if selectedFromObject != nil && selectedToObject != nil {
+                satisfy = next.satisfyWithScore(poseMap: poseMap, fromObject: selectedFromObject!, toObject: selectedToObject!)
+            }
+
+            
+            var newWarnings = result.1
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let objectToStateDistanceSatisfys = objectToStateDistance.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            var satisfy = (false, 0.0)
+            
+            let selectedObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
+            })
+            
+            if selectedObject != nil {
+                satisfy = next.satisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!)
+            }
+            
+
+            var newWarnings = result.1
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let objectToStateAngleSatisfys = objectToStateAngle.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            var satisfy = (false, 0.0)
+            
+            let selectedObject = objects.first(where: { _object in
+                _object.label == next.fromPosition.id
+            })
+            
+            if selectedObject != nil {
+                satisfy = next.satisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: selectedObject!)
+            }
+            
+//            if let object = object {
+//                satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, object: object)
+//            } else {
+//                satisfy = false
+//            }
+            
+            var newWarnings = result.1
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        // 每个规则至少要包含一个条件 且所有条件都必须满足
+        return (objectToLandmarkSatisfys.0 && objectToObjectSatisfys.0 && objectToStateDistanceSatisfys.0 &&
+                objectToStateAngleSatisfys.0,
+                objectToLandmarkSatisfys.1.union(objectToObjectSatisfys.1).union(objectToStateDistanceSatisfys.1)
+            .union(objectToStateAngleSatisfys.1),
+                objectToLandmarkSatisfys.2 + objectToObjectSatisfys.2 + objectToStateDistanceSatisfys.2
+                + objectToStateAngleSatisfys.2,
+                objectToLandmarkSatisfys.3 + objectToObjectSatisfys.3 + objectToStateDistanceSatisfys.3
+                + objectToStateAngleSatisfys.3,
+                objectToLandmarkSatisfys.4 + objectToObjectSatisfys.4 + objectToStateDistanceSatisfys.4
+                + objectToStateAngleSatisfys.4
+        )
+    }
+    
+    
+    
     
     
     

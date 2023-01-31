@@ -136,7 +136,7 @@ struct SporterView: View {
                         Text("\(sporter.sport.findFirstStateByStateId(stateId: sporter.currentStateTime.stateId)!.name)/\(sporter.nextStatePreview.name)/\(sporter.nextState.name)?")
                             .padding()
                             .background(Capsule().fill(Color.green))
-                        Text("\(sporter.scoreTimes.count)/\(sporter.interactionScoreTimes.count)").padding()
+                        Text("\(sporter.scoreTimes.count)/\(sporter.interactionScoreTimes.count)/\(sporter.timeRangeScores.reduce(0, +))").padding()
                             .background(Capsule().fill(Color.green))
                     }
 

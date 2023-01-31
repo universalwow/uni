@@ -216,9 +216,6 @@ class Sporter: Identifiable {
     }
     
     
-
-
-    
     func getFixedAreas() -> [FixedAreaForSport] {
         var areas : Set<String> = []
         sport.stateTransForm.filter({ transform in
@@ -494,8 +491,8 @@ class Sporter: Identifiable {
                         }
           
                         if allStateSatisfy {
-                            // 检查状态改变后是否满足多帧条件 决定是否计分
-                            if [SportClass.Counter,SportClass.TimeRanger].contains(sport.sportClass) {
+                            // 检查状态改变后是否满足多帧条件 决定是否计分 , SportClass.TimeRanger
+                            if [SportClass.Counter].contains(sport.sportClass) {
                                 scoreTimes.append(
                                     ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
                                 )
@@ -580,6 +577,8 @@ class Sporter: Identifiable {
         }
     }
     
+    var timeRangeScores: [Int] = []
+    
 //    交互计分
     var interactionScoreTimes: [ScoreTime] = []
     
@@ -637,7 +636,6 @@ class Sporter: Identifiable {
     
     var stateTimeHistory: [StateTime] = [StateTime(stateId: SportState.startState.id, time: 0, poseMap: [:], object: nil)]
     
-  
     var cancelableWarningMap: [Warning: Timer] = [:]
     
     var warningsData: [WarningData] = []
@@ -664,6 +662,8 @@ class Sporter: Identifiable {
     var inCheckingStateHistory: [String: [Bool]] = [:]
     // 检测到状态维护的计时器
     var inCheckingStatesTimer: [String: Timer] = [:]
+//
+    var inCheckingStateTimeRanger:[String: (Double, [Double])] = [:]
     
     func checkStateTimer(state: SportState, currentTime: Double, withTimeInterval: TimeInterval, poseMap: PoseMap, object: Observation?) -> Timer {
         Timer.scheduledTimer(
@@ -856,18 +856,27 @@ class Sporter: Identifiable {
         
             
         }
-        
-
-        
     }
     
     // 时间区间内项目流程
     
     func playTimeRanger(poseMap:PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+        
         // 如果返回顺序错误 则丢弃
-        if lastTime > currentTime {
-            return
+//        if lastTime > currentTime {
+//            return
+//        }
+        
+        let allRemovedChecks = inCheckingStateTimeRanger.filter{ $0.value.0 < currentTime }
+        allRemovedChecks.keys.forEach {
+            inCheckingStateTimeRanger.removeValue(forKey: $0)
         }
+        
+        allRemovedChecks.values.forEach {
+            print("aaaaaaaaaaaa \($0.1)")
+            timeRangeScores.append(Int(($0.1.max() ?? 0)*100))
+        }
+        
         
 //      收集最低点和最高点
         if !sport.selectedLandmarkTypes.isEmpty {
@@ -931,22 +940,32 @@ class Sporter: Identifiable {
         
         let scoreRulesTransformSatisfy = allHasRuleStates.filter{ state in
             state.checkTimeRanges!.contains(where: { timeRange in
-                timeRange.range.contains(currentTime)
+                let flag = timeRange.range.contains(currentTime)
+                if flag {
+                    // 进入时间范围 则初始化
+                    if !inCheckingStateTimeRanger.keys.contains(state.name) {
+                        inCheckingStateTimeRanger[state.name] = (timeRange.endTime, [])
+                    }
+                }
+                
+                return flag
             })
-        }.map { state -> (Bool, Set<Warning>, Int, Int) in
+        }.map { state -> (Bool, Set<Warning>, Int, Int, [Double]) in
             
-            if let toState = sport.findFirstStateByStateId(stateId: state.id), currentStateTime.stateId != state.id {
+            if let toState = sport.findFirstStateByStateId(stateId: state.id) {
                                 
-                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+                let satisfy = toState.rulesSatisfyWithScore(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
                 if satisfy.0  {
                     currentStateTime = StateTime(stateId: toState.id, time: currentTime, poseMap: poseMap, object:  objects.first(where: { object in
                         object.label != ObjectLabel.POSE.rawValue
-                        
                     }))
                 }
+                
+                inCheckingStateTimeRanger[state.name]!.1.append(satisfy.4.reduce(0.0, +)/Double(satisfy.4.count))
+
                 return satisfy
             }
-            return (false, [], 0, 0)
+            return (false, [], 0, 0, [])
             
         }
         
@@ -960,18 +979,18 @@ class Sporter: Identifiable {
             }
             
 
-            allRulesSatisfySorted.filter{ (_, warnings, _ , _) in
+            allRulesSatisfySorted.filter{ (_, warnings, _ , _, _) in
                 warnings.contains(where: { warning in
 
                     warning.triggeredWhenRuleMet
                 })
-            }.forEach({ (satisfy, warnings, _ , _) in
+            }.forEach({ (satisfy, warnings, _ , _, _) in
                 allCurrentFrameWarnings = allCurrentFrameWarnings.union(warnings)
             }
             )
         }
         
-        if scoreRulesTransformSatisfy.contains(where: { (satisfy, warnings, _, _) in
+        if scoreRulesTransformSatisfy.contains(where: { (satisfy, warnings, _, _, _) in
             satisfy && !warnings.contains(where: { warning in
                 warning.triggeredWhenRuleMet
             })

@@ -344,6 +344,56 @@ extension SportState {
         }
     })
   }
+    
+    func rulesSatisfyWithScore(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+    
+    var rules : [Rules] = []
+    switch ruleType {
+      case .SCORE:
+        rules = scoreRules
+      case .VIOLATE:
+        rules = violateRules
+    }
+    // 只要有一组条件满足
+        return rules.reduce((false, Set<Warning>(), 0, 0, [0.0]), { result, next in
+        // 每一组条件全部满足
+
+        let satisfy = next.allSatisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+        
+        // 返回满足率最大的那一组数目
+//        MARK: 初始化isScoreWarning逻辑应移至外部设置
+        let warningSet = Set(satisfy.1.map { warning -> Warning in
+            var newWarning = warning
+            newWarning.isScoreWarning = ruleType == .SCORE
+            return newWarning
+        })
+        
+        if result.3 == 0 && satisfy.3 == 0 {
+//            print("aaaa 1")
+            return (false, warningSet, satisfy.2, satisfy.3, result.0 ? result.4 : satisfy.4)
+        } else if result.3 == 0 && satisfy.3 != 0 {
+//            print("aaaa 2 \(satisfy.0) \(satisfy.0 ? satisfy.4 : result.4)")
+
+            return (result.0 || satisfy.0, warningSet, satisfy.2, satisfy.3, result.0 ? result.4 : satisfy.4)
+        } else if result.3 != 0 && satisfy.3 == 0 {
+//            print("aaaa 3")
+
+            return (false, result.1, result.2, result.3, result.0 ? result.4 : satisfy.4)
+        } else {
+//            print("aaaa 4")
+            let lastSatisfyPercent = Double(result.2) / Double(result.3)
+            let currentSatisfyPercent = Double(satisfy.2) / Double(satisfy.3)
+            
+            if currentSatisfyPercent > lastSatisfyPercent {
+                return (result.0 || satisfy.0, warningSet, satisfy.2, satisfy.3, result.0 ? result.4 : satisfy.4)
+            } else if currentSatisfyPercent < lastSatisfyPercent {
+                return (result.0 || satisfy.0, result.1, result.2, result.3, result.0 ? result.4 : satisfy.4)
+            }else{
+                return (result.0 || satisfy.0, result.1.union(warningSet), result.2, result.3, result.0 ? result.4 : satisfy.4)
+            }
+        }
+    })
+  }
   
   func findLandmarkSegment(id: String) -> LandmarkSegment {
     landmarkSegments.first{ landmarkSegment in

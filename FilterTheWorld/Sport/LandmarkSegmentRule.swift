@@ -204,7 +204,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let landmarkSegmentAngleSatisfys = landmarkSegmentAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -220,7 +220,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let angleToLandmarkSegmentSatisfys = angleToLandmarkSegment.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -238,7 +238,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let landmarkSegmentToStateAngleSatisfys = landmarkSegmentToStateAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -256,7 +256,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         let landmarkSegmentToStateDistanceSatisfys = landmarkSegmentToStateDistance.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -274,7 +274,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
             return (result.0 && satisfy,
                     newWarnings,
                     satisfy ? result.2 + 1 : result.2,
-                    result.2 + 1)
+                    result.3 + 1)
         })
         
         
@@ -282,6 +282,108 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
                 landmarkSegmentLengthSatisfys.1.union(landmarkSegmentAngleSatisfys.1).union(angleToLandmarkSegmentSatisfys.1).union(landmarkSegmentToStateAngleSatisfys.1).union(landmarkSegmentToStateDistanceSatisfys.1),
                 landmarkSegmentLengthSatisfys.2 + landmarkSegmentAngleSatisfys.2 + angleToLandmarkSegmentSatisfys.2 + landmarkSegmentToStateAngleSatisfys.2 + landmarkSegmentToStateDistanceSatisfys.2,
                 landmarkSegmentLengthSatisfys.3 + landmarkSegmentAngleSatisfys.3 + angleToLandmarkSegmentSatisfys.3 + landmarkSegmentToStateAngleSatisfys.3 + landmarkSegmentToStateDistanceSatisfys.3)
+    }
+    
+    
+    // 是否满足， 收集提醒， 满足的数目， 总规则数
+    func allSatisfyWithScore(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        // 单帧
+        
+        
+        let landmarkSegmentLengthSatisfys = landmarkSegmentLength.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let landmarkSegmentAngleSatisfys = landmarkSegmentAngle.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithScore(poseMap: poseMap)
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let angleToLandmarkSegmentSatisfys = angleToLandmarkSegment.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            
+            let satisfy = next.satisfyWithScore(poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let landmarkSegmentToStateAngleSatisfys = landmarkSegmentToStateAngle.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            
+            let satisfy = next.satisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        let landmarkSegmentToStateDistanceSatisfys = landmarkSegmentToStateDistance.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            
+            let satisfy = next.satisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        
+        return (landmarkSegmentLengthSatisfys.0 && landmarkSegmentAngleSatisfys.0 && angleToLandmarkSegmentSatisfys.0 && landmarkSegmentToStateAngleSatisfys.0 && landmarkSegmentToStateDistanceSatisfys.0,
+                landmarkSegmentLengthSatisfys.1.union(landmarkSegmentAngleSatisfys.1).union(angleToLandmarkSegmentSatisfys.1).union(landmarkSegmentToStateAngleSatisfys.1).union(landmarkSegmentToStateDistanceSatisfys.1),
+                landmarkSegmentLengthSatisfys.2 + landmarkSegmentAngleSatisfys.2 + angleToLandmarkSegmentSatisfys.2 + landmarkSegmentToStateAngleSatisfys.2 + landmarkSegmentToStateDistanceSatisfys.2,
+                landmarkSegmentLengthSatisfys.3 + landmarkSegmentAngleSatisfys.3 + angleToLandmarkSegmentSatisfys.3 + landmarkSegmentToStateAngleSatisfys.3 + landmarkSegmentToStateDistanceSatisfys.3,
+                landmarkSegmentLengthSatisfys.4 + landmarkSegmentAngleSatisfys.4 + angleToLandmarkSegmentSatisfys.4 + landmarkSegmentToStateAngleSatisfys.4 + landmarkSegmentToStateDistanceSatisfys.4
+        )
     }
     
     

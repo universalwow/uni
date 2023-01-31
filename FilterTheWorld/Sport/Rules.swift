@@ -92,6 +92,71 @@ struct Rules: Identifiable, Hashable, Codable {
                 + fixedAreaRuleSatisfy.3 + dynamicAreaRuleSatisfy.3)
     }
     
+    
+    func allSatisfyWithScore(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let landmarkSegmentRulesSatisfy = landmarkSegmentRules.reduce((true, Set<Warning>(), 0, 0, [Double]()), { result, next in
+            let satisfy = next.allSatisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3,
+                    result.4 + satisfy.4
+            )
+        })
+        
+        let landmarkRulesSatisfy = landmarkRules.reduce((true, Set<Warning>(), 0, 0, [Double]()), { result, next in
+            let satisfy = next.allSatisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3,
+                    result.4 + satisfy.4
+            )
+        })
+        
+        let observationRuleSatisfy = observationRules.reduce((true, Set<Warning>(), 0, 0, [Double]()), { result, next in
+            let satisfy = next.allSatisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3,
+                    result.4 + satisfy.4)
+        })
+        
+        
+        let fixedAreaRuleSatisfy = fixedAreaRules.reduce((true, Set<Warning>(), 0, 0, [Double]()), { result, next in
+            let satisfy = next.allSatisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3,
+                    result.4 + satisfy.4)
+        })
+        
+        let dynamicAreaRuleSatisfy = dynamicAreaRules.reduce((true, Set<Warning>(), 0, 0, [Double]()), { result, next in
+            let satisfy = next.allSatisfyWithScore(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3,
+                    result.4 + satisfy.4)
+        })
+        
+        
+        
+        
+        return (landmarkSegmentRulesSatisfy.0 && landmarkRulesSatisfy.0 && observationRuleSatisfy.0
+                && fixedAreaRuleSatisfy.0 && dynamicAreaRuleSatisfy.0,
+                landmarkSegmentRulesSatisfy.1.union(landmarkRulesSatisfy.1).union(observationRuleSatisfy.1).union(fixedAreaRuleSatisfy.1).union(dynamicAreaRuleSatisfy.1),
+                landmarkSegmentRulesSatisfy.2 + landmarkRulesSatisfy.2 + observationRuleSatisfy.2
+                + fixedAreaRuleSatisfy.2 + dynamicAreaRuleSatisfy.2,
+                landmarkSegmentRulesSatisfy.3 + landmarkRulesSatisfy.3 + observationRuleSatisfy.3
+                + fixedAreaRuleSatisfy.3 + dynamicAreaRuleSatisfy.3,
+                landmarkSegmentRulesSatisfy.4 + landmarkRulesSatisfy.4 + observationRuleSatisfy.4
+                + fixedAreaRuleSatisfy.4 + dynamicAreaRuleSatisfy.4)
+    }
+    
     func firstIndexOfRule(editedRule: Ruler, ruleClass: RuleClass) -> Int? {
         switch ruleClass {
             case .LandmarkSegment:

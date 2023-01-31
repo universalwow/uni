@@ -1315,7 +1315,6 @@ extension Sport {
                 }
             }
             
-            
             mutating func removeRuleLandmarkInFixedAreaForAreaRule(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
                 let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
                 states[stateIndex].removeRuleLandmarkInFixedAreaForAreaRule(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
