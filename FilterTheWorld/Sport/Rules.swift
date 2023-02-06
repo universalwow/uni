@@ -786,19 +786,13 @@ struct Rules: Identifiable, Hashable, Codable {
 
                                                        extremeDirection: ExtremeDirection,
                                                 toStateLandmark: Landmark,
-                                                toLandmarkSegmentType: LandmarkTypeSegment,
+                                                toLandmarkSegment: LandmarkSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
                                                         warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID, humanPose: HumanPose, defaultSatisfy: Bool)  {
             let fromLandmark = humanPose.landmarks.first(where: { landmark in
                 landmark.id == ruleId
             })!
-            
-            
-            let toLandmarkSegment = humanPose.landmarkSegments.first(where: { landmarkSegment in
-                landmarkSegment.id == toLandmarkSegmentType.id
-            })!
-            
             
             
             if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {

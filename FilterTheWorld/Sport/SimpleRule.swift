@@ -281,7 +281,6 @@ struct LandmarkToStateDistance: Identifiable, Codable {
                 fromLandmarkToAxis.landmark.id != oldValue.landmark.id {
                 initBound()
             }
-            
         }
     }
     
@@ -301,7 +300,6 @@ struct LandmarkToStateDistance: Identifiable, Codable {
                 toLandmarkSegmentToAxis.landmarkSegment.id != oldValue.landmarkSegment.id {
                 initBound()
             }
-            
         }
     }
     
@@ -333,11 +331,14 @@ struct LandmarkToStateDistance: Identifiable, Codable {
             
             let fromLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
 
-            let toLandmark = ComplexRule.initLandmark(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmark: fromLandmark, toStateTime: toStateTime)
+            let toLandmark = ComplexRule.initLandmark(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmark: self.toLandmarkToAxis.landmark, toStateTime: toStateTime)
+            
             
             let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
-            let toSegment = self.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
-            if fromLandmark.isEmpty || toSegment.isEmpty {
+            print("aaaa-\(fromSegment.startLandmark.id) 1\(fromSegment.startLandmark.position.x)/\(fromSegment.endLandmark.position.x) - \(stateTimeHistory.last!.stateId)")
+            let toSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: toLandmarkSegmentToAxis.landmarkSegment, toStateTime: toStateTime)
+//            self.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+            if fromLandmark.isEmpty || toLandmark.isEmpty || toSegment.isEmpty {
                 return false
             }
             
@@ -365,10 +366,10 @@ struct LandmarkToStateDistance: Identifiable, Codable {
             
             let fromLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
 
-            let toLandmark = ComplexRule.initLandmark(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmark: fromLandmark, toStateTime: toStateTime)
+            let toLandmark = ComplexRule.initLandmark(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmark: self.toLandmarkToAxis.landmark, toStateTime: toStateTime)
             
             let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
-            let toSegment = self.toLandmarkSegmentToAxis.landmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
+            let toSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: toLandmarkSegmentToAxis.landmarkSegment, toStateTime: toStateTime)
             if fromLandmark.isEmpty || toSegment.isEmpty {
                 return (false, score)
             }
@@ -1787,7 +1788,7 @@ struct LandmarkSegmentToStateAngle: Identifiable, Codable {
             
             let fromLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
           
-            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.fromLandmarkSegment, _toLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
+            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
             
             if fromLandmarkSegment.isEmpty || toLandmarkSegment.isEmpty {
                 return false
@@ -1814,7 +1815,7 @@ struct LandmarkSegmentToStateAngle: Identifiable, Codable {
             
             let fromLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
           
-            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.fromLandmarkSegment, _toLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
+            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
             
             if fromLandmarkSegment.isEmpty || toLandmarkSegment.isEmpty {
                 return (false, score)
@@ -1903,7 +1904,7 @@ struct LandmarkSegmentToStateDistance: Identifiable, Codable {
             let fromLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
 
             
-            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.fromLandmarkSegment, _toLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
+            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
             
             
             if fromLandmarkSegment.isEmpty || toLandmarkSegment.isEmpty {
@@ -1929,7 +1930,7 @@ struct LandmarkSegmentToStateDistance: Identifiable, Codable {
             
             let fromLandmarkSegment = self.toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: poseMap)
 
-            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.fromLandmarkSegment, _toLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
+            let toLandmarkSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: self.toLandmarkSegment, toStateTime: toStateTime)
             
             
             if fromLandmarkSegment.isEmpty || toLandmarkSegment.isEmpty {
@@ -1967,7 +1968,6 @@ struct LandmarkSegmentToStateDistance: Identifiable, Codable {
     }
     
 }
-
 
 
 
@@ -2724,7 +2724,7 @@ extension ComplexRule {
         switch (fromAxis, toAxis) {
         case (.X, .X):
             ratio = fromSegment.distanceXWithDirection/toSegment.distanceX
-            
+            print("aaaa-\(fromSegment.startLandmark.id) \(fromSegment.startLandmark.position.x)/\(fromSegment.endLandmark.position.x) - \(toSegment.distanceXWithDirection)")
         case (.X, .Y):
             ratio = fromSegment.distanceXWithDirection/toSegment.distanceY
 
@@ -2853,7 +2853,7 @@ extension ComplexRule {
         return toLandmark
     }
     
-    static func initLandmarkSegment(isRelativeToExtremeDirection: Bool, extremeDirection: ExtremeDirection, fromLandmarkSegment: LandmarkSegment, _toLandmarkSegment: LandmarkSegment, toStateTime: StateTime) -> LandmarkSegment {
+    static func initLandmarkSegment(isRelativeToExtremeDirection: Bool, extremeDirection: ExtremeDirection, fromLandmarkSegment: LandmarkSegment, toStateTime: StateTime) -> LandmarkSegment {
         
         var toLandmarkSegment = LandmarkSegment(
             startLandmark: Landmark(position: Point3D.zero, landmarkType: fromLandmarkSegment.startLandmark.landmarkType),
@@ -2864,62 +2864,62 @@ extension ComplexRule {
             switch extremeDirection {
                 
                 case .MinX:
-                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX
-                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX
+                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.minX
+                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.minX
 
                 case .MinY:
-                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY
-                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY
+                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.minY
+                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.minY
 
                 case .MaxX:
-                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX
-                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX
+                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.maxX
+                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.maxX
 
                 case .MaxY:
-                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY
-                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY
+                    toLandmarkSegment.startLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.maxY
+                    toLandmarkSegment.endLandmark.position = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.maxY
                 
 
                 case .MinX_MinY:
-                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX.x
-                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY.y
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.minY.y
                     
-                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX.x
-                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY.y
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.minY.y
 
 
 
                 case .MinX_MaxY:
-                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minX.x
-                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY.y
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.maxY.y
                     
-                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minX.x
-                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY.y
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.minX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.maxY.y
 
 
                 case .MaxX_MinY:
                 
-                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX.x
-                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.minY.y
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.minY.y
                     
-                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX.x
-                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.minY.y
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.minY.y
 
 
 
                 case .MaxX_MaxY:
-                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxX.x
-                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.startLandmark.landmarkType]!.maxY.y
+                    toLandmarkSegment.startLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.startLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.startLandmark.landmarkType]!.maxY.y
                     
-                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxX.x
-                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[fromLandmarkSegment.endLandmark.landmarkType]!.maxY.y
+                    toLandmarkSegment.endLandmark.position.x = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.maxX.x
+                    toLandmarkSegment.endLandmark.position.y = toStateTime.dynamicPoseMaps[toLandmarkSegment.endLandmark.landmarkType]!.maxY.y
 
 
             }
             
         }else {
             
-            toLandmarkSegment = _toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: toStateTime.poseMap)
+            toLandmarkSegment = toLandmarkSegment.landmarkSegmentType.landmarkSegment(poseMap: toStateTime.poseMap)
         }
         
         return toLandmarkSegment
@@ -2930,7 +2930,9 @@ extension ComplexRule {
         var ratio = 0.0
         switch (fromAxis, toAxis) {
         case (.X, .X):
+            print("aaaa \(fromSegment.startLandmark.position.x)/\(fromSegment.endLandmark.position.x) - \(toSegment.distanceXWithDirection)")
             ratio = fromSegment.distanceXWithDirection/toSegment.distanceXWithDirection
+            
             
         case (.X, .Y):
             ratio =  fromSegment.distanceXWithDirection/toSegment.distanceYWithDirection

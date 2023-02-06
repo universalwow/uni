@@ -24,7 +24,8 @@ struct LandmarkToStateDistanceRuleView: View {
 
     @State var lowerBound: Double = 0.0
     @State var upperBound: Double = 0.0
-    
+    @State var toLandmarkType = LandmarkType.LeftShoulder
+
 
  
     
@@ -55,6 +56,8 @@ struct LandmarkToStateDistanceRuleView: View {
     func updateRemoteData() {
         sportManager.updateRuleLandmarkToStateDistance(fromAxis: fromAxis,
                                                toStateId: toStateId,
+                                                       toLandmarkType: toLandmarkType,
+                                                       
                                                       isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                extremeDirection: extremeDirection,
                                                toLandmarkSegmentType: toLandmarkSegmentType,
@@ -70,7 +73,7 @@ struct LandmarkToStateDistanceRuleView: View {
         VStack {
             
             HStack {
-                Text("自身(相对状态)位移")
+                Text("关节(相对状态)位移")
                 Spacer()
                 
                 Toggle(isOn: $changeStateClear.didSet{ _ in
@@ -144,7 +147,7 @@ struct LandmarkToStateDistanceRuleView: View {
                             }
                         }
                         
-                        Text("相对状态")
+                        Text("状态/关节")
                         Picker("相对状态", selection: $toStateId.didSet{ _ in
                             print("相对状态-------\(toStateId)")
                             updateRemoteData()
@@ -154,9 +157,19 @@ struct LandmarkToStateDistanceRuleView: View {
                                 Text(state.name).tag(state.id)
                             }
                         }
+                        Picker("相对关节", selection: $toLandmarkType.didSet{ _ in
+                            updateRemoteData()
+                            updateLocalData()
+                            
+                        }) {
+                            ForEach(LandmarkType.allCases) { landmarkType in
+                                Text(landmarkType.rawValue).tag(landmarkType)
+                            }
+                        }
+                        
                         Spacer()
 
-                        Text("相对关节对")
+                        Text("关节对")
                         Picker("相对关节对", selection: $toLandmarkSegmentType.didSet{ _ in
                             updateRemoteData()
                             updateLocalData()
@@ -231,6 +244,7 @@ struct LandmarkToStateDistanceRuleView: View {
             lowerBound = length.lowerBound
             upperBound = length.upperBound
             defaultSatisfy = length.defaultSatisfy ?? true
+            toLandmarkType = length.toLandmarkToAxis.landmark.landmarkType
             
         }
     }

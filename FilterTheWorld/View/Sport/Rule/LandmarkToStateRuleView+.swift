@@ -23,6 +23,9 @@ struct LandmarkToStateRuleView: View {
     @State var lowerBound: Double = 0.0
     @State var upperBound: Double = 0.0
     
+    @State var toLandmarkType = LandmarkType.LeftShoulder
+
+    
 
  
     
@@ -49,7 +52,7 @@ struct LandmarkToStateRuleView: View {
         VStack {
             
             HStack {
-                Text("关节自身(相对状态)位移")
+                Text("关节(相对状态)位移")
                 Spacer()
                 Button(action: {
 //                    sportManager.removeRuleLandmarkToState(id: landmarkToState.id)
@@ -100,7 +103,7 @@ struct LandmarkToStateRuleView: View {
                             }
                         }
                         
-                        Text("相对状态")
+                        Text("相对状态/关节")
                         Picker("相对状态", selection: $toStateId.didSet{ _ in
                             print("相对状态-------\(toStateId)")
                             updateRemoteData()
@@ -110,9 +113,10 @@ struct LandmarkToStateRuleView: View {
                                 Text(state.name).tag(state.id)
                             }
                         }
+                        
                         Spacer()
 
-                        Text("相对关节对")
+                        Text("关节对")
                         Picker("相对关节对", selection: $toLandmarkSegmentType.didSet{ _ in
                             updateRemoteData()
                             updateLocalData()

@@ -158,10 +158,10 @@ extension SportsManager {
         }
     }
     
-    func updateSport(editedSport:Sport, state: SportState, checkCycle: Double, passingRate:Double, keepTime: Double) {
+    func updateSport(editedSport:Sport, state: SportState, checkCycle: Double, passingRate:Double, keepTime: Double, isTimer: Bool) {
         
         if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
-            sports[sportIndex].updateSportState(editedSportState: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+            sports[sportIndex].updateSportState(editedSportState: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime, isTimer: isTimer)
             
         }
     }
@@ -817,6 +817,7 @@ extension SportsManager {
     
     func updateRuleLandmarkToStateDistance(fromAxis: CoordinateAxis,
                                            toStateId: Int,
+                                           toLandmarkType: LandmarkType,
                                            isRelativeToExtremeDirection: Bool,
                                            extremeDirection: ExtremeDirection,
                                            toLandmarkSegmentType: LandmarkTypeSegment,
@@ -827,6 +828,7 @@ extension SportsManager {
         sports[sportIndex].updateRuleLandmarkToStateDistance(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass,
                                                              fromAxis: fromAxis,
                                                              toStateId: toStateId,
+                                                             toLandmarkType: toLandmarkType,
                                                              isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                              extremeDirection: extremeDirection,
                                                              toLandmarkSegmentType: toLandmarkSegmentType,

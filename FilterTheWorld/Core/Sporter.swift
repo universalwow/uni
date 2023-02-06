@@ -497,8 +497,17 @@ class Sporter: Identifiable {
                                     ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
                                 )
 
-                            } else {
-                                scoreTimes.append(contentsOf: timerScoreTimes)
+                            } else if [SportClass.TimeCounter, SportClass.Timer].contains(sport.sportClass) {
+//                          如果是
+                                if let state = sport.findFirstStateByStateId(stateId: currentStateTime.stateId), let isTimer = state.timeCounterIsTimer, !isTimer {
+                                    scoreTimes.append(
+                                        ScoreTime(stateId: currentStateTime.stateId, time: currentStateTime.time, vaild: true, poseMap: currentStateTime.poseMap, object: currentStateTime.object)
+                                    )
+                                }else {
+                                    scoreTimes.append(contentsOf: timerScoreTimes)
+
+                                }
+          
                             }
 
                         }
@@ -548,9 +557,7 @@ class Sporter: Identifiable {
                         DispatchQueue.main.async {
                             self.currentStateTime = StateTime(stateId: directToStateId, time: self.currentStateTime.time, poseMap: self.currentStateTime.poseMap, object: self.currentStateTime.object, dynamicObjectsMaps: self.currentStateTime.dynamicObjectsMaps, dynamicPoseMaps: self.currentStateTime.dynamicPoseMaps)
                         }
-                        
                     }
-                    
                 }
                 
             }
@@ -628,6 +635,7 @@ class Sporter: Identifiable {
             
             if timerScoreTimes.count == state.keepTime!.toInt {
                 currentStateTime = StateTime(stateId: state.id, time: last_1.time, poseMap: last_1.poseMap, object: last_1.object)
+                print("currentStateTime \(last_1)")
             }
         }
 
@@ -853,8 +861,6 @@ class Sporter: Identifiable {
             case .TimeRanger:
                 playTimeRanger(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             case .None: break
-        
-            
         }
     }
     
@@ -1123,7 +1129,6 @@ class Sporter: Identifiable {
             return
         }
         
-        
 //      收集最低点和最高点
         if !sport.selectedLandmarkTypes.isEmpty {
             updateCurrentStateLandmarkBounds(poseMap: poseMap, landmarkTypes: sport.selectedLandmarkTypes)
@@ -1133,9 +1138,22 @@ class Sporter: Identifiable {
             updateCurrentStateObjectBounds(objects: objects, objectLabels: sport.collectedObjects)
         }
         
+        
+        
  
     
         var allCurrentFrameWarnings : Set<Warning> = []
+        
+        if currentStateTime.time > 1 && currentTime - currentStateTime.time > sport.scoreTimeLimit {
+//            print("时间间隔3秒")
+            currentStateTime = StateTime(stateId: SportState.startState.id, time: currentTime, poseMap: poseMap, object: objects.first(where: { object in
+                object.label != ObjectLabel.POSE.rawValue
+                
+            }))
+            allCurrentFrameWarnings = allCurrentFrameWarnings.union([
+                Warning(content: "状态变换间隔太久", triggeredWhenRuleMet: true, delayTime: 0)
+            ])
+        }
 
 //        违规逻辑
         let transforms = sport.stateTransForm.filter { currentStateTime.stateId == $0.from }
@@ -1185,24 +1203,38 @@ class Sporter: Identifiable {
             if let toState = sport.findFirstStateByStateId(stateId: transform.to), transform.from == currentStateTime.stateId {
                 nextState = toState
                 let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
-                if satisfy.0  {
-                    if !inCheckingStatesTimer.keys.contains(toState.name) {
-                        inCheckingStatesTimer[toState.name] = checkStateTimer(state: toState, currentTime: currentTime, withTimeInterval: toState.checkCycle!, poseMap: poseMap, object: objects.first(where: { object in
+                
+                if let isTimer = toState.timeCounterIsTimer, isTimer {
+                    if satisfy.0  {
+                        if !inCheckingStatesTimer.keys.contains(toState.name) {
+                            inCheckingStatesTimer[toState.name] = checkStateTimer(state: toState, currentTime: currentTime, withTimeInterval: toState.checkCycle!, poseMap: poseMap, object: objects.first(where: { object in
+                                object.label != ObjectLabel.POSE.rawValue
+                                
+                            }))
+                        }
+                    }
+                    
+                    if self.inCheckingStatesTimer.keys.contains(toState.name) {
+                        if self.inCheckingStateHistory.keys.contains(toState.name) {
+                            self.inCheckingStateHistory[toState.name]!.append(satisfy.0)
+                        }else {
+                            self.inCheckingStateHistory[toState.name] = [satisfy.0]
+                        }
+                    }
+                    
+   
+                    
+                } else {
+                    if satisfy.0  {
+                        currentStateTime = StateTime(stateId: toState.id, time: currentTime, poseMap: poseMap, object:  objects.first(where: { object in
                             object.label != ObjectLabel.POSE.rawValue
-                            
                         }))
                     }
                 }
                 
-                if self.inCheckingStatesTimer.keys.contains(toState.name) {
-                    if self.inCheckingStateHistory.keys.contains(toState.name) {
-                        self.inCheckingStateHistory[toState.name]!.append(satisfy.0)
-                    }else {
-                        self.inCheckingStateHistory[toState.name] = [satisfy.0]
-                    }
-                }
-                
                 return satisfy
+                
+                
             }
             print("allCurrentFrameWarnings 1111111" )
             return (false, [], 0, 0)
@@ -1337,7 +1369,6 @@ class Sporter: Identifiable {
                 if satisfy.0  {
                     currentStateTime = StateTime(stateId: toState.id, time: currentTime, poseMap: poseMap, object:  objects.first(where: { object in
                         object.label != ObjectLabel.POSE.rawValue
-                        
                     }))
                 }
                 return satisfy

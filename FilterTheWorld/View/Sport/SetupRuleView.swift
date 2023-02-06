@@ -126,7 +126,7 @@ struct SetupLandmarkRuleView: View {
                     Button(action: {
                         sportManager.addRuleLandmarkToStateDistance()
                     }) {
-                        Text("关节自身(相对状态)位移")
+                        Text("关节(相对状态)位移")
                     }
                     
                     Button(action: {

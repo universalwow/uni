@@ -137,6 +137,7 @@ struct StateTimerView: View {
     @State var checkCycle = 1.0
     @State var passingRate = 0.8
     @State var keepTime = 5.0
+    @State var isTimer = true
     
 
     
@@ -146,7 +147,7 @@ struct StateTimerView: View {
                 Text("检查周期(s)")
                 TextField("检查周期", value: $checkCycle, formatter: formatter, onEditingChanged: { flag in
                     if !flag {
-                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime, isTimer: isTimer)
                     }
                     
                 }).textFieldStyle(RoundedBorderTextFieldStyle())
@@ -157,7 +158,7 @@ struct StateTimerView: View {
                 Text("通过率")
                 TextField("通过率", value: $passingRate, formatter: formatter, onEditingChanged: { flag in
                     if !flag {
-                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime, isTimer: isTimer)
                         
                     }
                     
@@ -169,7 +170,7 @@ struct StateTimerView: View {
                 Text("计分周期")
                 TextField("记分周期数", value: $keepTime, formatter: formatter, onEditingChanged: { flag in
                     if !flag {
-                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime)
+                        sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime, isTimer: isTimer)
                         
                     }
                     
@@ -177,12 +178,19 @@ struct StateTimerView: View {
                     .keyboardType(.decimalPad)
                 
             }
+            Toggle(isOn: $isTimer.didSet { _ in
+                sportManager.updateSport(editedSport: sport, state: state, checkCycle: checkCycle, passingRate: passingRate, keepTime: keepTime, isTimer: isTimer)
+            }, label: {
+                Text("是否计时?").frame(maxWidth: .infinity, alignment: .trailing)
+            })
+            
             Spacer()
             
         }.onAppear(perform: {
             checkCycle = state.checkCycle ?? 1.0
             passingRate = state.passingRate ?? 0.8
             keepTime = state.keepTime ?? 5.0
+            isTimer = state.timeCounterIsTimer ?? true
         })
     }
     
@@ -557,6 +565,7 @@ struct SportView: View {
                             HStack {
                                 Text("\(state.name)/\(state.id)")
                                 Spacer()
+                                
                                 
                                 Text("TO状态:\(state.directToStateId ?? -100)")
                                 Picker("状态", selection: $directToState.didSet( { _ in

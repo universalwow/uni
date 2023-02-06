@@ -39,6 +39,8 @@ struct SportState: Identifiable, Equatable, Hashable, Codable {
     
     var checkTimeRanges:[TimeRange]? = []
     
+    var timeCounterIsTimer: Bool? = true
+    
     
     
     
@@ -925,7 +927,7 @@ extension SportState {
                                                        isRelativeToExtremeDirection: Bool,
                                                        extremeDirection: ExtremeDirection,
                                                 toStateLandmark: Landmark,
-                                                toLandmarkSegmentType: LandmarkTypeSegment,
+                                                toLandmarkSegment: LandmarkSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
                                                         warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
@@ -938,7 +940,7 @@ extension SportState {
                                                                             isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                                             extremeDirection: extremeDirection,
                                                                      toStateLandmark: toStateLandmark,
-                                                                     toLandmarkSegmentType: toLandmarkSegmentType,
+                                                                     toLandmarkSegment: toLandmarkSegment,
                                                                      toAxis: toAxis,
                                                                      lowerBound: lowerBound, upperBound: upperBound,
                                                                              warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy)
@@ -949,7 +951,7 @@ extension SportState {
                                                                               isRelativeToExtremeDirection: isRelativeToExtremeDirection,
                                                                               extremeDirection: extremeDirection,
                                                                        toStateLandmark: toStateLandmark,
-                                                                       toLandmarkSegmentType: toLandmarkSegmentType,
+                                                                       toLandmarkSegment: toLandmarkSegment,
                                                                        toAxis: toAxis,
                                                                        lowerBound: lowerBound, upperBound: upperBound,
                                                                                warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy)

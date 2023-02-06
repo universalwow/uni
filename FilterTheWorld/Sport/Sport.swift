@@ -470,11 +470,12 @@ extension Sport {
       }
     }
     
-    mutating func updateSportState(editedSportState: SportState, checkCycle: Double, passingRate: Double, keepTime: Double) {
+    mutating func updateSportState(editedSportState: SportState, checkCycle: Double, passingRate: Double, keepTime: Double, isTimer: Bool) {
       if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
           states[index].checkCycle = checkCycle
           states[index].passingRate = passingRate
           states[index].keepTime = keepTime
+          states[index].timeCounterIsTimer = isTimer
       }
     }
     
@@ -848,6 +849,8 @@ extension Sport {
         mutating func updateRuleLandmarkToStateDistance(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
                                                 fromAxis: CoordinateAxis,
                                                 toStateId: Int,
+                                                        toLandmarkType: LandmarkType,
+                                                        
                                                        isRelativeToExtremeDirection: Bool,
                                                        extremeDirection: ExtremeDirection,
                                                 toLandmarkSegmentType: LandmarkTypeSegment,
@@ -862,9 +865,17 @@ extension Sport {
                 let toStateLandmark = self.states.first(where: { state in
                     toStateId == state.id
                 })!.humanPose!.landmarks.first(where: { landmark in
-                    landmark.id == ruleId
+                    landmark.id == toLandmarkType.id
                     
                 })!
+                
+                let toStateLandmarkSegment = self.states.first(where: { state in
+                    toStateId == state.id
+                })!.humanPose!.landmarkSegments.first(where: { landmarkSegment in
+                    landmarkSegment.id == toLandmarkSegmentType.id
+                    
+                })!
+                
               states[stateIndex].updateRuleLandmarkToStateDistance(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
                                                            fromAxis: fromAxis,
                                                                   toStateId: toStateId,
@@ -872,7 +883,7 @@ extension Sport {
                                                                   extremeDirection: extremeDirection,
                                                                   
                                                            toStateLandmark: toStateLandmark,
-                                                           toLandmarkSegmentType: toLandmarkSegmentType,
+                                                           toLandmarkSegment: toStateLandmarkSegment,
                                                            toAxis: toAxis,
                                                            lowerBound: lowerBound, upperBound: upperBound,
                                                                    warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, defaultSatisfy: defaultSatisfy)
@@ -1290,10 +1301,8 @@ extension Sport {
             }
         
     }
-
     
     //    ---------------
-        
         
             func getRuleLandmarkInFixedAreasForAreaRule(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkInAreaForAreaRule] {
                 let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
