@@ -23,9 +23,12 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         self.landmarkType = landmarkType
     }
     
-    init(ruleId: String) {
+    
+    init(ruleId: String, ruleClass: RuleClass)  {
         self.id = ruleId
         self.landmarkType = LandmarkType(rawValue: ruleId)!
+        self.ruleClass = ruleClass
+
     }
     
 
@@ -104,7 +107,8 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                                                     toLandmarkSegment: LandmarkSegment,
                                                     toAxis: CoordinateAxis,
                                                     lowerBound: Double, upperBound: Double,
-                                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
+                                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool,
+                                                    toStateToggle: Bool, toLastFrameToggle: Bool, weight: Double) {
         if let index = self.firstLandmarkToStateDistanceIndexById(id: id) {
             
             landmarkToStateDistance[index].warning.content = warningContent
@@ -115,6 +119,9 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             landmarkToStateDistance[index].lowerBound = lowerBound
             landmarkToStateDistance[index].upperBound = upperBound
             
+            landmarkToStateDistance[index].toStateToggle = toStateToggle
+            landmarkToStateDistance[index].toLastFrameToggle = toLastFrameToggle
+            landmarkToStateDistance[index].weight = weight
             
             
             landmarkToStateDistance[index].fromLandmarkToAxis =  LandmarkToAxis(landmark: fromLandmark, axis: fromAxis)
@@ -199,7 +206,6 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                     satisfy ? result.2 + 1 : result.2,
                     result.3 + 1)
         })
-        
         
         
         let landmarkToStateDistanceSatisfys = landmarkToStateDistance.reduce((true, Set<Warning>(), 0, 0), {result, next in
@@ -324,6 +330,67 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                 angleToLandmarkSatisfys.2 + landmarkToStateDistanceSatisfys.2 + landmarkToStateAngleSatisfys.2  + distanceToLandmarkSatisfys.2,
                 angleToLandmarkSatisfys.3 + landmarkToStateDistanceSatisfys.3 + landmarkToStateAngleSatisfys.3  + distanceToLandmarkSatisfys.3,
                 angleToLandmarkSatisfys.4 + landmarkToStateDistanceSatisfys.4 + landmarkToStateAngleSatisfys.4  + distanceToLandmarkSatisfys.4
+        )
+    }
+    
+    
+    func allSatisfyWithRatio(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let landmarkToStateDistanceSatisfys = landmarkToStateDistance.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithRatio(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        
+        
+        // 每个规则至少要包含一个条件 且所有条件都必须满足
+        return (landmarkToStateDistanceSatisfys.0,
+                landmarkToStateDistanceSatisfys.1,
+                landmarkToStateDistanceSatisfys.2,
+                landmarkToStateDistanceSatisfys.3,
+                landmarkToStateDistanceSatisfys.4
+        )
+    }
+    
+    func allSatisfyWithWeight(stateTimeHistory: [StateTime], poseMap: PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let landmarkToStateDistanceSatisfys = landmarkToStateDistance.reduce((true, Set<Warning>(), 0, 0, [Double]()), {result, next in
+            let satisfy = next.satisfyWithWeight(stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1, result.4 + [satisfy.1])
+        })
+        
+        
+        
+        // 每个规则至少要包含一个条件 且所有条件都必须满足
+        return (landmarkToStateDistanceSatisfys.0,
+                landmarkToStateDistanceSatisfys.1,
+                landmarkToStateDistanceSatisfys.2,
+                landmarkToStateDistanceSatisfys.3,
+                landmarkToStateDistanceSatisfys.4
         )
     }
     

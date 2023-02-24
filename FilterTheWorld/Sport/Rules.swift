@@ -2,6 +2,7 @@
 
 import Foundation
 
+
 struct Rules: Identifiable, Hashable, Codable {
     var id = UUID()
     
@@ -11,6 +12,58 @@ struct Rules: Identifiable, Hashable, Codable {
     var observationRules: [ObservationRule] = []
     var fixedAreaRules: [FixedAreaRule] = []
     var dynamicAreaRules: [DynamicAreaRule] = []
+    
+    var landmarkToStateDistanceMergeRules: [LandmarkRule]? = []
+    
+    
+    
+
+    
+    
+    var landmarkToStateDistanceMergeRulesView: [LandmarkRule] {
+
+        landmarkToStateDistanceMergeRules?.map { landmarkRule in
+            var _landmarkRule = landmarkRule
+            _landmarkRule.ruleClass = .LandmarkMerge
+            return _landmarkRule
+            
+        } ?? []
+    }
+    
+    var landmarkToStateDistanceMergeRulesToStateToggleOn: [LandmarkRule] {
+        landmarkToStateDistanceMergeRulesView.filter{ rules in
+            rules.landmarkToStateDistance.contains(where: { rule in
+                rule.toStateToggle == true
+            })
+        }
+    }
+    
+    var landmarkToStateDistanceMergeRulesToLastFrameToggleOn: [LandmarkRule] {
+        landmarkToStateDistanceMergeRulesView.filter{ rules in
+            rules.landmarkToStateDistance.contains(where: { rule in
+                rule.toLastFrameToggle == true
+            })
+            
+        }
+    }
+    
+//    // 控制是否merge的参数
+//    var landmarksToStateDistanceRuleMerge: Bool? = false
+    var mergeLowerBound:Double? = 0
+    var mergeUpperBound:Double? = 0
+    
+    var weightLowerBound:Double? = 0
+    var weightUpperBound:Double? = 0
+    
+    var range: Range<Double> {
+        (mergeLowerBound ?? 0.0)..<(mergeUpperBound ?? 0.01)
+    }
+    
+    var weightRange: Range<Double> {
+        (weightLowerBound ?? 0.0)..<(weightUpperBound ?? 0.01)
+    }
+    
+    
 
     var description:String = ""
     
@@ -37,7 +90,7 @@ struct Rules: Identifiable, Hashable, Codable {
         })
     }
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int) {
         
         let landmarkSegmentRulesSatisfy = landmarkSegmentRules.reduce((true, Set<Warning>(), 0, 0), { result, next in
             let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
@@ -80,16 +133,17 @@ struct Rules: Identifiable, Hashable, Codable {
                     result.3 + satisfy.3)
         })
         
+        let landmarkToStateDistanceMergeRulesSatisfy = self.allSatisfyWithRatio(landmarkToStateDistanceMergeRules:landmarkToStateDistanceMergeRulesToStateToggleOn, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
         
-        
+        let landmarkToStateDistanceLastFrameRulesSatisfy = self.allSatisfyWithWeight(landmarkToStateDistanceMergeRules:landmarkToStateDistanceMergeRulesToLastFrameToggleOn, stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
         
         return (landmarkSegmentRulesSatisfy.0 && landmarkRulesSatisfy.0 && observationRuleSatisfy.0
-                && fixedAreaRuleSatisfy.0 && dynamicAreaRuleSatisfy.0,
-                landmarkSegmentRulesSatisfy.1.union(landmarkRulesSatisfy.1).union(observationRuleSatisfy.1).union(fixedAreaRuleSatisfy.1).union(dynamicAreaRuleSatisfy.1),
+                && fixedAreaRuleSatisfy.0 && dynamicAreaRuleSatisfy.0 && landmarkToStateDistanceMergeRulesSatisfy.0 && landmarkToStateDistanceLastFrameRulesSatisfy.0,
+                landmarkSegmentRulesSatisfy.1.union(landmarkRulesSatisfy.1).union(observationRuleSatisfy.1).union(fixedAreaRuleSatisfy.1).union(dynamicAreaRuleSatisfy.1).union(landmarkToStateDistanceMergeRulesSatisfy.1).union(landmarkToStateDistanceLastFrameRulesSatisfy.1),
                 landmarkSegmentRulesSatisfy.2 + landmarkRulesSatisfy.2 + observationRuleSatisfy.2
-                + fixedAreaRuleSatisfy.2 + dynamicAreaRuleSatisfy.2,
+                + fixedAreaRuleSatisfy.2 + dynamicAreaRuleSatisfy.2 + landmarkToStateDistanceMergeRulesSatisfy.2 + landmarkToStateDistanceLastFrameRulesSatisfy.2,
                 landmarkSegmentRulesSatisfy.3 + landmarkRulesSatisfy.3 + observationRuleSatisfy.3
-                + fixedAreaRuleSatisfy.3 + dynamicAreaRuleSatisfy.3)
+                + fixedAreaRuleSatisfy.3 + dynamicAreaRuleSatisfy.3 + landmarkToStateDistanceMergeRulesSatisfy.3 + landmarkToStateDistanceLastFrameRulesSatisfy.3)
     }
     
     
@@ -157,6 +211,59 @@ struct Rules: Identifiable, Hashable, Codable {
                 + fixedAreaRuleSatisfy.4 + dynamicAreaRuleSatisfy.4)
     }
     
+    
+    func allSatisfyWithRatio(landmarkToStateDistanceMergeRules: [LandmarkRule] , stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        
+        let landmarkRulesSatisfy = landmarkToStateDistanceMergeRules.reduce((true, Set<Warning>(), 0, 0, [Double]()), { result, next in
+            let satisfy = next.allSatisfyWithRatio(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3,
+                    result.4 + satisfy.4
+            )
+        })
+        
+        var mergeSatisfy = range.contains(landmarkRulesSatisfy.4.reduce(0.0, +))
+        if landmarkRulesSatisfy.3 == 0 {
+            mergeSatisfy = true
+        }
+        
+        
+        return (mergeSatisfy,
+                landmarkRulesSatisfy.1,
+                landmarkRulesSatisfy.2,
+                landmarkRulesSatisfy.3,
+                landmarkRulesSatisfy.4)
+    }
+    
+    func allSatisfyWithWeight(landmarkToStateDistanceMergeRules: [LandmarkRule] , stateTimeHistory: [StateTime], poseMap: PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D)  -> (Bool, Set<Warning>, Int, Int, [Double]) {
+        
+        let landmarkRulesSatisfy = landmarkToStateDistanceMergeRules.reduce((true, Set<Warning>(), 0, 0, [Double]()), { result, next in
+            let satisfy = next.allSatisfyWithWeight(stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
+            return (result.0 && satisfy.0,
+                    result.1.union(satisfy.1),
+                    result.2 + satisfy.2,
+                    result.3 + satisfy.3,
+                    result.4 + satisfy.4
+            )
+        })
+        
+        var mergeSatisfy = weightRange.contains(landmarkRulesSatisfy.4.reduce(0.0, +))
+        
+        if landmarkRulesSatisfy.3 == 0 {
+            mergeSatisfy = true
+        }
+        
+        
+        return (mergeSatisfy,
+                landmarkRulesSatisfy.1,
+                landmarkRulesSatisfy.2,
+                landmarkRulesSatisfy.3,
+                landmarkRulesSatisfy.4)
+    }
+    
     func firstIndexOfRule(editedRule: Ruler, ruleClass: RuleClass) -> Int? {
         switch ruleClass {
             case .LandmarkSegment:
@@ -177,6 +284,11 @@ struct Rules: Identifiable, Hashable, Codable {
             })
         case .DynamicArea:
             return dynamicAreaRules.firstIndex(where: { rule in
+                editedRule.id == rule.id
+            })
+        
+        case .LandmarkMerge:
+            return landmarkToStateDistanceMergeRules?.firstIndex(where: { rule in
                 editedRule.id == rule.id
             })
 
@@ -208,6 +320,10 @@ struct Rules: Identifiable, Hashable, Codable {
             return dynamicAreaRules.firstIndex(where: { rule in
                 editedRuleId == rule.id
             })
+        case .LandmarkMerge:
+            return landmarkToStateDistanceMergeRules?.firstIndex(where: { rule in
+                editedRuleId == rule.id
+            })
         }
 
     }
@@ -225,6 +341,8 @@ struct Rules: Identifiable, Hashable, Codable {
                 return fixedAreaRules[firstIndex]
             case .DynamicArea:
                 return dynamicAreaRules[firstIndex]
+            case .LandmarkMerge:
+                return landmarkToStateDistanceMergeRules?[firstIndex]
             }
         }
         return nil
@@ -246,7 +364,11 @@ struct Rules: Identifiable, Hashable, Codable {
                 fixedAreaRules[firstIndex] = editedRule as! FixedAreaRule
             case .DynamicArea:
                 dynamicAreaRules[firstIndex] = editedRule as! DynamicAreaRule
+            
+            case .LandmarkMerge:
+                landmarkToStateDistanceMergeRules![firstIndex] = editedRule as! LandmarkRule
             }
+            
         } else {
             switch ruleClass {
             
@@ -260,6 +382,11 @@ struct Rules: Identifiable, Hashable, Codable {
                 fixedAreaRules.append(editedRule as! FixedAreaRule)
             case .DynamicArea:
                 dynamicAreaRules.append(editedRule as! DynamicAreaRule)
+            case .LandmarkMerge:
+                if landmarkToStateDistanceMergeRules == nil {
+                    landmarkToStateDistanceMergeRules = []
+                }
+                landmarkToStateDistanceMergeRules?.append(editedRule as! LandmarkRule)
             }
         }
         
@@ -273,7 +400,7 @@ struct Rules: Identifiable, Hashable, Codable {
         case .LandmarkSegment:
             landmarkSegmentRules.append(LandmarkSegmentRule(ruleId: ruleId))
         case .Landmark:
-            landmarkRules.append(LandmarkRule(ruleId: ruleId))
+            landmarkRules.append(LandmarkRule(ruleId: ruleId, ruleClass: .Landmark))
         case .Observation:
             observationRules.append(ObservationRule(ruleId: ruleId))
         case .FixedArea:
@@ -282,6 +409,12 @@ struct Rules: Identifiable, Hashable, Codable {
         case .DynamicArea:
 
             dynamicAreaRules.append(DynamicAreaRule(id: ruleId))
+        case .LandmarkMerge:
+            if landmarkToStateDistanceMergeRules == nil {
+                landmarkToStateDistanceMergeRules = []
+            }
+            landmarkToStateDistanceMergeRules?.append(LandmarkRule(ruleId: ruleId, ruleClass: .LandmarkMerge))
+            
         }
     }
     
@@ -299,6 +432,9 @@ struct Rules: Identifiable, Hashable, Codable {
             fixedAreaRules.remove(at: firstIndex)
         case .DynamicArea:
             dynamicAreaRules.remove(at: firstIndex)
+        
+        case .LandmarkMerge:
+            landmarkToStateDistanceMergeRules?.remove(at: firstIndex)
         }
     }
     
@@ -326,6 +462,10 @@ struct Rules: Identifiable, Hashable, Codable {
         case .DynamicArea:
             return dynamicAreaRules.firstIndex(where: { areaRule in
                 areaRule.id == ruleId
+            })
+        case .LandmarkMerge:
+            return landmarkToStateDistanceMergeRules?.firstIndex(where: { landmarkRule in
+                landmarkRule.id == ruleId
             })
             
         }
@@ -740,10 +880,24 @@ struct Rules: Identifiable, Hashable, Codable {
             }
             return []
         }
+    
+    func getRuleLandmarkToStateDistancesMerge(ruleId: String, ruleClass: RuleClass) -> [LandmarkToStateDistance] {
+        if ruleClass == .LandmarkMerge, let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+            return landmarkToStateDistanceMergeRules![ruleIndex].landmarkToStateDistance
+        }
+        return []
+    }
         
         func getRuleLandmarkToStateDistance(ruleId: String, ruleClass: RuleClass, id: UUID) -> LandmarkToStateDistance {
             let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
             return landmarkRules[ruleIndex].landmarkToStateDistance.first(where: { landmarkToStateExtreme in
+                landmarkToStateExtreme.id == id
+            })!
+        }
+    
+        func getRuleLandmarkToStateDistanceMerge(ruleId: String, ruleClass: RuleClass, id: UUID) -> LandmarkToStateDistance {
+            let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+            return landmarkToStateDistanceMergeRules![ruleIndex].landmarkToStateDistance.first(where: { landmarkToStateExtreme in
                 landmarkToStateExtreme.id == id
             })!
         }
@@ -770,6 +924,29 @@ struct Rules: Identifiable, Hashable, Codable {
 
             }
         }
+    
+    mutating func addRuleLandmarkToStateDistanceMerge(ruleId: String, ruleClass: RuleClass, humanPose: HumanPose, stateId: Int, isScoreWarning: Bool) {
+        if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass) {
+            let landmark = humanPose.landmarks.first(where: { landmark in
+                landmark.id == ruleId
+            })!
+            let landmarkSegment = humanPose.landmarkSegments.first(where: { landmarkSegment in
+                landmarkSegment.id == LandmarkTypeSegment(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder).id
+            })!
+            landmarkToStateDistanceMergeRules![ruleIndex].landmarkToStateDistance.append(
+                
+                LandmarkToStateDistance(toStateId: stateId,
+                                fromLandmarkToAxis: LandmarkToAxis(landmark: landmark, axis: .X),
+                                toLandmarkToAxis: LandmarkToAxis(landmark: landmark, axis: .X),
+                                toLandmarkSegmentToAxis: LandmarkSegmentToAxis(landmarkSegment: landmarkSegment, axis: .X),
+                                        warning: Warning(content: "", triggeredWhenRuleMet: false, delayTime: 2, isScoreWarning: isScoreWarning)
+                               )
+                
+
+            )
+
+        }
+    }
         
         mutating func removeRuleLandmarkToStateDistance(ruleId: String, ruleClass: RuleClass, id: UUID) {
             let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
@@ -778,6 +955,14 @@ struct Rules: Identifiable, Hashable, Codable {
                 
             })
         }
+    
+    mutating func removeRuleLandmarkToStateDistanceMerge(ruleId: String, ruleClass: RuleClass, id: UUID) {
+        let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)!
+        landmarkToStateDistanceMergeRules![ruleIndex].landmarkToStateDistance.removeAll(where: { length in
+            length.id == id
+            
+        })
+    }
         
         mutating func updateRuleLandmarkToStateDistance(ruleId: String,  ruleClass: RuleClass,
                                                 fromAxis: CoordinateAxis,
@@ -805,11 +990,43 @@ struct Rules: Identifiable, Hashable, Codable {
                                                                    toLandmarkSegment: toLandmarkSegment,
                                                                   toAxis: toAxis,
                                                                   lowerBound: lowerBound, upperBound: upperBound,
-                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, defaultSatisfy: defaultSatisfy)
+                                                                           warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, defaultSatisfy: defaultSatisfy, toStateToggle: false, toLastFrameToggle: false, weight: 1)
             
 
             }
         }
+    
+    mutating func updateRuleLandmarkToStateDistanceMerge(ruleId: String,  ruleClass: RuleClass,
+                                            fromAxis: CoordinateAxis,
+                                            toStateId: Int,
+                                                   isRelativeToExtremeDirection: Bool,
+
+                                                   extremeDirection: ExtremeDirection,
+                                            toStateLandmark: Landmark,
+                                            toLandmarkSegment: LandmarkSegment,
+                                            toAxis: CoordinateAxis,
+                                            lowerBound: Double, upperBound: Double,
+                                                    warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double, changeStateClear: Bool, id: UUID, humanPose: HumanPose, defaultSatisfy: Bool, toStateToggle: Bool, toLastFrameToggle: Bool, weight: Double)  {
+        let fromLandmark = humanPose.landmarks.first(where: { landmark in
+            landmark.id == ruleId
+        })!
+        
+        
+        if let ruleIndex = findFirstRulerByRuleId(ruleId: ruleId, ruleClass: ruleClass)  {
+            landmarkToStateDistanceMergeRules![ruleIndex].updateRuleLandmarkToStateDistance(fromAxis: fromAxis,
+                                                               fromLandmark: fromLandmark,
+                                                              toStateId: toStateId,
+                                                                      isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                                                               extremeDirection: extremeDirection,
+                                                               toStateLandmark: toStateLandmark,
+                                                               toLandmarkSegment: toLandmarkSegment,
+                                                              toAxis: toAxis,
+                                                              lowerBound: lowerBound, upperBound: upperBound,
+                                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, defaultSatisfy: defaultSatisfy, toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle, weight: weight)
+        
+
+        }
+    }
     
     //    ---------------------------
             
@@ -1316,6 +1533,7 @@ struct Rules: Identifiable, Hashable, Codable {
     
 //    --------------
     mutating func transferRuleTo(rule: Ruler) {
+        print("aaaaaaaaaaaa \(rule.ruleClass.rawValue)")
         switch rule.ruleClass {
         case .LandmarkSegment:
             self.transferToLandmarkSegmentRules(rule: rule as! LandmarkSegmentRule)
@@ -1328,6 +1546,10 @@ struct Rules: Identifiable, Hashable, Codable {
             self.transferToFixedAreaRules(rule: rule as! FixedAreaRule)
         case .DynamicArea:
             self.transferToDynamicAreaRules(rule: rule as! DynamicAreaRule)
+        case .LandmarkMerge:
+//            break
+            self.transferToLandmarkRulesMerge(rule: rule as! LandmarkRule)
+//            self.transferToLandmarkRules(rule: rule as! LandmarkRule)
 
         }
         
@@ -1352,6 +1574,20 @@ struct Rules: Identifiable, Hashable, Codable {
             landmarkRules.append(rule)
         }
     }
+    
+    mutating func transferToLandmarkRulesMerge(rule: LandmarkRule) {
+        if let index = landmarkToStateDistanceMergeRules?.firstIndex(where: { landmarkRule in
+            landmarkRule.id == rule.id
+        }) {
+            landmarkToStateDistanceMergeRules![index] = rule
+        }else {
+            if landmarkToStateDistanceMergeRules == nil {
+                landmarkToStateDistanceMergeRules = []
+            }
+            landmarkToStateDistanceMergeRules?.append(rule)
+        }
+    }
+    
     
     mutating func transferToObservationRules(rule: ObservationRule) {
         if let index = landmarkRules.firstIndex(where: { observationRule in

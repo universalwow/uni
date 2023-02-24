@@ -195,6 +195,26 @@ extension SportState {
     
   }
     
+    mutating func updateRule(editedSportStateRulesId: UUID, ruleType: RuleType, mergeLowerBound: Double, mergeUpperBound: Double, weightLowerBound: Double, weightUpperBound: Double) {
+      if let rulesIndex = firstIndexOfRules(editedRulesId: editedSportStateRulesId, ruleType: ruleType) {
+        switch ruleType {
+          case .SCORE:
+            scoreRules[rulesIndex].mergeLowerBound = mergeLowerBound
+            scoreRules[rulesIndex].mergeUpperBound = mergeUpperBound
+            scoreRules[rulesIndex].weightLowerBound = weightLowerBound
+            scoreRules[rulesIndex].weightUpperBound = weightUpperBound
+
+          case .VIOLATE:
+            
+            violateRules[rulesIndex].mergeLowerBound = mergeLowerBound
+            violateRules[rulesIndex].mergeUpperBound = mergeUpperBound
+            violateRules[rulesIndex].weightLowerBound = weightLowerBound
+            violateRules[rulesIndex].weightUpperBound = weightUpperBound
+          }
+    }
+    
+  }
+    
 
   
   
@@ -290,6 +310,11 @@ extension SportState {
             break
         case .DynamicArea:
             break
+        case .LandmarkMerge:
+            if let editedSportStateRuleId = editedSportStateRuleId,
+                let index = firstIndexOfLandmark(editedSportStateRuleId: editedSportStateRuleId) {
+                humanPose?.landmarks[index].selected = true
+            }
             
         case .none:
             break
@@ -301,7 +326,7 @@ extension SportState {
   
 
   
-    func rulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func rulesSatisfy(ruleType: RuleType, stateTimeHistory: [StateTime], poseMap:PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
     
     var rules : [Rules] = []
     switch ruleType {
@@ -314,7 +339,7 @@ extension SportState {
     return rules.reduce((false, Set<Warning>(), 0, 0), { result, next in
         // 每一组条件全部满足
 
-        let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+        let satisfy = next.allSatisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
         
         
         
@@ -889,6 +914,19 @@ extension SportState {
             
             return []
         }
+    
+    func getRuleLandmarkToStateDistancesMerge(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkToStateDistance] {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                return scoreRules[rulesIndex].getRuleLandmarkToStateDistancesMerge(ruleId: ruleId, ruleClass: ruleClass)
+            case .VIOLATE:
+                return violateRules[rulesIndex].getRuleLandmarkToStateDistancesMerge(ruleId: ruleId, ruleClass: ruleClass)
+            }
+        }
+        
+        return []
+    }
         
         func getRuleLandmarkToStateDistance(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkToStateDistance {
             let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
@@ -899,6 +937,16 @@ extension SportState {
                 return violateRules[rulesIndex].getRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass, id: id)
             }
         }
+    
+    func getRuleLandmarkToStateDistanceMerge(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkToStateDistance {
+        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+        switch ruleType {
+        case .SCORE:
+            return scoreRules[rulesIndex].getRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        case .VIOLATE:
+            return violateRules[rulesIndex].getRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        }
+    }
         
         mutating func addRuleLandmarkToStateDistance(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
@@ -910,6 +958,17 @@ extension SportState {
                 }
             }
         }
+    
+    mutating func addRuleLandmarkToStateDistanceMerge(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].addRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: true)
+            case .VIOLATE:
+                violateRules[rulesIndex].addRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass, humanPose: humanPose!, stateId: self.id, isScoreWarning: false)
+            }
+        }
+    }
         
         mutating func removeRuleLandmarkToStateDistance(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
             let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
@@ -920,6 +979,16 @@ extension SportState {
                 violateRules[rulesIndex].removeRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass, id: id)
             }
         }
+    
+    mutating func removeRuleLandmarkToStateDistanceMerge(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType)!
+        switch ruleType {
+        case .SCORE:
+            scoreRules[rulesIndex].removeRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        case .VIOLATE:
+            violateRules[rulesIndex].removeRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass, id: id)
+        }
+    }
         
         mutating func updateRuleLandmarkToStateDistance(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
                                                 fromAxis: CoordinateAxis,
@@ -958,6 +1027,46 @@ extension SportState {
                 }
             }
         }
+    
+    
+    mutating func updateRuleLandmarkToStateDistanceMerge(rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
+                                            fromAxis: CoordinateAxis,
+                                            toStateId: Int,
+                                                   isRelativeToExtremeDirection: Bool,
+                                                   extremeDirection: ExtremeDirection,
+                                            toStateLandmark: Landmark,
+                                            toLandmarkSegment: LandmarkSegment,
+                                            toAxis: CoordinateAxis,
+                                            lowerBound: Double, upperBound: Double,
+                                                         warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool, toStateToggle: Bool, toLastFrameToggle: Bool, weight: Double)  {
+        if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
+            switch ruleType {
+            case .SCORE:
+                scoreRules[rulesIndex].updateRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass,
+                                                                 fromAxis: fromAxis,
+                                                                 toStateId: toStateId,
+                                                                        isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                                                                        extremeDirection: extremeDirection,
+                                                                 toStateLandmark: toStateLandmark,
+                                                                 toLandmarkSegment: toLandmarkSegment,
+                                                                 toAxis: toAxis,
+                                                                 lowerBound: lowerBound, upperBound: upperBound,
+                                                                              warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy, toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle, weight: weight)
+            case .VIOLATE:
+                violateRules[rulesIndex].updateRuleLandmarkToStateDistanceMerge(ruleId: ruleId, ruleClass: ruleClass,
+                                                                   fromAxis: fromAxis,
+                                                                   toStateId: toStateId,
+                                                                          isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                                                                          extremeDirection: extremeDirection,
+                                                                   toStateLandmark: toStateLandmark,
+                                                                   toLandmarkSegment: toLandmarkSegment,
+                                                                   toAxis: toAxis,
+                                                                   lowerBound: lowerBound, upperBound: upperBound,
+                                                                                warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy, toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle, weight: weight)
+            }
+        }
+    }
+
     
     
     

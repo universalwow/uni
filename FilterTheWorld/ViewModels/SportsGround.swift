@@ -78,12 +78,12 @@ class SportsGround: ObservableObject {
         })
     }
     
-    func play(poseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+    func play(poseMap: PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
         sporters.indices.forEach { sporterIndex in
             if sportersReport[sporterIndex].startTime < 0 {
                 sportersReport[sporterIndex].startTime = currentTime
             }
-            sporters[sporterIndex].play(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
+            sporters[sporterIndex].play(poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             
        
 //            if sporters[sporterIndex].scoreTimes 

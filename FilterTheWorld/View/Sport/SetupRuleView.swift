@@ -183,6 +183,59 @@ struct SetupLandmarkRuleView: View {
     }
 }
 
+
+struct SetupLandmarkMergeRuleView: View {
+    @State var clearBackground = false
+    
+    @EnvironmentObject var sportManager: SportsManager
+    @State var showingOptions = false
+
+    var body: some View {
+        VStack {
+            HStack {
+                Text(self.sportManager.currentSportStateRuleId ?? "请选择关节对")
+                    .foregroundColor(self.sportManager.currentSportStateRuleId != nil ? .black : .red)
+                Spacer()
+                Button("添加规则") {
+                                showingOptions = true
+                }.confirmationDialog("选择关节规则", isPresented: $showingOptions, titleVisibility: .visible) {
+                    
+                    Button(action: {
+                        sportManager.addRuleLandmarkToStateDistanceMerge()
+                    }) {
+                        Text("关节(相对状态)位移")
+                    }
+
+                }
+                
+                Button(action: {
+                    clearBackground.toggle()
+                }) {
+                    Text(clearBackground ? "恢复背景" : "清除背景")
+                }
+            }
+            
+            ScrollView(showsIndicators: false) {
+                VStack {
+                    
+                    ForEach(sportManager.getRuleLandmarkToStateDistancesMerge()) { landmarkToStateDistance in
+                        LandmarkToStateDistanceMergeRuleView(landmarkToStateDistance: landmarkToStateDistance)
+                        Divider()
+                    }
+                    
+                }
+                
+                Spacer()
+            }
+            
+            
+            
+        }.padding()
+        .background(BackgroundClearView(clearBackground: $clearBackground))
+    }
+}
+
+
 struct SetupObservationRuleView: View {
     @State var clearBackground = false
     

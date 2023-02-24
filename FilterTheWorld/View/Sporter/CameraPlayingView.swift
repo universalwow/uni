@@ -13,7 +13,8 @@ struct CameraPlayingView: View {
     @Environment(\.presentationMode) var presentationMode
     var skipFrequency = 4
     @State var frameCount = 0
-
+    
+    @State var lastPoseMap: PoseMap? = nil
     
     var body: some View {
         let uiImage = imageAnalysis.sportData.frame
@@ -58,8 +59,11 @@ struct CameraPlayingView: View {
 
             
             if !sportGround.sporters.isEmpty && !poses.isEmpty {
-                
-                sportGround.play(poseMap: poses.first!.landmarksMaps, objects: imageAnalysis.sportData.frameData.objects, frameSize: uiImage.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                if lastPoseMap == nil {
+                    lastPoseMap = poses.first!.landmarksMaps
+                }
+                sportGround.play(poseMap: poses.first!.landmarksMaps, lastPoseMap: lastPoseMap!, objects: imageAnalysis.sportData.frameData.objects, frameSize: uiImage.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                lastPoseMap = poses.first!.landmarksMaps
                 self.sportGround.objectWillChange.send()
 
             }

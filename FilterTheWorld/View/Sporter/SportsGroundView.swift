@@ -18,6 +18,7 @@ struct SportsGroundView: View {
     
 
     @State var controlSport: Sport?
+    @State var lastPoseMap: PoseMap? = nil
     
     var body: some View {
         
@@ -174,7 +175,11 @@ struct SportsGroundView: View {
                     
                     if !sportGround.sporters.isEmpty && !poses.isEmpty && sportGround.sporters[0].sport.isGestureController == true {
                         DispatchQueue.main.async {
-                            sportGround.play(poseMap: poses.first!.landmarksMaps, objects: [], frameSize: imageAnalysis.sportData.frame.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                            if lastPoseMap == nil {
+                                lastPoseMap = poses.first!.landmarksMaps
+                            }
+                            sportGround.play(poseMap: poses.first!.landmarksMaps, lastPoseMap: lastPoseMap!, objects: [], frameSize: imageAnalysis.sportData.frame.size.point2d, currentTime: imageAnalysis.sportData.frameData.currentTime)
+                            lastPoseMap = poses.first!.landmarksMaps
                             self.sportGround.objectWillChange.send()
                             
                             let afterPlayScoreTimes = sportGround.sporters[0].scoreTimes

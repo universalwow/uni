@@ -35,7 +35,7 @@ enum RuleClass: String, Identifiable, CaseIterable, Codable, Equatable {
     var id: String {
         self.rawValue
     }
-    case LandmarkSegment, Landmark, Observation, FixedArea, DynamicArea
+    case LandmarkSegment, Landmark, Observation, FixedArea, DynamicArea, LandmarkMerge
 }
 
 
@@ -265,6 +265,9 @@ struct LandmarkToStateDistance: Identifiable, Codable {
     var id = UUID()
     var lowerBound:Double = 0
     var upperBound:Double = 0
+    var toStateToggle: Bool? = false
+    var toLastFrameToggle: Bool? = false
+    var weight: Double? = 1
     
     
     var toStateId:Int {
@@ -323,6 +326,10 @@ struct LandmarkToStateDistance: Identifiable, Codable {
         lowerBound..<upperBound
     }
     
+    var reverseRange: Range<Double> {
+        (-1 * upperBound)..<(-1 * lowerBound)
+    }
+    
     func satisfy(stateTimeHistory: [StateTime], poseMap: PoseMap) -> Bool {
         
         if let toStateTime = stateTimeHistory.last(where: { stateTime in
@@ -347,6 +354,8 @@ struct LandmarkToStateDistance: Identifiable, Codable {
                                                                    range: self.range,
                                                                    fromSegment: fromSegment,
                                                                    toSegment: toSegment)
+            
+            print("satisfy ------  \(satisfyAndRatio)")
             
             return satisfyAndRatio.0
 
@@ -390,6 +399,92 @@ struct LandmarkToStateDistance: Identifiable, Codable {
 //            MARK: 默认为什么最好可以设置
             return (defaultSatisfy ?? true, score)
         }
+    }
+    
+    func satisfyWithRatio(stateTimeHistory: [StateTime], poseMap: PoseMap) -> (Bool,Double) {
+        var score = 0.0
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
+
+            let toLandmark = ComplexRule.initLandmark(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmark: self.toLandmarkToAxis.landmark, toStateTime: toStateTime)
+            
+            let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
+            let toSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: toLandmarkSegmentToAxis.landmarkSegment, toStateTime: toStateTime)
+            if fromLandmark.isEmpty || toSegment.isEmpty {
+                return (false, score)
+            }
+            
+//            let satisfyAndRatio = ComplexRule.satisfyWithDirection(fromAxis: self.fromLandmarkToAxis.axis,
+//                                                                   toAxis: self.toLandmarkSegmentToAxis.axis,
+//                                                                   range: self.range,
+//                                                                   fromSegment: fromSegment,
+//                                                                   toSegment: toSegment)
+//            score = satisfyAndRatio.1
+
+            
+            return ComplexRule.satisfyWithDirection(fromAxis: self.fromLandmarkToAxis.axis,
+                                                    toAxis: self.toLandmarkSegmentToAxis.axis,
+                                                    range: self.range,
+                                                    fromSegment: fromSegment,
+                                                    toSegment: toSegment)
+
+            
+        } else {
+//            MARK: 默认为什么最好可以设置
+            return (defaultSatisfy ?? true, score)
+        }
+    }
+    
+    
+    func satisfyWithWeight(stateTimeHistory: [StateTime], poseMap: PoseMap, lastPoseMap: PoseMap) -> (Bool,Double) {
+        var score = 0.0
+        
+        if let toStateTime = stateTimeHistory.last(where: { stateTime in
+            stateTime.stateId == self.toStateId
+        }) {
+            
+            let fromLandmark = self.fromLandmarkToAxis.landmark.landmarkType.landmark(poseMap: poseMap)
+
+            let toLandmark = self.toLandmarkToAxis.landmark.landmarkType.landmark(poseMap: lastPoseMap)
+            
+            let fromSegment = LandmarkSegment(startLandmark: fromLandmark, endLandmark: toLandmark)
+            let toSegment = ComplexRule.initLandmarkSegment(isRelativeToExtremeDirection: isRelativeToExtremeDirection, extremeDirection: extremeDirection, fromLandmarkSegment: toLandmarkSegmentToAxis.landmarkSegment, toStateTime: toStateTime)
+            if fromLandmark.isEmpty || toSegment.isEmpty {
+                return (false, score)
+            }
+            
+            let satisfyAndRatio = ComplexRule.satisfyWithDirection(fromAxis: self.fromLandmarkToAxis.axis,
+                                                                   toAxis: self.toLandmarkSegmentToAxis.axis,
+                                                                   range: self.range,
+                                                                   fromSegment: fromSegment,
+                                                                   toSegment: toSegment)
+            
+            let reverseSatisfyAndRatio = ComplexRule.satisfyWithDirection(fromAxis: self.fromLandmarkToAxis.axis,
+                                                                   toAxis: self.toLandmarkSegmentToAxis.axis,
+                                                                   range: self.reverseRange,
+                                                                   fromSegment: fromSegment,
+                                                                   toSegment: toSegment)
+            if satisfyAndRatio.0 {
+                score = weight!
+            }
+            
+            if reverseSatisfyAndRatio.0 {
+                score = -1 * weight!
+            }
+//            score = satisfyAndRatio.0 ? weight! : 0
+            
+            
+            return (satisfyAndRatio.0, score)
+            
+        } else {
+//            MARK: 默认为什么最好可以设置
+            return (defaultSatisfy ?? true, score)
+        }
+        
     }
     
     private mutating func initBound() {
@@ -440,6 +535,7 @@ struct LandmarkToStateDistance: Identifiable, Codable {
     }
     
 }
+
 
 
 

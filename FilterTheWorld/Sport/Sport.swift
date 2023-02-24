@@ -500,6 +500,13 @@ extension Sport {
           
       }
     }
+    
+    mutating func updateSportState(editedSportState: SportState, rules: Rules, ruleType: RuleType, mergeLowerBound: Double, mergeUpperBound: Double, weightLowerBound: Double, weightUpperBound: Double) {
+      if let index = firstStateIndexByStateName(editedStateName: editedSportState.name) {
+          states[index].updateRule(editedSportStateRulesId: rules.id, ruleType: ruleType, mergeLowerBound: mergeLowerBound, mergeUpperBound: mergeUpperBound, weightLowerBound: weightLowerBound, weightUpperBound: weightUpperBound)
+          
+      }
+    }
   
     mutating func deleteSportState(editedSportState: SportState, timeRangeId: Int) {
         
@@ -827,23 +834,45 @@ extension Sport {
             let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
             return states[stateIndex].getRuleLandmarkToStateDistances(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
         }
+    
+        func getRuleLandmarkToStateDistancesMerge(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) -> [LandmarkToStateDistance] {
+            let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+            return states[stateIndex].getRuleLandmarkToStateDistancesMerge(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
         
         func getRuleLandmarkToStateDistance(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkToStateDistance {
             let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
             return states[stateIndex].getRuleLandmarkToStateDistance(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
         }
+    
+    func getRuleLandmarkToStateDistanceMerge(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) -> LandmarkToStateDistance {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        return states[stateIndex].getRuleLandmarkToStateDistanceMerge(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
         
         mutating func addRuleLandmarkToStateDistance(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
             if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
               states[stateIndex].addRuleLandmarkToStateDistance(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
             }
         }
+    
+    mutating func addRuleLandmarkToStateDistanceMerge(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass) {
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+          states[stateIndex].addRuleLandmarkToStateDistanceMerge(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass)
+        }
+    }
+
         
         
         mutating func removeRuleLandmarkToStateDistance(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
             let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
             states[stateIndex].removeRuleLandmarkToStateDistance(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
         }
+    
+    mutating func removeRuleLandmarkToStateDistanceMerge(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass, id: UUID) {
+        let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId)!
+        states[stateIndex].removeRuleLandmarkToStateDistanceMerge(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass, id: id)
+    }
         
         
         mutating func updateRuleLandmarkToStateDistance(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
@@ -890,6 +919,52 @@ extension Sport {
 
             }
         }
+    
+    mutating func updateRuleLandmarkToStateDistanceMerge(stateId: Int, rulesId: UUID, ruleId: String, ruleType: RuleType, ruleClass: RuleClass,
+                                            fromAxis: CoordinateAxis,
+                                            toStateId: Int,
+                                                    toLandmarkType: LandmarkType,
+                                                    
+                                                   isRelativeToExtremeDirection: Bool,
+                                                   extremeDirection: ExtremeDirection,
+                                            toLandmarkSegmentType: LandmarkTypeSegment,
+                                            toAxis: CoordinateAxis,
+                                            lowerBound: Double, upperBound: Double,
+                                                         warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool, toStateToggle: Bool, toLastFrameToggle: Bool, weight: Double)  {
+        
+        
+        
+        if let stateIndex = firstStateIndexByStateID(editedStateUUID: stateId) {
+            
+            let toStateLandmark = self.states.first(where: { state in
+                toStateId == state.id
+            })!.humanPose!.landmarks.first(where: { landmark in
+                landmark.id == toLandmarkType.id
+                
+            })!
+            
+            let toStateLandmarkSegment = self.states.first(where: { state in
+                toStateId == state.id
+            })!.humanPose!.landmarkSegments.first(where: { landmarkSegment in
+                landmarkSegment.id == toLandmarkSegmentType.id
+                
+            })!
+            
+          states[stateIndex].updateRuleLandmarkToStateDistanceMerge(rulesId: rulesId, ruleId: ruleId, ruleType: ruleType, ruleClass: ruleClass,
+                                                       fromAxis: fromAxis,
+                                                              toStateId: toStateId,
+                                                              isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                                                              extremeDirection: extremeDirection,
+                                                              
+                                                       toStateLandmark: toStateLandmark,
+                                                       toLandmarkSegment: toStateLandmarkSegment,
+                                                       toAxis: toAxis,
+                                                       lowerBound: lowerBound, upperBound: upperBound,
+                                                                    warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, defaultSatisfy: defaultSatisfy, toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle, weight: weight)
+
+        }
+    }
+
     
     
     //    ---------------

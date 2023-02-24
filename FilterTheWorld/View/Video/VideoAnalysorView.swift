@@ -63,6 +63,9 @@ struct VideoAnalysorView: View {
     
     @State var showAngle = true
     
+    
+    @State var lastPoseMap: PoseMap? = nil
+    
     var secondToStandardedTime:String {
         if self.frameWidth > 0 && self.scrollOffset >= 0.0 {
             let second = Double(self.scrollOffset/self.frameWidth)
@@ -301,8 +304,11 @@ struct VideoAnalysorView: View {
 //                                    print("--------------object\(ropes)")
                                     
                                     if !sportGround.sporters.isEmpty && !poses.isEmpty {
-                                        
-                                        sportGround.play(poseMap: poses.first!.landmarksMaps, objects: imageAnalysis.sportData.frameData.objects, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
+                                        if lastPoseMap == nil {
+                                            lastPoseMap = poses.first!.landmarksMaps
+                                        }
+                                        sportGround.play(poseMap: poses.first!.landmarksMaps, lastPoseMap: lastPoseMap!, objects: imageAnalysis.sportData.frameData.objects, frameSize: uiImage.size.point2d, currentTime: self.scrollOffset/self.frameWidth)
+                                        lastPoseMap = poses.first!.landmarksMaps
                                         self.sportGround.objectWillChange.send()
                                     }
                                 }

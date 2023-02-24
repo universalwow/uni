@@ -117,9 +117,9 @@ struct LandmarkToStateDistanceDescriptionView: View {
     var landmarkToStateDistance:LandmarkToStateDistance
     var body:some View {
         HStack {
-            Text("同状态\(landmarkToStateDistance.toStateId)关节\(landmarkToStateDistance.toLandmarkToAxis.landmark.id)/\(landmarkToStateDistance.fromLandmarkToAxis.axis.rawValue)相对\(landmarkToStateDistance.toLandmarkSegmentToAxis.landmarkSegment.id)/\(landmarkToStateDistance.toLandmarkSegmentToAxis.axis.rawValue)位移:\(landmarkToStateDistance.warning.content)")
+            Text("同状态\(landmarkToStateDistance.toStateId)关节\(landmarkToStateDistance.toLandmarkToAxis.landmark.id)/\(landmarkToStateDistance.fromLandmarkToAxis.axis.rawValue)相对\(landmarkToStateDistance.toLandmarkSegmentToAxis.landmarkSegment.id)/\(landmarkToStateDistance.toLandmarkSegmentToAxis.axis.rawValue)位移(\((landmarkToStateDistance.toStateToggle ?? false).description),\((landmarkToStateDistance.toLastFrameToggle ?? false).description),\((landmarkToStateDistance.weight ?? 1).roundedString(number: 2))):\(landmarkToStateDistance.warning.content)")
             Spacer()
-            Text("\(landmarkToStateDistance.lowerBound.roundedString(number: 2))/\(landmarkToStateDistance.upperBound.roundedString(number: 2))")
+            Text("\(landmarkToStateDistance.lowerBound.roundedString(number: 3))/\(landmarkToStateDistance.upperBound.roundedString(number: 3))")
             Spacer()
         }
         
@@ -293,6 +293,8 @@ struct LandmarkRuleDescriptionView: View {
                 Divider()
                 
             })
+            
+            
             
             ForEach(rule.angleToLandmark, content: { angleToLandmark in
                 AngleToLandmarkDescriptionView(angleToLandmark: angleToLandmark)

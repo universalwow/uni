@@ -31,6 +31,7 @@ struct ExtremeObject {
 }
 
 struct StateTime {
+    
     let stateId: Int
     let time: Double
 //    状态变换时的关节信息
@@ -334,6 +335,8 @@ class Sporter: Identifiable {
     var answerSet: Set<Int> = []
     
     var orderTouchStart = false
+    
+    var currentTime = 0.0
 
     
     var currentStateTime = StateTime(stateId: SportState.startState.id, time: 0, poseMap: [:], object: nil) {
@@ -431,22 +434,22 @@ class Sporter: Identifiable {
                             
                             
                         }
-                        currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                        currentStateTime = StateTime(stateId: SportState.startState.id, time: self.currentTime, poseMap: [:], object: nil)
                         orderTouchStart = false
                     }
                     if self.answerSet.count == 1 {
                         if self.answerSet != [SportState.interAction_a.id] {
-                            currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                            currentStateTime = StateTime(stateId: SportState.startState.id, time: self.currentTime, poseMap: [:], object: nil)
                             orderTouchStart = false
                         }
                     }else if self.answerSet.count == 2 {
                         if self.answerSet != [SportState.interAction_a.id, SportState.interAction_b.id] {
-                            currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                            currentStateTime = StateTime(stateId: SportState.startState.id, time: self.currentTime, poseMap: [:], object: nil)
                             orderTouchStart = false
                         }
                     } else if self.answerSet.count == 3 {
                         if self.answerSet != [SportState.interAction_a.id, SportState.interAction_b.id, SportState.interAction_c.id] {
-                            currentStateTime = StateTime(stateId: SportState.startState.id, time: currentStateTime.time, poseMap: [:], object: nil)
+                            currentStateTime = StateTime(stateId: SportState.startState.id, time: self.currentTime, poseMap: [:], object: nil)
                             orderTouchStart = false
                         }
                     }
@@ -552,15 +555,26 @@ class Sporter: Identifiable {
                     self.onStateChange()
                 }
                 
+                if !sport.selectedLandmarkTypes.isEmpty {
+                    updateCurrentStateLandmarkBounds(poseMap: currentStateTime.poseMap, landmarkTypes: sport.selectedLandmarkTypes)
+                }
+                
                 if let directToStateId = sport.findFirstStateByStateId(stateId: currentStateTime.stateId)?.directToStateId {
                     if directToStateId != SportState.endState.id && directToStateId != -100 {
                         DispatchQueue.main.async {
-                            self.currentStateTime = StateTime(stateId: directToStateId, time: self.currentStateTime.time, poseMap: self.currentStateTime.poseMap, object: self.currentStateTime.object, dynamicObjectsMaps: self.currentStateTime.dynamicObjectsMaps, dynamicPoseMaps: self.currentStateTime.dynamicPoseMaps)
+                            self.currentStateTime = StateTime(stateId: directToStateId, time: self.currentTime, poseMap: self.currentStateTime.poseMap, object: self.currentStateTime.object, dynamicObjectsMaps: self.currentStateTime.dynamicObjectsMaps, dynamicPoseMaps: self.currentStateTime.dynamicPoseMaps)
                         }
                     }
                 }
                 
             }
+            
+            //      收集最低点和最高点
+
+//
+//            if !sport.collectedObjects.isEmpty {
+//                updateCurrentStateObjectBounds(objects: currentStateTime.objects, objectLabels: sport.collectedObjects)
+//            }
             
         
         }
@@ -578,7 +592,7 @@ class Sporter: Identifiable {
             
             if sport.interactionType != InteractionType.None && scoreTimes.count % sport.interactionScoreCycle! == 0 {
 //                切换到交互状态
-                currentStateTime = StateTime(stateId: -1, time: scoreTimes.last!.time, poseMap: scoreTimes.last!.poseMap, object: scoreTimes.last?.object)
+                currentStateTime = StateTime(stateId: -1, time: self.currentTime, poseMap: scoreTimes.last!.poseMap, object: scoreTimes.last?.object)
             }
 //            stateTimeHistory = [stateTimeHistory.last!]
         }
@@ -634,7 +648,7 @@ class Sporter: Identifiable {
             
             
             if timerScoreTimes.count == state.keepTime!.toInt {
-                currentStateTime = StateTime(stateId: state.id, time: last_1.time, poseMap: last_1.poseMap, object: last_1.object)
+                currentStateTime = StateTime(stateId: state.id, time: self.currentTime, poseMap: last_1.poseMap, object: last_1.object)
                 print("currentStateTime \(last_1)")
             }
         }
@@ -848,25 +862,25 @@ class Sporter: Identifiable {
         }
     }
     
-    func play(poseMap:PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
-
+    func play(poseMap:PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+        self.currentTime = currentTime
         switch sport.sportClass {
             case .Counter:
-                playCounter(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
+                playCounter(poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             case .Timer:
-                playTimer(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
+                playTimer(poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             case .TimeCounter:
                 
-                playTimeCounter(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
+                playTimeCounter(poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             case .TimeRanger:
-                playTimeRanger(poseMap: poseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
+                playTimeRanger(poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize, currentTime: currentTime)
             case .None: break
         }
     }
     
     // 时间区间内项目流程
     
-    func playTimeRanger(poseMap:PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+    func playTimeRanger(poseMap:PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
         
         // 如果返回顺序错误 则丢弃
 //        if lastTime > currentTime {
@@ -1017,7 +1031,7 @@ class Sporter: Identifiable {
     }
     
     // 计时类项目流程
-    func playTimer(poseMap:PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+    func playTimer(poseMap:PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
         
         if lastTime > currentTime {
             return
@@ -1043,7 +1057,7 @@ class Sporter: Identifiable {
         
         let allRulesSatisfy = allHasRuleStates.map({state -> (Bool, Set<Warning>, Int, Int) in
             
-            let satisfy = state.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+            let satisfy = state.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
             if satisfy.0 {
 //                如果不包含该状态 则建立计时器
                 if !inCheckingStatesTimer.keys.contains(state.name) {
@@ -1122,7 +1136,7 @@ class Sporter: Identifiable {
         
     }
     
-    func playTimeCounter(poseMap:PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+    func playTimeCounter(poseMap:PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
         
         // 如果返回顺序错误 则丢弃
         if lastTime > currentTime {
@@ -1161,7 +1175,7 @@ class Sporter: Identifiable {
         let violateRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int, Int) in
 
             if let toState = sport.findFirstStateByStateId(stateId: transform.to) {
-                let satisfy = toState.rulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+                let satisfy = toState.rulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
                 return satisfy
             }
             return (false, [], 0, 0)
@@ -1202,7 +1216,7 @@ class Sporter: Identifiable {
             
             if let toState = sport.findFirstStateByStateId(stateId: transform.to), transform.from == currentStateTime.stateId {
                 nextState = toState
-                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
                 
                 if let isTimer = toState.timeCounterIsTimer, isTimer {
                     if satisfy.0  {
@@ -1221,9 +1235,6 @@ class Sporter: Identifiable {
                             self.inCheckingStateHistory[toState.name] = [satisfy.0]
                         }
                     }
-                    
-   
-                    
                 } else {
                     if satisfy.0  {
                         currentStateTime = StateTime(stateId: toState.id, time: currentTime, poseMap: poseMap, object:  objects.first(where: { object in
@@ -1236,7 +1247,7 @@ class Sporter: Identifiable {
                 
                 
             }
-            print("allCurrentFrameWarnings 1111111" )
+            print("allCurrentFrameWarnings 1111111")
             return (false, [], 0, 0)
             
         }
@@ -1280,7 +1291,7 @@ class Sporter: Identifiable {
     }
     
     
-    func playCounter(poseMap:PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
+    func playCounter(poseMap:PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D, currentTime: Double) {
         
         
         // 如果返回顺序错误 则丢弃
@@ -1320,7 +1331,7 @@ class Sporter: Identifiable {
         let violateRulesTransformSatisfy = transforms.map { transform -> (Bool, Set<Warning>, Int, Int) in
 
             if let toState = sport.findFirstStateByStateId(stateId: transform.to) {
-                let satisfy = toState.rulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+                let satisfy = toState.rulesSatisfy(ruleType: .VIOLATE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
                 return satisfy
             }
             return (false, [], 0, 0)
@@ -1365,11 +1376,13 @@ class Sporter: Identifiable {
                 
                 nextState = toState
                 
-                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, objects: objects, frameSize: frameSize)
+                let satisfy = toState.rulesSatisfy(ruleType: .SCORE, stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap, objects: objects, frameSize: frameSize)
                 if satisfy.0  {
                     currentStateTime = StateTime(stateId: toState.id, time: currentTime, poseMap: poseMap, object:  objects.first(where: { object in
                         object.label != ObjectLabel.POSE.rawValue
                     }))
+                    
+                    
                 }
                 return satisfy
             }

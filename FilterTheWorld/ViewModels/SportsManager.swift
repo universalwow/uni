@@ -180,6 +180,13 @@ extension SportsManager {
         }
     }
     
+    func updateSport(editedSport:Sport, state: SportState, rules: Rules, ruleType: RuleType, mergeLowerBound: Double, mergeUpperBound: Double, weightLowerBound: Double, weightUpperBound: Double) {
+        
+        if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
+            sports[sportIndex].updateSportState(editedSportState: state, rules: rules, ruleType: ruleType, mergeLowerBound: mergeLowerBound, mergeUpperBound: mergeUpperBound, weightLowerBound: weightLowerBound, weightUpperBound: weightUpperBound)
+        }
+    }
+    
     func deleteSport(editedSport:Sport, state: SportState, timeRangeId: Int) {
         
         if let sportIndex = firstIndexOfSport(editedSportId: editedSport.id) {
@@ -794,9 +801,19 @@ extension SportsManager {
         return sports[sportIndex].getRuleLandmarkToStateDistances(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass)
     }
     
+    func getRuleLandmarkToStateDistancesMerge() -> [LandmarkToStateDistance] {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleLandmarkToStateDistancesMerge(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass)
+    }
+    
     func getRuleLandmarkToStateDistance(id: UUID) -> LandmarkToStateDistance {
         let sportIndex = firstIndexOfSport()!
         return sports[sportIndex].getRuleLandmarkToStateDistance(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass, id: id)
+    }
+    
+    func getRuleLandmarkToStateDistanceMerge(id: UUID) -> LandmarkToStateDistance {
+        let sportIndex = firstIndexOfSport()!
+        return sports[sportIndex].getRuleLandmarkToStateDistanceMerge(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass, id: id)
     }
     
     
@@ -808,10 +825,21 @@ extension SportsManager {
         }
     }
     
+    func addRuleLandmarkToStateDistanceMerge() {
+        if let sportIndex = firstIndexOfSport() {
+            sports[sportIndex].addRuleLandmarkToStateDistanceMerge(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass)
+        }
+    }
+    
     
     func removeRuleLandmarkToStateDistance(id: UUID) {
         let sportIndex = firstIndexOfSport()!
         sports[sportIndex].removeRuleLandmarkToStateDistance(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass, id: id)
+    }
+    
+    func removeRuleLandmarkToStateDistanceMerge(id: UUID) {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].removeRuleLandmarkToStateDistanceMerge(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass, id: id)
     }
     
     
@@ -835,6 +863,29 @@ extension SportsManager {
                                                              toAxis: toAxis,
                                                              lowerBound: lowerBound, upperBound: upperBound,
                                                              warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, defaultSatisfy: defaultSatisfy)
+        
+    }
+    
+    func updateRuleLandmarkToStateDistanceMerge(fromAxis: CoordinateAxis,
+                                           toStateId: Int,
+                                           toLandmarkType: LandmarkType,
+                                           isRelativeToExtremeDirection: Bool,
+                                           extremeDirection: ExtremeDirection,
+                                           toLandmarkSegmentType: LandmarkTypeSegment,
+                                           toAxis: CoordinateAxis,
+                                           lowerBound: Double, upperBound: Double,
+                                                warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool, toStateToggle: Bool, toLastFrameToggle: Bool, weight: Double)  {
+        let sportIndex = firstIndexOfSport()!
+        sports[sportIndex].updateRuleLandmarkToStateDistanceMerge(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass,
+                                                             fromAxis: fromAxis,
+                                                             toStateId: toStateId,
+                                                             toLandmarkType: toLandmarkType,
+                                                             isRelativeToExtremeDirection: isRelativeToExtremeDirection,
+                                                             extremeDirection: extremeDirection,
+                                                             toLandmarkSegmentType: toLandmarkSegmentType,
+                                                             toAxis: toAxis,
+                                                             lowerBound: lowerBound, upperBound: upperBound,
+                                                                  warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, defaultSatisfy: defaultSatisfy, toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle, weight: weight)
         
     }
     

@@ -9,6 +9,7 @@ struct RuleView: View {
     
     @State var selectedLandmarkSegmentType = LandmarkTypeSegment.init(startLandmarkType: .LeftShoulder, endLandmarkType: .RightShoulder)
     @State var selectedLandmarkType = LandmarkType.LeftShoulder
+    @State var selectedLandmarkTypeMerge = LandmarkType.LeftShoulder
     @State var selectedObject = ObjectLabel.POSE.rawValue
     @State var selectedFixedArea = "1"
     @State var selectedDynamicArea = "1"
@@ -47,6 +48,12 @@ struct RuleView: View {
                 }
                 
                 Picker("选择关节", selection: $selectedLandmarkType) {
+                    ForEach(LandmarkType.allCases) { landmarkType in
+                        Text(landmarkType.id).tag(landmarkType)
+                    }
+                }
+                
+                Picker("合并关节", selection: $selectedLandmarkTypeMerge) {
                     ForEach(LandmarkType.allCases) { landmarkType in
                         Text(landmarkType.id).tag(landmarkType)
                     }
@@ -107,6 +114,11 @@ struct RuleView: View {
             ruleClass = .Landmark
             sportManager.setCurrentSportStateRule(landmarkType: self.selectedLandmarkType, ruleClass: ruleClass)
         }
+        .onChange(of: self.selectedLandmarkTypeMerge) { _ in
+            ruleClass = .LandmarkMerge
+            sportManager.setCurrentSportStateRule(landmarkType: self.selectedLandmarkTypeMerge, ruleClass: ruleClass)
+        }
+        
 //        .onChange(of: sportManager.currentSportStateRuleClass, perform: {
 //            ruleClass =
 //        })
@@ -129,6 +141,8 @@ struct RuleView: View {
             case .DynamicArea:
 //                SetupAreaRuleView()
                 SetupDynamicAreaRuleView()
+            case .LandmarkMerge:
+                SetupLandmarkMergeRuleView()
             }
             
             
