@@ -186,7 +186,7 @@ struct LandmarkSegmentRule: Identifiable, Hashable, Codable, Ruler {
     
     
     // 是否满足， 收集提醒， 满足的数目， 总规则数
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         // 单帧
         
         

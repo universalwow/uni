@@ -17,6 +17,8 @@ target 'FilterTheWorld' do
     pod 'AlertToast'
     pod 'NavigationStack'
         pod 'PerspectiveTransform'
+	pod "SwiftPhoenixClient", '~> 5.1'
+
 
   
 

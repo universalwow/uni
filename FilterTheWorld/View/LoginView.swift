@@ -38,11 +38,8 @@ import SwiftUI
 let lightGreyColor = Color(red: 239.0/255.0, green: 243.0/255.0, blue: 244.0/255.0, opacity: 1.0)
 
 
-
-
-
 struct LoginView: View {
-    @ObservedObject  var serviceManager = ServiceManager()
+    @EnvironmentObject  var serviceManager:ServiceManager
     @State var username: String = ""
     @State var password: String = ""
   
@@ -85,7 +82,7 @@ struct LoginView: View {
             .background(Color.green)
             .cornerRadius(15.0)
       }
-      
+              
     }
   }
   
@@ -119,6 +116,8 @@ struct LoginView: View {
           login
           loginState.position(x: geometry.size.width - 80, y: 20)
         }.padding()
+      }.onAppear{
+          serviceManager.getCookies()
       }
       
       

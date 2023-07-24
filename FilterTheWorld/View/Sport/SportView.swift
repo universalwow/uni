@@ -622,6 +622,689 @@ struct SportView: View {
     }
     
     
+    func stateMessage(sport: Sport, state: SportState) -> some View {
+        
+        VStack{
+            VStack {
+                HStack {
+                    Text("\(state.name)/\(state.id)")
+                    Spacer()
+                    
+                    
+                    Text("TO状态:\(state.directToStateId ?? -100)")
+                    Picker("状态", selection: $directToState.didSet( { _ in
+                        
+                        sportManager.updateSportState(sport: sport, state: state, directToState: directToState)
+                        
+                        
+                    })) {
+                        ForEach(sport.allStates) { state in
+                            Text(state.name).tag(state)
+                        }
+                    }
+                    
+                    Button(action: {
+                        
+                        sportManager.setState(editedSport: sport, editedSportState: state)
+                        self.keyFrameFlag = true
+                        
+                    }) {
+                        Text("添加关键帧")
+                            .foregroundColor(sportManager.keyFrameSetted(sport: sport, state: state) ? Color.green : Color.blue)
+                    }
+                    
+                    
+                    Button(action: {
+                        sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
+                        
+                        //                            self.editRuleFlag = true
+                        
+                    }) {
+                        Text("添加计分规则集")
+                    }
+                    
+                    Button(action: {
+                        sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
+                        //                            self.editRuleFlag = true
+                        
+                    }) {
+                        Text("添加违规规则集")
+                    }
+                    
+                    Button(action: {
+                        sportManager.deleteSportState(editedSport: sport, editedSportState: state)
+                        
+                    }) {
+                        Text("删除")
+                    }
+                }
+                if [SportClass.Timer, SportClass.TimeCounter].contains(sportClass) {
+                    StateTimerView(sport: sport, state: state)
+                }
+                
+                if [SportClass.TimeRanger].contains(sportClass) {
+                    StateTimeRangeView(sport: sport, state: Binding.constant(state))
+                }
+                
+                
+            }
+            .padding([.vertical])
+            
+            // 计分规则集
+            ForEach(state.scoreRules.indices, id: \.self) { scoreRulesIndex in
+                let scoreRules = state.scoreRules[scoreRulesIndex]
+                Divider()
+                HStack {
+                    Text("\(state.name)/\(scoreRules.description)/\(scoreRulesIndex)")
+                    Spacer()
+                    
+                    Button(action: {
+                        
+                        sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .SCORE, ruleClass: .LandmarkSegment)
+                        self.editRuleFlag = true
+                    }) {
+                        Text("添加规则")
+                    }
+                    
+                    Button(action: {
+                        sportManager.deleteRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE)
+                    }) {
+                        Text("删除")
+                    }
+                }.padding([.top], StaticValue.padding)
+                
+                
+                VStack {
+                    ForEach(scoreRules.landmarkSegmentRules) { rule in
+                        Divider()
+                        VStack {
+                            HStack {
+                                Text("规则: \(rule.id)")
+                                Spacer()
+                                
+                                
+                                Button(action: {
+                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .LandmarkSegment)
+                                    ruleClass = .LandmarkSegment
+                                    self.showSetupRule = true
+                                    
+                                }) {
+                                    Text("修改")
+                                }
+                                Button(action: {
+                                    sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .LandmarkSegment)
+                                    
+                                }) {
+                                    Text("删除")
+                                }
+                                
+                                
+                            }.padding([.top], StaticValue.padding)
+                               
+                            TransferToOtherRulesView(sport: $sport, rule: rule)
+                            LandmarkSegmentRuleDescriptionView(rule: Binding.constant(rule))
+                        }.background(Color.yellow)
+                    }
+                    
+                    ForEach(scoreRules.landmarkRules) { rule in
+                        Divider()
+                        VStack {
+                            HStack {
+                                Text("规则: \(rule.id)")
+                                Spacer()
+
+                                Button(action: {
+                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Landmark)
+                                    ruleClass = .Landmark
+
+                                    self.showSetupRule = true
+                                }) {
+                                    Text("修改")
+                                }
+                                Button(action: {
+                                    sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Landmark)
+                                }) {
+                                    Text("删除")
+                                }
+
+
+                            }.padding([.top], StaticValue.padding)
+
+                            TransferToOtherRulesView(sport: $sport, rule: rule)
+                            LandmarkRuleDescriptionView(rule: Binding.constant(rule))
+                        }.background(Color.yellow)
+                    }
+                    
+                   
+                    RulesBoundsView(sport: sport, state: state, rules: Binding.constant(scoreRules), ruleType: .SCORE)
+                    ForEach(scoreRules.landmarkToStateDistanceMergeRulesView) { rule in
+                        Divider()
+                        VStack {
+                            HStack {
+                                Text("merge规则: \(rule.id)")
+                                Spacer()
+
+                                Button(action: {
+                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .LandmarkMerge)
+                                    ruleClass = .LandmarkMerge
+
+                                    self.showSetupRule = true
+                                }) {
+                                    Text("修改")
+                                }
+                                Button(action: {
+                                    sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .LandmarkMerge)
+                                }) {
+                                    Text("删除")
+                                }
+
+
+                            }.padding([.top], StaticValue.padding)
+
+                            TransferToOtherRulesView(sport: $sport, rule: rule)
+                            LandmarkRuleDescriptionView(rule: Binding.constant(rule))
+                        }.background(Color.yellow)
+                    }
+                }
+                
+                
+                
+                ForEach(scoreRules.observationRules) { rule in
+                    Divider()
+                    VStack {
+                        HStack {
+                            Text("规则: \(rule.id)")
+                            Spacer()
+                            
+                            
+                            Button(action: {
+                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Observation)
+                                ruleClass = .Observation
+
+                                self.showSetupRule = true
+                            }) {
+                                Text("修改")
+                            }
+                            Button(action: {
+                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Observation)
+                            }) {
+                                Text("删除")
+                            }
+                            
+                            
+                        }.padding([.top], StaticValue.padding)
+                           
+                        TransferToOtherRulesView(sport: $sport, rule: rule)
+                        ObservationRuleDescriptionView(rule: Binding.constant(rule))
+                    }.background(Color.yellow)
+                }
+                
+                ForEach(scoreRules.fixedAreaRules) { rule in
+                    Divider()
+                    VStack {
+                        HStack {
+                            Text("规则:\(rule.id)")
+                            Spacer()
+                            
+                            Button(action: {
+                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .FixedArea)
+                                ruleClass = .FixedArea
+
+                                self.showSetupRule = true
+                            }) {
+                                Text("修改")
+                            }
+                            Button(action: {
+                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .FixedArea)
+                            }) {
+                                Text("删除")
+                            }
+                            
+                            
+                        }.padding([.top], StaticValue.padding)
+                           
+                        TransferToOtherRulesView(sport: $sport, rule: rule)
+                        FixedAreaRuleDescriptionView(rule: Binding.constant(rule))
+                    }.background(Color.yellow)
+                }
+                
+                ForEach(scoreRules.dynamicAreaRules) { rule in
+                    Divider()
+                    VStack {
+                        HStack {
+                            Text("规则:\(rule.id)")
+                            Spacer()
+                            
+                            Button(action: {
+                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .DynamicArea)
+                                ruleClass = .DynamicArea
+
+                                self.showSetupRule = true
+                            }) {
+                                Text("修改")
+                            }
+                            Button(action: {
+                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .DynamicArea)
+                            }) {
+                                Text("删除")
+                            }
+                            
+                            
+                        }.padding([.top], StaticValue.padding)
+                           
+                        TransferToOtherRulesView(sport: $sport, rule: rule)
+                        DynamicAreaRuleDescriptionView(rule: Binding.constant(rule))
+                    }.background(Color.yellow)
+                }
+            }
+            
+            
+    //                         违规规则集
+            ForEach(state.violateRules.indices, id: \.self) { scoreRulesIndex in
+                let scoreRules = state.violateRules[scoreRulesIndex]
+                Divider()
+                HStack {
+                    Text("\(state.name)/\(scoreRules.description)/\(scoreRulesIndex)")
+                    Spacer()
+
+                    Button(action: {
+
+                        sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
+                        
+                        self.editRuleFlag = true
+                    }) {
+                        Text("添加规则")
+                    }
+
+                    Button(action: {
+                        sportManager.deleteRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .VIOLATE)
+                    }) {
+                        Text("删除")
+                    }
+                }.padding([.top], StaticValue.padding)
+                
+                
+                VStack {
+                    ForEach(scoreRules.landmarkSegmentRules) { rule in
+                        Divider()
+                        VStack {
+
+                            HStack {
+                                Text("规则:")
+                                Text(rule.id)
+                                Spacer()
+                                Button(action: {
+                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
+                                    ruleClass = .LandmarkSegment
+
+                                    self.showSetupRule = true
+                                }) {
+                                    Text("修改")
+                                }
+                                Button(action: {
+                                    sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
+
+                                }) {
+                                    Text("删除")
+                                }
+
+
+                            }.padding([.top], StaticValue.padding)
+
+                            TransferToOtherRulesView(sport: $sport, rule: rule)
+                            LandmarkSegmentRuleDescriptionView(rule: Binding.constant(rule))
+
+
+                        }.background(Color.gray)
+                    }
+                    
+                    ForEach(scoreRules.landmarkRules) { rule in
+                        Divider()
+                        VStack {
+                            HStack {
+                                Text("规则: \(rule.id)")
+                                Spacer()
+                                
+                                Button(action: {
+                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .Landmark)
+                                    ruleClass = .Landmark
+
+                                    self.showSetupRule = true
+                                }) {
+                                    Text("修改")
+                                }
+                                Button(action: {
+                                    sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .Landmark)
+                                }) {
+                                    Text("删除")
+                                }
+                                
+                                
+                            }.padding([.top], StaticValue.padding)
+                               
+                            TransferToOtherRulesView(sport: $sport, rule: rule)
+                            LandmarkRuleDescriptionView(rule: Binding.constant(rule))
+                        }.background(Color.gray)
+                    }
+                    
+    //                                ForEach(scoreRules.landmarkToStateDistanceMergeRules ?? []) { rule in
+    //                                    Divider()
+    //                                    VStack {
+    //                                        HStack {
+    //                                            Text("merge规则: \(rule.id)")
+    //                                            Spacer()
+    //
+    //                                            Button(action: {
+    //                                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .LandmarkMerge)
+    //                                                ruleClass = .LandmarkMerge
+    //
+    //                                                self.showSetupRule = true
+    //                                            }) {
+    //                                                Text("修改")
+    //                                            }
+    //                                            Button(action: {
+    //                                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .LandmarkMerge)
+    //                                            }) {
+    //                                                Text("删除")
+    //                                            }
+    //
+    //
+    //                                        }.padding([.top], StaticValue.padding)
+    //
+    //                                        TransferToOtherRulesView(sport: $sport, rule: rule)
+    //                                        LandmarkRuleDescriptionView(rule: Binding.constant(rule))
+    //                                    }.background(Color.gray)
+    //                                }
+                }
+                
+                ForEach(scoreRules.observationRules) { rule in
+                    Divider()
+                    VStack {
+                        HStack {
+                            Text("规则: \(rule.id)")
+                            Spacer()
+                            
+                            
+                            Button(action: {
+                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .Observation)
+                                ruleClass = .Observation
+                                self.showSetupRule = true
+                                
+                            }) {
+                                Text("修改")
+                            }
+                            Button(action: {
+                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .Observation)
+                            }) {
+                                Text("删除")
+                            }
+                            
+                            
+                        }.padding([.top], StaticValue.padding)
+                           
+                        TransferToOtherRulesView(sport: $sport, rule: rule)
+                        ObservationRuleDescriptionView(rule: Binding.constant(rule))
+                    }.background(Color.gray)
+                }
+                
+                ForEach(scoreRules.fixedAreaRules) { rule in
+                    Divider()
+                    VStack {
+                        HStack {
+                            Text("规则:\(rule.id)")
+                            Spacer()
+                            
+                            Button(action: {
+                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .FixedArea)
+                                ruleClass = .FixedArea
+
+                                self.showSetupRule = true
+                            }) {
+                                Text("修改")
+                            }
+                            Button(action: {
+                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .FixedArea)
+                            }) {
+                                Text("删除")
+                            }
+                            
+                            
+                        }.padding([.top], StaticValue.padding)
+                           
+                        TransferToOtherRulesView(sport: $sport, rule: rule)
+                        FixedAreaRuleDescriptionView(rule: Binding.constant(rule))
+                    }.background(Color.yellow)
+                }
+                
+                ForEach(scoreRules.dynamicAreaRules) { rule in
+                    Divider()
+                    VStack {
+                        HStack {
+                            Text("规则:\(rule.id)")
+                            Spacer()
+                            
+                            Button(action: {
+                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .DynamicArea)
+                                ruleClass = .DynamicArea
+
+                                self.showSetupRule = true
+                            }) {
+                                Text("修改")
+                            }
+                            Button(action: {
+                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .DynamicArea)
+                            }) {
+                                Text("删除")
+                            }
+
+                        }.padding([.top], StaticValue.padding)
+                           
+                        TransferToOtherRulesView(sport: $sport, rule: rule)
+                        DynamicAreaRuleDescriptionView(rule: Binding.constant(rule))
+                    }.background(Color.yellow)
+                }
+            }
+        }
+        
+    }
+    
+    
+    func stateTransform(sport:Sport)  -> some View {
+        VStack {
+            VStack {
+                HStack {
+                    Text("状态列表")
+                    Spacer()
+                    Button(action: {
+                        sportManager.addSportState(editedSport: sport, stateName: stateName, stateDescription: stateDescription)
+                        
+                    }) {
+                        Text("添加状态")
+                    }
+                }
+                
+                ForEach(sport.allStates) { state in
+                    Divider()
+                    stateMessage(sport: sport, state: state)
+                    
+                }
+                
+                
+                
+            }
+            
+            
+            VStack {
+                Divider()
+                HStack{
+                    Text("状态转换")
+                    Spacer()
+                    Picker("From", selection: $fromState) {
+                        ForEach(sport.allStates) { state in
+                            Text(state.name).tag(state)
+                        }
+                    }
+                    Spacer()
+                    Picker("To", selection: $toState) {
+                        ForEach(sport.allStates) { state in
+                            Text(state.name).tag(state)
+                        }
+                    }
+                }
+                HStack {
+                    Text("状态转换列表")
+                    Spacer()
+                    Button(action: {
+                        sportManager.addSportStatetransform(sport: sport, fromSportState: fromState, toSportState: toState)
+                        let _fromState = fromState
+                        fromState = toState
+                        toState = _fromState
+                        
+                    }) {
+                        Text("添加状态转换")
+                    }
+                }
+                
+                
+                ForEach(sport.stateTransForm) { transform in
+                    if let fromState = sport.findFirstStateByStateId(stateId: transform.from), let toState =
+                        sport.findFirstStateByStateId(stateId: transform.to) {
+                        HStack {
+                            Text("\(fromState.name) -> \(toState.name)")
+                            Spacer()
+                            Button(action: {
+                                sportManager.deleteSportStateTransForm(sport: sport, fromSportState: fromState, toSportState: toState)
+                                
+                            }) {
+                                Text("删除")
+                            }
+                            
+                        }.padding([.top], StaticValue.padding)
+                        
+                        
+                    }
+                }
+            }
+            
+            
+            VStack {
+                Divider()
+                HStack {
+                    Text("成绩状态序列")
+                    Spacer()
+                    HStack {
+                        Text("状态")
+                        Picker("成绩序列", selection: $scoreState) {
+                            ForEach(sport.allStates) { state in
+                                Text(state.name).tag(state)
+                            }
+                        }
+                    }
+                    Spacer()
+                    Button(action: {
+                        sportManager.addSportStateScoreSequence(sport: sport)
+                        
+                    }) {
+                        Text("添加成绩序列")
+                    }
+                }
+                
+                ForEach(sport.scoreStateSequence.indices, id: \.self) { sequenceIndex in
+                    Divider()
+                    HStack {
+                        Text("序列\(sequenceIndex)")
+                        Spacer()
+                        
+                        
+                        Button(action: {
+                           sportManager.addSportStateScoreSequence(sport: sport, index: sequenceIndex, scoreState: scoreState)
+
+                       }) {
+                           Text("添加状态")
+                       }
+                        
+                    }.padding([.top], StaticValue.padding)
+                    
+                    ForEach(sport.scoreStateSequence[sequenceIndex].indices, id: \.self) { stateIndex in
+                        HStack {
+                            Text(sport.findFirstStateByStateId(stateId: sport.scoreStateSequence[sequenceIndex][stateIndex])!.name)
+                            Spacer()
+                            Button(action: {
+                                sportManager.deleteSportStateFromScoreSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
+                            }) {
+                                Text("删除")
+                            }
+                        }.padding([.top], StaticValue.padding)
+                        
+                    }
+                    
+                }
+            }
+            
+            
+            
+            interactionMessageView(sport: sport)
+            
+            VStack {
+                Divider()
+                HStack {
+                    Text("违规状态序列")
+                    TextField("请输入违规提醒:请先输入提醒再添加状态!", text: $violateSequenceWarning)
+                    Spacer()
+                    HStack {
+                        Text("状态")
+                        Picker("违规序列", selection: $violateState) {
+                            ForEach(sport.allStates) { state in
+                                Text(state.name).tag(state)
+                            }
+                        }
+                    }
+                    Spacer()
+                    Button(action: {
+                        sportManager.addSportStateViolateSequence(sport: sport)
+
+                    }) {
+                        Text("添加违规序列")
+                    }
+                }
+
+                ForEach(sport.violateStateSequence.indices, id: \.self) { sequenceIndex in
+                    Divider()
+                    HStack {
+                        Text("序列\(sequenceIndex)")
+                        Spacer()
+
+                        Text("提醒:\(sport.violateStateSequence[sequenceIndex].warning.content)")
+                        
+
+                        Button(action: {
+                            sportManager.addSportStateViolateSequence(sport: sport, index: sequenceIndex, violateState: violateState, warning: violateSequenceWarning)
+
+                       }) {
+                           Text("添加状态")
+                       }
+
+                    }.padding([.top], StaticValue.padding)
+
+                    ForEach(sport.violateStateSequence[sequenceIndex].stateIds.indices, id: \.self) { stateIndex in
+                        HStack {
+                            Text(sport.findFirstStateByStateId(stateId: sport.violateStateSequence[sequenceIndex].stateIds[stateIndex])!.name)
+                            Spacer()
+                            Button(action: {
+                                sportManager.deleteSportStateFromViolateSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
+                            }) {
+                                Text("删除")
+                            }
+                        }.padding([.top], StaticValue.padding)
+
+                    }
+
+                }
+            }
+        }
+    }
+    
+    
     
     var stateMessage: some View {
         VStack {
@@ -636,674 +1319,8 @@ struct SportView: View {
             }
             
             if let sport = sportManager.findFirstSport(sport: sport) {
-                VStack {
-                    HStack {
-                        Text("状态列表")
-                        Spacer()
-                        Button(action: {
-                            sportManager.addSportState(editedSport: sport, stateName: stateName, stateDescription: stateDescription)
-                            
-                        }) {
-                            Text("添加状态")
-                        }
-                    }
-                    
-                    ForEach(sport.allStates) { state in
-                        Divider()
-                        
-                        VStack {
-                            HStack {
-                                Text("\(state.name)/\(state.id)")
-                                Spacer()
-                                
-                                
-                                Text("TO状态:\(state.directToStateId ?? -100)")
-                                Picker("状态", selection: $directToState.didSet( { _ in
-                                    
-                                    sportManager.updateSportState(sport: sport, state: state, directToState: directToState)
-                                    
-                                    
-                                })) {
-                                    ForEach(sport.allStates) { state in
-                                        Text(state.name).tag(state)
-                                    }
-                                }
-                                
-                                Button(action: {
-                                    
-                                    sportManager.setState(editedSport: sport, editedSportState: state)
-                                    self.keyFrameFlag = true
-                                    
-                                }) {
-                                    Text("添加关键帧")
-                                        .foregroundColor(sportManager.keyFrameSetted(sport: sport, state: state) ? Color.green : Color.blue)
-                                }
-                                
-                                
-                                Button(action: {
-                                    sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .SCORE)
-                                    
-                                    //                            self.editRuleFlag = true
-                                    
-                                }) {
-                                    Text("添加计分规则集")
-                                }
-                                
-                                Button(action: {
-                                    sportManager.addNewRules(editedSport: sport, editedSportState: state, ruleType: .VIOLATE)
-                                    //                            self.editRuleFlag = true
-                                    
-                                }) {
-                                    Text("添加违规规则集")
-                                }
-                                
-                                Button(action: {
-                                    sportManager.deleteSportState(editedSport: sport, editedSportState: state)
-                                    
-                                }) {
-                                    Text("删除")
-                                }
-                            }
-                            if [SportClass.Timer, SportClass.TimeCounter].contains(sportClass) {
-                                StateTimerView(sport: sport, state: state)
-                            }
-                            
-                            if [SportClass.TimeRanger].contains(sportClass) {
-                                StateTimeRangeView(sport: sport, state: Binding.constant(state))
-                            }
-                            
-                            
-                        }
-                        .padding([.vertical])
-                        
-                        // 计分规则集
-                        ForEach(state.scoreRules.indices, id: \.self) { scoreRulesIndex in
-                            let scoreRules = state.scoreRules[scoreRulesIndex]
-                            Divider()
-                            HStack {
-                                Text("\(state.name)/\(scoreRules.description)/\(scoreRulesIndex)")
-                                Spacer()
-                                
-                                Button(action: {
-                                    
-                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .SCORE, ruleClass: .LandmarkSegment)
-                                    self.editRuleFlag = true
-                                }) {
-                                    Text("添加规则")
-                                }
-                                
-                                Button(action: {
-                                    sportManager.deleteRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .SCORE)
-                                }) {
-                                    Text("删除")
-                                }
-                            }.padding([.top], StaticValue.padding)
-                            
-                            
-                            VStack {
-                                ForEach(scoreRules.landmarkSegmentRules) { rule in
-                                    Divider()
-                                    VStack {
-                                        HStack {
-                                            Text("规则: \(rule.id)")
-                                            Spacer()
-                                            
-                                            
-                                            Button(action: {
-                                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .LandmarkSegment)
-                                                ruleClass = .LandmarkSegment
-                                                self.showSetupRule = true
-                                                
-                                            }) {
-                                                Text("修改")
-                                            }
-                                            Button(action: {
-                                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .LandmarkSegment)
-                                                
-                                            }) {
-                                                Text("删除")
-                                            }
-                                            
-                                            
-                                        }.padding([.top], StaticValue.padding)
-                                           
-                                        TransferToOtherRulesView(sport: $sport, rule: rule)
-                                        LandmarkSegmentRuleDescriptionView(rule: Binding.constant(rule))
-                                    }.background(Color.yellow)
-                                }
-                                
-                                ForEach(scoreRules.landmarkRules) { rule in
-                                    Divider()
-                                    VStack {
-                                        HStack {
-                                            Text("规则: \(rule.id)")
-                                            Spacer()
-
-                                            Button(action: {
-                                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Landmark)
-                                                ruleClass = .Landmark
-
-                                                self.showSetupRule = true
-                                            }) {
-                                                Text("修改")
-                                            }
-                                            Button(action: {
-                                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Landmark)
-                                            }) {
-                                                Text("删除")
-                                            }
-
-
-                                        }.padding([.top], StaticValue.padding)
-
-                                        TransferToOtherRulesView(sport: $sport, rule: rule)
-                                        LandmarkRuleDescriptionView(rule: Binding.constant(rule))
-                                    }.background(Color.yellow)
-                                }
-                                
-                               
-                                RulesBoundsView(sport: sport, state: state, rules: Binding.constant(scoreRules), ruleType: .SCORE)
-                                ForEach(scoreRules.landmarkToStateDistanceMergeRulesView) { rule in
-                                    Divider()
-                                    VStack {
-                                        HStack {
-                                            Text("merge规则: \(rule.id)")
-                                            Spacer()
-
-                                            Button(action: {
-                                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .LandmarkMerge)
-                                                ruleClass = .LandmarkMerge
-
-                                                self.showSetupRule = true
-                                            }) {
-                                                Text("修改")
-                                            }
-                                            Button(action: {
-                                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .LandmarkMerge)
-                                            }) {
-                                                Text("删除")
-                                            }
-
-
-                                        }.padding([.top], StaticValue.padding)
-
-                                        TransferToOtherRulesView(sport: $sport, rule: rule)
-                                        LandmarkRuleDescriptionView(rule: Binding.constant(rule))
-                                    }.background(Color.yellow)
-                                }
-                            }
-                            
-                            
-                            
-                            ForEach(scoreRules.observationRules) { rule in
-                                Divider()
-                                VStack {
-                                    HStack {
-                                        Text("规则: \(rule.id)")
-                                        Spacer()
-                                        
-                                        
-                                        Button(action: {
-                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .Observation)
-                                            ruleClass = .Observation
-
-                                            self.showSetupRule = true
-                                        }) {
-                                            Text("修改")
-                                        }
-                                        Button(action: {
-                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .Observation)
-                                        }) {
-                                            Text("删除")
-                                        }
-                                        
-                                        
-                                    }.padding([.top], StaticValue.padding)
-                                       
-                                    TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    ObservationRuleDescriptionView(rule: Binding.constant(rule))
-                                }.background(Color.yellow)
-                            }
-                            
-                            ForEach(scoreRules.fixedAreaRules) { rule in
-                                Divider()
-                                VStack {
-                                    HStack {
-                                        Text("规则:\(rule.id)")
-                                        Spacer()
-                                        
-                                        Button(action: {
-                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .FixedArea)
-                                            ruleClass = .FixedArea
-
-                                            self.showSetupRule = true
-                                        }) {
-                                            Text("修改")
-                                        }
-                                        Button(action: {
-                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .FixedArea)
-                                        }) {
-                                            Text("删除")
-                                        }
-                                        
-                                        
-                                    }.padding([.top], StaticValue.padding)
-                                       
-                                    TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    FixedAreaRuleDescriptionView(rule: Binding.constant(rule))
-                                }.background(Color.yellow)
-                            }
-                            
-                            ForEach(scoreRules.dynamicAreaRules) { rule in
-                                Divider()
-                                VStack {
-                                    HStack {
-                                        Text("规则:\(rule.id)")
-                                        Spacer()
-                                        
-                                        Button(action: {
-                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .SCORE, ruleClass: .DynamicArea)
-                                            ruleClass = .DynamicArea
-
-                                            self.showSetupRule = true
-                                        }) {
-                                            Text("修改")
-                                        }
-                                        Button(action: {
-                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .SCORE, ruleClass: .DynamicArea)
-                                        }) {
-                                            Text("删除")
-                                        }
-                                        
-                                        
-                                    }.padding([.top], StaticValue.padding)
-                                       
-                                    TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    DynamicAreaRuleDescriptionView(rule: Binding.constant(rule))
-                                }.background(Color.yellow)
-                            }
-                        }
-                        
-                        
-//                         违规规则集
-                        ForEach(state.violateRules.indices, id: \.self) { scoreRulesIndex in
-                            let scoreRules = state.violateRules[scoreRulesIndex]
-                            Divider()
-                            HStack {
-                                Text("\(state.name)/\(scoreRules.description)/\(scoreRulesIndex)")
-                                Spacer()
-
-                                Button(action: {
-
-                                    sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: nil, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
-                                    
-                                    self.editRuleFlag = true
-                                }) {
-                                    Text("添加规则")
-                                }
-
-                                Button(action: {
-                                    sportManager.deleteRules(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleType: .VIOLATE)
-                                }) {
-                                    Text("删除")
-                                }
-                            }.padding([.top], StaticValue.padding)
-                            
-                            
-                            VStack {
-                                ForEach(scoreRules.landmarkSegmentRules) { rule in
-                                    Divider()
-                                    VStack {
-
-                                        HStack {
-                                            Text("规则:")
-                                            Text(rule.id)
-                                            Spacer()
-                                            Button(action: {
-                                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
-                                                ruleClass = .LandmarkSegment
-
-                                                self.showSetupRule = true
-                                            }) {
-                                                Text("修改")
-                                            }
-                                            Button(action: {
-                                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .LandmarkSegment)
-
-                                            }) {
-                                                Text("删除")
-                                            }
-
-
-                                        }.padding([.top], StaticValue.padding)
-
-                                        TransferToOtherRulesView(sport: $sport, rule: rule)
-                                        LandmarkSegmentRuleDescriptionView(rule: Binding.constant(rule))
-
-
-                                    }.background(Color.gray)
-                                }
-                                
-                                ForEach(scoreRules.landmarkRules) { rule in
-                                    Divider()
-                                    VStack {
-                                        HStack {
-                                            Text("规则: \(rule.id)")
-                                            Spacer()
-                                            
-                                            Button(action: {
-                                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .Landmark)
-                                                ruleClass = .Landmark
-
-                                                self.showSetupRule = true
-                                            }) {
-                                                Text("修改")
-                                            }
-                                            Button(action: {
-                                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .Landmark)
-                                            }) {
-                                                Text("删除")
-                                            }
-                                            
-                                            
-                                        }.padding([.top], StaticValue.padding)
-                                           
-                                        TransferToOtherRulesView(sport: $sport, rule: rule)
-                                        LandmarkRuleDescriptionView(rule: Binding.constant(rule))
-                                    }.background(Color.gray)
-                                }
-                                
-//                                ForEach(scoreRules.landmarkToStateDistanceMergeRules ?? []) { rule in
-//                                    Divider()
-//                                    VStack {
-//                                        HStack {
-//                                            Text("merge规则: \(rule.id)")
-//                                            Spacer()
-//
-//                                            Button(action: {
-//                                                sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .LandmarkMerge)
-//                                                ruleClass = .LandmarkMerge
-//
-//                                                self.showSetupRule = true
-//                                            }) {
-//                                                Text("修改")
-//                                            }
-//                                            Button(action: {
-//                                                sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .LandmarkMerge)
-//                                            }) {
-//                                                Text("删除")
-//                                            }
-//
-//
-//                                        }.padding([.top], StaticValue.padding)
-//
-//                                        TransferToOtherRulesView(sport: $sport, rule: rule)
-//                                        LandmarkRuleDescriptionView(rule: Binding.constant(rule))
-//                                    }.background(Color.gray)
-//                                }
-                            }
-                            
-                            ForEach(scoreRules.observationRules) { rule in
-                                Divider()
-                                VStack {
-                                    HStack {
-                                        Text("规则: \(rule.id)")
-                                        Spacer()
-                                        
-                                        
-                                        Button(action: {
-                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .Observation)
-                                            ruleClass = .Observation
-                                            self.showSetupRule = true
-                                            
-                                        }) {
-                                            Text("修改")
-                                        }
-                                        Button(action: {
-                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .Observation)
-                                        }) {
-                                            Text("删除")
-                                        }
-                                        
-                                        
-                                    }.padding([.top], StaticValue.padding)
-                                       
-                                    TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    ObservationRuleDescriptionView(rule: Binding.constant(rule))
-                                }.background(Color.gray)
-                            }
-                            
-                            ForEach(scoreRules.fixedAreaRules) { rule in
-                                Divider()
-                                VStack {
-                                    HStack {
-                                        Text("规则:\(rule.id)")
-                                        Spacer()
-                                        
-                                        Button(action: {
-                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .FixedArea)
-                                            ruleClass = .FixedArea
-
-                                            self.showSetupRule = true
-                                        }) {
-                                            Text("修改")
-                                        }
-                                        Button(action: {
-                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .FixedArea)
-                                        }) {
-                                            Text("删除")
-                                        }
-                                        
-                                        
-                                    }.padding([.top], StaticValue.padding)
-                                       
-                                    TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    FixedAreaRuleDescriptionView(rule: Binding.constant(rule))
-                                }.background(Color.yellow)
-                            }
-                            
-                            ForEach(scoreRules.dynamicAreaRules) { rule in
-                                Divider()
-                                VStack {
-                                    HStack {
-                                        Text("规则:\(rule.id)")
-                                        Spacer()
-                                        
-                                        Button(action: {
-                                            sportManager.setRule(editedSport: sport, editedSportState: state, editedSportStateRules: scoreRules, editedSportStateRule: rule, ruleType: .VIOLATE, ruleClass: .DynamicArea)
-                                            ruleClass = .DynamicArea
-
-                                            self.showSetupRule = true
-                                        }) {
-                                            Text("修改")
-                                        }
-                                        Button(action: {
-                                            sportManager.deleteRule(editedSport: sport, editedSportState: state, editedRules: scoreRules, ruleId: rule.id, ruleType: .VIOLATE, ruleClass: .DynamicArea)
-                                        }) {
-                                            Text("删除")
-                                        }
-
-                                    }.padding([.top], StaticValue.padding)
-                                       
-                                    TransferToOtherRulesView(sport: $sport, rule: rule)
-                                    DynamicAreaRuleDescriptionView(rule: Binding.constant(rule))
-                                }.background(Color.yellow)
-                            }
-                        }
-                    }
-                    
-                    
-                    
-                }
-                
-                
-                VStack {
-                    Divider()
-                    HStack{
-                        Text("状态转换")
-                        Spacer()
-                        Picker("From", selection: $fromState) {
-                            ForEach(sport.allStates) { state in
-                                Text(state.name).tag(state)
-                            }
-                        }
-                        Spacer()
-                        Picker("To", selection: $toState) {
-                            ForEach(sport.allStates) { state in
-                                Text(state.name).tag(state)
-                            }
-                        }
-                    }
-                    HStack {
-                        Text("状态转换列表")
-                        Spacer()
-                        Button(action: {
-                            sportManager.addSportStatetransform(sport: sport, fromSportState: fromState, toSportState: toState)
-                            let _fromState = fromState
-                            fromState = toState
-                            toState = _fromState
-                            
-                        }) {
-                            Text("添加状态转换")
-                        }
-                    }
-                    
-                    
-                    ForEach(sport.stateTransForm) { transform in
-                        if let fromState = sport.findFirstStateByStateId(stateId: transform.from), let toState =
-                            sport.findFirstStateByStateId(stateId: transform.to) {
-                            HStack {
-                                Text("\(fromState.name) -> \(toState.name)")
-                                Spacer()
-                                Button(action: {
-                                    sportManager.deleteSportStateTransForm(sport: sport, fromSportState: fromState, toSportState: toState)
-                                    
-                                }) {
-                                    Text("删除")
-                                }
-                                
-                            }.padding([.top], StaticValue.padding)
-                            
-                            
-                        }
-                    }
-                }
-                
-                
-                VStack {
-                    Divider()
-                    HStack {
-                        Text("成绩状态序列")
-                        Spacer()
-                        HStack {
-                            Text("状态")
-                            Picker("成绩序列", selection: $scoreState) {
-                                ForEach(sport.allStates) { state in
-                                    Text(state.name).tag(state)
-                                }
-                            }
-                        }
-                        Spacer()
-                        Button(action: {
-                            sportManager.addSportStateScoreSequence(sport: sport)
-                            
-                        }) {
-                            Text("添加成绩序列")
-                        }
-                    }
-                    
-                    ForEach(sport.scoreStateSequence.indices, id: \.self) { sequenceIndex in
-                        Divider()
-                        HStack {
-                            Text("序列\(sequenceIndex)")
-                            Spacer()
-                            
-                            
-                            Button(action: {
-                               sportManager.addSportStateScoreSequence(sport: sport, index: sequenceIndex, scoreState: scoreState)
-   
-                           }) {
-                               Text("添加状态")
-                           }
-                            
-                        }.padding([.top], StaticValue.padding)
-                        
-                        ForEach(sport.scoreStateSequence[sequenceIndex].indices, id: \.self) { stateIndex in
-                            HStack {
-                                Text(sport.findFirstStateByStateId(stateId: sport.scoreStateSequence[sequenceIndex][stateIndex])!.name)
-                                Spacer()
-                                Button(action: {
-                                    sportManager.deleteSportStateFromScoreSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
-                                }) {
-                                    Text("删除")
-                                }
-                            }.padding([.top], StaticValue.padding)
-                            
-                        }
-                        
-                    }
-                }
-                
-                
-                
-                interactionMessageView(sport: sport)
-                
-                VStack {
-                    Divider()
-                    HStack {
-                        Text("违规状态序列")
-                        TextField("请输入违规提醒:请先输入提醒再添加状态!", text: $violateSequenceWarning)
-                        Spacer()
-                        HStack {
-                            Text("状态")
-                            Picker("违规序列", selection: $violateState) {
-                                ForEach(sport.allStates) { state in
-                                    Text(state.name).tag(state)
-                                }
-                            }
-                        }
-                        Spacer()
-                        Button(action: {
-                            sportManager.addSportStateViolateSequence(sport: sport)
-
-                        }) {
-                            Text("添加违规序列")
-                        }
-                    }
-
-                    ForEach(sport.violateStateSequence.indices, id: \.self) { sequenceIndex in
-                        Divider()
-                        HStack {
-                            Text("序列\(sequenceIndex)")
-                            Spacer()
-
-                            Text("提醒:\(sport.violateStateSequence[sequenceIndex].warning.content)")
-                            
-
-                            Button(action: {
-                                sportManager.addSportStateViolateSequence(sport: sport, index: sequenceIndex, violateState: violateState, warning: violateSequenceWarning)
-
-                           }) {
-                               Text("添加状态")
-                           }
-
-                        }.padding([.top], StaticValue.padding)
-
-                        ForEach(sport.violateStateSequence[sequenceIndex].stateIds.indices, id: \.self) { stateIndex in
-                            HStack {
-                                Text(sport.findFirstStateByStateId(stateId: sport.violateStateSequence[sequenceIndex].stateIds[stateIndex])!.name)
-                                Spacer()
-                                Button(action: {
-                                    sportManager.deleteSportStateFromViolateSequence(sport: sport, sequenceIndex: sequenceIndex, stateIndex: stateIndex)
-                                }) {
-                                    Text("删除")
-                                }
-                            }.padding([.top], StaticValue.padding)
-
-                        }
-
-                    }
-                }
+      
+                stateTransform(sport: sport)
                 
                 collectedMessageView(sport: sport)
                 

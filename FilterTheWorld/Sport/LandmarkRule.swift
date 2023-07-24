@@ -171,7 +171,7 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
             
         }
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, lastPoseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
         let distanceToLandmarkSatisfys = distanceToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
             let satisfy = next.satisfy(poseMap: poseMap)
@@ -208,8 +208,11 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         })
         
         
-        let landmarkToStateDistanceSatisfys = landmarkToStateDistance.reduce((true, Set<Warning>(), 0, 0), {result, next in
-            let satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
+        
+        let landmarkToStateDistanceSatisfys = landmarkToStateDistance.filter{ rule in
+            rule.toStateToggle == true
+        }.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            let satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap)
             
             var newWarnings = result.1
             
@@ -224,6 +227,28 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                     satisfy ? result.2 + 1 : result.2,
                     result.3 + 1)
         })
+        
+        
+        let landmarkToLastFrameDistanceSatisfys = landmarkToStateDistance.filter{ rule in
+            rule.toLastFrameToggle == true
+        }.reduce((true, Set<Warning>(), 0, 0), {result, next in
+            let satisfy = next.satisfyWithRatio2(stateTimeHistory: stateTimeHistory, poseMap: poseMap, lastPoseMap: lastPoseMap)
+            
+            var newWarnings = result.1
+            
+            if next.warning.triggeredWhenRuleMet && satisfy.0 {
+                newWarnings.insert(next.warning)
+            }else if !next.warning.triggeredWhenRuleMet && !satisfy.0 {
+                newWarnings.insert(next.warning)
+            }
+            
+            return (result.0 && satisfy.0,
+                    newWarnings,
+                    satisfy.0 ? result.2 + 1 : result.2,
+                    result.3 + 1)
+        })
+        
+        
         
         let landmarkToStateAngleSatisfys = landmarkToStateAngle.reduce((true, Set<Warning>(), 0, 0), {result, next in
             let satisfy = next.satisfy(stateTimeHistory: stateTimeHistory, poseMap: poseMap)
@@ -244,10 +269,10 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
         
         
         // 每个规则至少要包含一个条件 且所有条件都必须满足
-        return (angleToLandmarkSatisfys.0 && landmarkToStateDistanceSatisfys.0 && landmarkToStateAngleSatisfys.0 && distanceToLandmarkSatisfys.0,
-                angleToLandmarkSatisfys.1.union(landmarkToStateDistanceSatisfys.1).union(landmarkToStateAngleSatisfys.1).union(distanceToLandmarkSatisfys.1),
-                angleToLandmarkSatisfys.2 + landmarkToStateDistanceSatisfys.2 + landmarkToStateAngleSatisfys.2  + distanceToLandmarkSatisfys.2,
-                angleToLandmarkSatisfys.3 + landmarkToStateDistanceSatisfys.3 + landmarkToStateAngleSatisfys.3  + distanceToLandmarkSatisfys.3
+        return (angleToLandmarkSatisfys.0 && landmarkToStateDistanceSatisfys.0 && landmarkToLastFrameDistanceSatisfys.0 && landmarkToStateAngleSatisfys.0 && distanceToLandmarkSatisfys.0,
+                angleToLandmarkSatisfys.1.union(landmarkToStateDistanceSatisfys.1).union(landmarkToLastFrameDistanceSatisfys.1).union(landmarkToStateAngleSatisfys.1).union(distanceToLandmarkSatisfys.1),
+                angleToLandmarkSatisfys.2 + landmarkToStateDistanceSatisfys.2 + landmarkToLastFrameDistanceSatisfys.2 + landmarkToStateAngleSatisfys.2  + distanceToLandmarkSatisfys.2,
+                angleToLandmarkSatisfys.3 + landmarkToStateDistanceSatisfys.3 + landmarkToLastFrameDistanceSatisfys.3 + landmarkToStateAngleSatisfys.3  + distanceToLandmarkSatisfys.3
         )
     }
     
@@ -393,10 +418,6 @@ struct LandmarkRule: Identifiable, Hashable, Codable, Ruler {
                 landmarkToStateDistanceSatisfys.4
         )
     }
-    
-    
-    
-    
     
 }
 

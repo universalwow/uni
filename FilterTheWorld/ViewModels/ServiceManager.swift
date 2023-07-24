@@ -4,11 +4,13 @@ import Alamofire
 struct Login: Codable {
   var email:String
   var password:String
+  var _csrf_token:String
 }
 
 struct LoginResponse: Codable {
   var success: Bool
   var status: String
+  var token:String
 }
 
 
@@ -20,7 +22,7 @@ struct SportFile: Codable {
 class ServiceManager: NSObject, ObservableObject {
     
     struct StaticValue {
-        static let IP = "192.168.10.173"
+        static let IP = "192.168.10.132"
     }
   @Published var loginState: LoginResponse?
   
@@ -30,11 +32,36 @@ class ServiceManager: NSObject, ObservableObject {
   func logout() {
     self.loginState = nil
   }
-    
   
+    func getCookies() {
+        let _url = URL(string: "https://\(StaticValue.IP):4001")!
+        var request = URLRequest(url: _url)
+        request.httpMethod = "GET"
+          
+          
+          var task = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: request) { (data, response, error) in
+              
+              if let error = error {
+                  print("Error took place \(error)")
+                  return
+              }
+            
+              guard let data = data else {return}
+    //        let response = try! JSONDecoder().decode(LoginResponse.self, from: data)
+    //        self.loginState = response
+            print("result \(response)")
+
+          }
+          task.resume()
+    }
   
   func login(username: String, password: String) {
+    
+      
+      
     print("login \(username)/\(password)")
+      
+      
     let url = URL(string: "https://\(StaticValue.IP):4001/users/log_in")
     guard let requestUrl = url else {
 //            fatalError()
@@ -42,19 +69,30 @@ class ServiceManager: NSObject, ObservableObject {
       return
       
     }
+    
+      
     var request = URLRequest(url: requestUrl)
+      request.httpShouldHandleCookies = true
+      let cstorage = HTTPCookieStorage.shared
+      if let cookies = cstorage.cookies(for: requestUrl) {
+          let cookieHeader = HTTPCookie.requestHeaderFields(with: cookies)
+          request.allHTTPHeaderFields = cookieHeader
+      }
+    
     request.httpMethod = "POST"
     // Set HTTP Request Header
     request.setValue("application/json", forHTTPHeaderField: "Accept")
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
+      request.setValue("CHhvDhQNRiQsazYsIyYsVD09Nw9MOCgkW77FpEwhIRcDyEjfGiQi4Moh",
+                       forHTTPHeaderField:    "X-CSRF-Token"
+      )
     request.setValue("strict-origin-when-cross-origin", forHTTPHeaderField: "Referrer Policy")
-    let login = Login(email: username, password: password)
+      let login = Login(email: username, password: password, _csrf_token: "CHhvDhQNRiQsazYsIyYsVD09Nw9MOCgkW77FpEwhIRcDyEjfGiQi4Moh")
     let jsonData = try! JSONEncoder().encode(login)
     request.httpBody = jsonData
       let config = URLSessionConfiguration.ephemeral
     config.allowsConstrainedNetworkAccess = true
-    let task = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: request) { (data, response, error) in
+    var task = URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: request) { (data, response, error) in
         
         if let error = error {
             print("Error took place \(error)")
@@ -62,19 +100,14 @@ class ServiceManager: NSObject, ObservableObject {
         }
       
         guard let data = data else {return}
+        print("result0 \(response)")
       let response = try! JSONDecoder().decode(LoginResponse.self, from: data)
-      self.loginState = response
+        DispatchQueue.main.async {
+            self.loginState = response
+        }
       print("result \(response)")
           
-//            do{
-//                let todoItemModel = try JSONDecoder().decode(ToDoResponseModel.self, from: data)
-//                print("Response data:\n \(todoItemModel)")
-//                print("todoItemModel Title: \(todoItemModel.title)")
-//                print("todoItemModel id: \(todoItemModel.id ?? 0)")
-//            }catch let jsonErr{
-//                print(jsonErr)
-//           }
-     
+
     }
     task.resume()
   }
@@ -92,7 +125,7 @@ extension ServiceManager {
     
     
     func uploadData(sport: Sport) {
-      let url = URL(string: "https://\(StaticValue.IP):4001/rules")
+      let url = URL(string: "https://\(StaticValue.IP):4001/sports")
       guard let requestUrl = url else {
   //            fatalError()
         print("url error")
@@ -156,7 +189,7 @@ extension ServiceManager {
                 multipartFormData: { multipartFormData in
                     multipartFormData.append(data, withName: "upload_data" , fileName: filename, mimeType: "application/json")
             },
-                to: "https://\(StaticValue.IP):4001/rules", method: .post , headers: headers)
+                to: "https://\(StaticValue.IP):4001/sports", method: .post , headers: headers)
                 .response { response in
                     if let responseData = response.data {
                         //handle the response however you like
@@ -179,7 +212,6 @@ extension ServiceManager {
         
         URLSession(configuration: .ephemeral, delegate: self, delegateQueue: .main).dataTask(with: url1) { [self] data, response, error in
               if let data = data {
-                  
                   do {
                       let res = try JSONDecoder().decode(SportFile.self, from: data)
                       let appVersion:String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String

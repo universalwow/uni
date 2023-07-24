@@ -114,7 +114,7 @@ struct SportReport: Identifiable, Codable {
     
     func findStateDescription(stateId: Int) -> StateDescription {
         return self.statesDescription!.first(where: { stateDescription in
-            print("statesDescription \(stateDescription) - \(stateId)")
+//            print("statesDescription \(stateDescription) - \(stateId)")
             return stateDescription.stateId == stateId
         })!
     }

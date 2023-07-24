@@ -5,7 +5,16 @@ struct ContentView: View {
     
     
     var body: some View {
+        
         TabView {
+            
+            VStack {
+                ChatView().padding()
+            }
+            .tabItem{
+                Text("Chats")
+            }
+            
             VStack {
                 SportsManagerView().padding()
             }

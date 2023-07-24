@@ -1,0 +1,109 @@
+Code = KHT011
+          Name = 开合跳
+          Left
+          {
+            Check
+            {
+              CheckCode = LeftArm
+              CheckContent = mLeftAngel
+              CheckRange = 300_240 ,100_60
+              Set
+              {
+                mLeftAngel = EXY_03_07
+                mRL = T04_08 - T03_07
+                mLeftDis = 0.5*L03_05
+              }
+              Condition
+              {
+                ALL = 1
+                # LXY_03_05 > mLeftDis AND LXY_05_07>0.5*L05_07 AND L03_07 > (L03_05 + L05_07)/2
+              }
+              Error
+              {
+                e10011 =  mLeftAngel<60 , 请保持手在身体两侧
+                e20003 = LeftArm > 0.8 AND RightArm > 0.8 AND LeftLeg < 0.5,双腿打开的幅度不够大
+                e20003 = LeftArm > 0.8 AND RightArm > 0.8 AND RightLeg < 0.5,双腿打开的幅度不够大
+                e11004 = RightLeg > 0.8 AND LeftLeg > 0.8 AND LeftArm < 0.5,左手再向上伸一些
+                e12004 = RightLeg > 0.8 AND LeftLeg > 0.8 AND RightArm < 0.5,右手再向上伸一些
+              }
+              Trail
+              {
+                MaxVal=0.8,3,e10004,双手再向上伸一些
+              }
+            }
+            Check
+            {
+              CheckCode = LeftLeg
+              CheckContent = mLeftFooterLen
+              CheckRange = 0.8_1.2,2_4
+              Set
+              {
+                mLeftFooterLen = (X13-X02)/(X03-X01)
+              }
+              Condition
+              {
+                ALL = 70< A09_11_13 AND A09_11_13<180 AND 265<EXY_01_02 AND EXY_01_02<275
+              }
+              Error
+              {
+                e20007 = A09_11_13<70 ,请伸直左腿
+                #e004 = LeftLeg>0.6 AND LeftLeg<0.8,Tips,双腿打开的幅度不够大
+              }
+              Trail
+              {
+                MaxVal=0.8,3,e20003,双腿打开的幅度不够大
+              }
+            }
+          }
+          Right
+          {
+            Check
+            {
+              CheckCode = RightArm
+              CheckContent = mRightArmAngle
+              CheckRange = 300_240 ,100_60
+              Set
+              {
+                mRightArmAngle = 360 - (EXY_04_08 + 180)%360
+                mRL = T04_08 - T03_07
+              }
+              Condition
+              {
+                ALL =  LXY_04_06 > L04_06/2 AND LXY_06_08>0.5*L06_08 AND L04_08 > (L04_06 + L06_08)/2
+              }
+              Error
+              {
+                e10011 = mRightArmAngle<60 , 请保持手在身体两侧
+                #e01 = RightArm > 0.2 AND (LeftLeg < 0.1 OR RightLeg<0.1) OR LeftArm > 0.5 AND (LeftLeg < 0.4 OR RightLeg<0.2),请跳起来
+                #e03 = RightArm>0.6 AND RightArm<0.8,Tips,双手再向上伸一些
+              }
+              Trail
+              {
+                MaxVal=0.8,3,e10004,双手再向上伸一些
+              }
+            }
+            Check
+            {
+              CheckCode = RightLeg
+              CheckContent = mRightFooterLen
+              CheckRange = 0.8_1.2,2_4
+              dx = (X04-X03)/2
+              Set
+              {
+                mRightFooterLen = (X02-X14)/(X03-X01)
+              }
+              Condition
+              {
+                ALL = 70<A10_12_14 AND A10_12_14<180 AND 265<EXY_01_02 AND EXY_01_02<275
+              }
+              Error
+              {
+                e20007 = A10_12_14<70 , 请伸直右腿
+                #e004 = RightLeg>0.6 AND RightLeg<0.8,Tips,双腿打开的幅度不够大
+              }
+              Trail
+              {
+                MaxVal=0.8,3,e20003,双腿打开的幅度不够大
+              }
+            }
+          }

@@ -1,4 +1,4 @@
-/// Copyright (c) 2021 Razeware LLC
+/// Copyright (c) 2023 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -32,27 +32,47 @@
 
 import SwiftUI
 
-@main
-struct AppMain: App {
-    @StateObject var sportManager = SportsManager()
-    @StateObject var imageAnalysor = ImageAnalysis()
-    @StateObject var sportGround = SportsGround()
-    @StateObject var cameraSporter = CameraViewModel()
-    @StateObject var standAndJumper = StandAndJumpSetter()
-    @StateObject var serviceManager = ServiceManager()
+struct ChatView: View {
     
     
-    //  let test = TestPublishedStruct()
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environmentObject(sportManager)
-            //        .environmentObject(test)
-                .environmentObject(imageAnalysor)
-                .environmentObject(sportGround)
-                .environmentObject(cameraSporter)
-                .environmentObject(standAndJumper)
-                .environmentObject(serviceManager)
-        }
+    @State var content = ""
+    @StateObject var chater = Chater()
+    @EnvironmentObject var serviceManager:ServiceManager
+    
+    var body: some View {
+        
+        VStack {
+            ForEach(chater.onlines) { user in
+                Text("\(user.id) -> \(user.bindingTo) - \(user.count)")
+            }
+            ForEach(0..<chater.contents.count, id: \.self, content: { index in
+                Text(chater.contents[index])
+            })
+            Spacer()
+            
+            TextField("Message...", text: $content)
+            
+            Button(action: {
+                chater.send(message: content)
+                content = ""
+            }, label: {
+                Text("发送消息")
+            })
+            
+        }.onReceive(serviceManager.$loginState, perform: {state in
+            print("$loginState -----> \(state)")
+            chater.setToken(token: state?.token ?? "") 
+        })
+        
+        
+        
+        
+        
+    }
+}
+
+struct ChatView_Previews: PreviewProvider {
+    static var previews: some View {
+        ChatView()
     }
 }

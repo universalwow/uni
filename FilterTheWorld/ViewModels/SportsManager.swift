@@ -851,7 +851,7 @@ extension SportsManager {
                                            toLandmarkSegmentType: LandmarkTypeSegment,
                                            toAxis: CoordinateAxis,
                                            lowerBound: Double, upperBound: Double,
-                                           warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
+                                           warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool,toStateToggle: Bool, toLastFrameToggle: Bool) {
         let sportIndex = firstIndexOfSport()!
         sports[sportIndex].updateRuleLandmarkToStateDistance(stateId: currentStateId!, rulesId: currentSportStateRulesId!, ruleId: currentSportStateRuleId!, ruleType: currentSportStateRuleType!, ruleClass: currentSportStateRuleClass,
                                                              fromAxis: fromAxis,
@@ -862,7 +862,7 @@ extension SportsManager {
                                                              toLandmarkSegmentType: toLandmarkSegmentType,
                                                              toAxis: toAxis,
                                                              lowerBound: lowerBound, upperBound: upperBound,
-                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, defaultSatisfy: defaultSatisfy)
+                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: id, defaultSatisfy: defaultSatisfy,toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle)
         
     }
     

@@ -4,7 +4,7 @@ import SwiftUI
 
 struct SportsManagerView: View {
     @EnvironmentObject var sportManager: SportsManager
-    @ObservedObject var serviceManager = ServiceManager()
+    @EnvironmentObject var serviceManager:ServiceManager
 
 
     var newSport: some View {
@@ -28,7 +28,7 @@ struct SportsManagerView: View {
                         NavigationLink(
                             destination:
                                 SportView(sport: Binding.constant(sport))
-                            .navigationTitle(Text(sport.name))
+                                .navigationTitle(Text("\(sport.name)-\(String((sport.id.uuidString)[sport.id.uuidString.startIndex...sport.id.uuidString.index(sport.id.uuidString.startIndex, offsetBy: 7)]))"))
                             .navigationBarTitleDisplayMode(.inline)
                             .navigationBarItems(trailing:
                                                     HStack {
@@ -91,7 +91,7 @@ struct SportsManagerView: View {
                     }
                     Button(action: {
                         
-                        serviceManager.downloadDocuments(path: "https://\(ServiceManager.StaticValue.IP ):4001/rules/-1")
+                        serviceManager.downloadDocuments(path: "https://\(ServiceManager.StaticValue.IP ):4001/sports/-1")
                         
                     }) {
                         Text("更新本地")

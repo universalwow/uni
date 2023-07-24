@@ -26,6 +26,9 @@ struct LandmarkToStateDistanceRuleView: View {
     @State var upperBound: Double = 0.0
     @State var toLandmarkType = LandmarkType.LeftShoulder
     
+    @State var toStateToggle: Bool = false
+    @State var toLastFrameToggle: Bool = false
+    
     
     func updateLocalData() {
         let length = sportManager.getRuleLandmarkToStateDistance(id: landmarkToStateDistance.id)
@@ -61,7 +64,7 @@ struct LandmarkToStateDistanceRuleView: View {
                                                toLandmarkSegmentType: toLandmarkSegmentType,
                                                toAxis: toAxis,
                                                lowerBound: lowerBound, upperBound: upperBound,
-                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: landmarkToStateDistance.id, defaultSatisfy: defaultSatisfy)
+                                                       warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime, changeStateClear: changeStateClear, id: landmarkToStateDistance.id, defaultSatisfy: defaultSatisfy, toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle)
 
     }
     
@@ -222,6 +225,23 @@ struct LandmarkToStateDistanceRuleView: View {
                         
                     }
                     
+                    HStack {
+                        Toggle(isOn: $toStateToggle.didSet { _ in
+                            updateRemoteData()
+                        }, label: {
+                            Text("状态开关").frame(maxWidth: .infinity, alignment: .trailing)
+                        })
+                        Spacer()
+                        Toggle(isOn: $toLastFrameToggle.didSet { _ in
+                            updateRemoteData()
+                        }, label: {
+                            Text("帧开关").frame(maxWidth: .infinity, alignment: .trailing)
+                        })
+                                                
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                    }
+                    
                 }
                 
             }
@@ -243,6 +263,9 @@ struct LandmarkToStateDistanceRuleView: View {
             upperBound = length.upperBound
             defaultSatisfy = length.defaultSatisfy ?? true
             toLandmarkType = length.toLandmarkToAxis.landmark.landmarkType
+            
+            toStateToggle = length.toStateToggle ?? false
+            toLastFrameToggle = length.toLastFrameToggle ?? false
             
         }
     }
@@ -479,13 +502,13 @@ struct LandmarkToStateDistanceMergeRuleView: View {
                     Toggle(isOn: $toStateToggle.didSet { _ in
                         updateRemoteData()
                     }, label: {
-                        Text("比例开关").frame(maxWidth: .infinity, alignment: .trailing)
+                        Text("状态开关").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                     Spacer()
                     Toggle(isOn: $toLastFrameToggle.didSet { _ in
                         updateRemoteData()
                     }, label: {
-                        Text("权重开关").frame(maxWidth: .infinity, alignment: .trailing)
+                        Text("帧开关").frame(maxWidth: .infinity, alignment: .trailing)
                     })
                     
                     Text("权重:")
@@ -525,8 +548,6 @@ struct LandmarkToStateDistanceMergeRuleView: View {
             toStateToggle = length.toStateToggle ?? false
             toLastFrameToggle = length.toLastFrameToggle ?? false
             weight = length.weight ?? 1
-            
-            
             
         }
     }

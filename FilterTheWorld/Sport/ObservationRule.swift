@@ -215,7 +215,7 @@ struct ObservationRule: Identifiable, Hashable, Codable, Ruler {
             
         }
     
-    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
+    func allSatisfy(stateTimeHistory: [StateTime], poseMap: PoseMap, lastPoseMap: PoseMap,objects: [Observation], frameSize: Point2D) -> (Bool, Set<Warning>, Int, Int) {
         
         let objectToLandmarkSatisfys = objectToLandmark.reduce((true, Set<Warning>(), 0, 0), {result, next in
             var satisfy = false

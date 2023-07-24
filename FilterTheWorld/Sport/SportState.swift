@@ -999,7 +999,7 @@ extension SportState {
                                                 toLandmarkSegment: LandmarkSegment,
                                                 toAxis: CoordinateAxis,
                                                 lowerBound: Double, upperBound: Double,
-                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool) {
+                                                        warningContent: String, triggeredWhenRuleMet: Bool, delayTime: Double,changeStateClear: Bool,  id: UUID, defaultSatisfy: Bool,toStateToggle: Bool, toLastFrameToggle: Bool) {
             if let rulesIndex = firstIndexOfRules(editedRulesId: rulesId, ruleType: ruleType) {
                 switch ruleType {
                 case .SCORE:
@@ -1012,7 +1012,7 @@ extension SportState {
                                                                      toLandmarkSegment: toLandmarkSegment,
                                                                      toAxis: toAxis,
                                                                      lowerBound: lowerBound, upperBound: upperBound,
-                                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy)
+                                                                             warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy,toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle)
                 case .VIOLATE:
                     violateRules[rulesIndex].updateRuleLandmarkToStateDistance(ruleId: ruleId, ruleClass: ruleClass,
                                                                        fromAxis: fromAxis,
@@ -1023,7 +1023,7 @@ extension SportState {
                                                                        toLandmarkSegment: toLandmarkSegment,
                                                                        toAxis: toAxis,
                                                                        lowerBound: lowerBound, upperBound: upperBound,
-                                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy)
+                                                                               warningContent: warningContent, triggeredWhenRuleMet: triggeredWhenRuleMet, delayTime: delayTime,changeStateClear: changeStateClear,  id: id, humanPose: self.humanPose!, defaultSatisfy: defaultSatisfy,toStateToggle: toStateToggle, toLastFrameToggle: toLastFrameToggle)
                 }
             }
         }

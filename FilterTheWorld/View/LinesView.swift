@@ -76,7 +76,6 @@ struct MoveableCircle: View {
                 }.updating($startLocation) { (value, startLocation, transaction) in
                     startLocation = startLocation ?? location // 2
                     print("location 1\(self.startLocation)")
-
                 }
         }
     
